@@ -28,6 +28,7 @@ COPY prisma ./prisma/
 COPY scripts ./scripts/
 COPY docker-entrypoint.sh ./docker-entrypoint.sh
 COPY tsconfig*.json nest-cli.json ./
+COPY prisma.config.ts ./
 COPY src ./src/
 COPY public ./public/
 
@@ -53,6 +54,8 @@ RUN groupadd -g 1001 nodejs && \
 COPY --from=builder --chown=nestjs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nestjs:nodejs /app/dist ./dist
 COPY --from=builder --chown=nestjs:nodejs /app/prisma ./prisma
+COPY --from=builder --chown=nestjs:nodejs /app/prisma.config.ts ./prisma.config.ts
+COPY --from=builder --chown=nestjs:nodejs /app/tsconfig*.json ./
 COPY --from=builder --chown=nestjs:nodejs /app/src/generated ./src/generated
 COPY --from=builder --chown=nestjs:nodejs /app/scripts ./scripts
 COPY --from=builder --chown=nestjs:nodejs /app/package*.json ./
