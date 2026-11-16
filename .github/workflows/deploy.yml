@@ -126,7 +126,7 @@ jobs:
           server: '${{ secrets.CAPROVER_SERVER }}'
           app: 'dsl-server'
           token: '${{ secrets.CAPROVER_APP_TOKEN_SERVER }}'
-          image: 'ghcr.io/${{ steps.prep.outputs.owner }}/dsl-server:${{ github.sha }}'
+          image: 'ghcr.io/${{ steps.prep.outputs.owner }}/dsl-server:sha-${{ github.sha }}'
 
   # ============================================================================
   # 2. FRONTEND BUILD & DEPLOY (dsl-frontend)
@@ -206,4 +206,4 @@ jobs:
           server: '${{ secrets.CAPROVER_SERVER }}'
           app: 'dsl-frontend'
           token: '${{ secrets.CAPROVER_APP_TOKEN_FRONTEND }}'
-          image: 'ghcr.io/${{ steps.prep.outputs.owner }}/dsl-frontend:${{ github.sha }}'
+          image: 'ghcr.io/${{ steps.prep.outputs.owner }}/dsl-frontend:sha-${{ github.sha }}'
