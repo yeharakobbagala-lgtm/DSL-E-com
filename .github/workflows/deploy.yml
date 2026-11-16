@@ -4,7 +4,21 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - '.github/workflows/deploy.yml'
   workflow_dispatch:
+    inputs:
+      target:
+        description: 'Select component to build & deploy'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - backend
+          - frontend
 
 permissions:
   contents: read
@@ -12,12 +26,45 @@ permissions:
 
 jobs:
   # ============================================================================
+  # 0. CHANGE DETECTION
+  # Detect whether frontend, backend, or both were modified in this push
+  # ============================================================================
+  detect-changes:
+    name: Detect Modified Services
+    if: github.repository == 'yeharakobbagala-lgtm/DSL-E-com'
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Path Filter
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+              - '.github/workflows/deploy.yml'
+            frontend:
+              - 'frontend/**'
+              - '.github/workflows/deploy.yml'
+
+  # ============================================================================
   # 1. BACKEND BUILD & DEPLOY (dsl-server)
+  # Runs ONLY when backend code or workflow is modified
   # ============================================================================
   backend:
     name: Build & Deploy Backend (dsl-server)
-    # Only execute on this specific repository
-    if: github.repository == 'yeharakobbagala-lgtm/DSL-E-com'
+    needs: detect-changes
+    if: |
+      github.repository == 'yeharakobbagala-lgtm/DSL-E-com' &&
+      (
+        needs.detect-changes.outputs.backend == 'true' ||
+        (github.event_name == 'workflow_dispatch' && (inputs.target == 'all' || inputs.target == 'backend'))
+      )
     runs-on: ubuntu-latest
 
     steps:
@@ -82,11 +129,17 @@ jobs:
 
   # ============================================================================
   # 2. FRONTEND BUILD & DEPLOY (dsl-frontend)
+  # Runs ONLY when frontend code or workflow is modified
   # ============================================================================
   frontend:
     name: Build & Deploy Frontend (dsl-frontend)
-    # Only execute on this specific repository
-    if: github.repository == 'yeharakobbagala-lgtm/DSL-E-com'
+    needs: detect-changes
+    if: |
+      github.repository == 'yeharakobbagala-lgtm/DSL-E-com' &&
+      (
+        needs.detect-changes.outputs.frontend == 'true' ||
+        (github.event_name == 'workflow_dispatch' && (inputs.target == 'all' || inputs.target == 'frontend'))
+      )
     runs-on: ubuntu-latest
 
     steps:
