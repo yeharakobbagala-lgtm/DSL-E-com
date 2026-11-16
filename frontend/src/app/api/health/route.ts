@@ -3,7 +3,11 @@ import { NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const backendBase = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1').replace(/\/+$/, '');
+  const backendBase = (
+    process.env.BACKEND_URL
+      ? `${process.env.BACKEND_URL}/api/v1`
+      : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'
+  ).replace(/\/+$/, '');
   const targetUrl = `${backendBase}/health`;
 
   try {

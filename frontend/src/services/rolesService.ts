@@ -126,7 +126,7 @@ export const rolesService = {
    * Get roles export download URL.
    */
   getExportUrl(format: 'csv' | 'xlsx' = 'csv'): string {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+    const baseUrl = apiClient.getBaseUrl();
     return `${baseUrl}/admin/roles/export?format=${format}`;
   },
 };

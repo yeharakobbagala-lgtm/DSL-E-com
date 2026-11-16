@@ -141,7 +141,7 @@ export const securityService = {
    * Returns download URL for private administrator activities CSV export.
    */
   getActivitiesExportUrl(): string {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+    const baseUrl = apiClient.getBaseUrl();
     return `${baseUrl}/audit-logs/admin-activities/export`;
   },
 

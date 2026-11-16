@@ -244,7 +244,7 @@ export const adminUserService = {
     if (query?.isActive !== undefined) params.set('isActive', String(query.isActive));
     if (query?.format) params.set('format', query.format);
     const qs = params.toString() ? `?${params.toString()}` : '';
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+    const baseUrl = apiClient.getBaseUrl();
     return `${baseUrl}/admin/users/export${qs}`;
   },
 
