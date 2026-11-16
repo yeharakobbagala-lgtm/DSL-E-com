@@ -21,7 +21,7 @@ RUN apt-get update -y && \
     rm -rf /var/lib/apt/lists/*
 
 COPY package*.json ./
-RUN npm ci
+RUN npm ci || npm install
 
 # Copy schema and configuration files
 COPY prisma ./prisma/
@@ -44,8 +44,8 @@ ENV NODE_ENV=production
 ENV PORT=4000
 
 # Run as non-root user for security
-RUN groupadd --system --gid 1001 nodejs && \
-    useradd --system --uid 1001 -g nodejs nestjs
+RUN groupadd -g 1001 nodejs && \
+    useradd -u 1001 -g nodejs -s /bin/sh -m nestjs
 
 # Copy pruned dependencies and built artifacts
 COPY --from=builder --chown=nestjs:nodejs /app/node_modules ./node_modules
