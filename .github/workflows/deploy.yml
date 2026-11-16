@@ -93,6 +93,7 @@ jobs:
           images: ghcr.io/${{ steps.prep.outputs.owner }}/dsl-server
           tags: |
             type=raw,value=latest
+            type=raw,value=${{ github.sha }}
             type=sha,format=long
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
@@ -168,6 +169,7 @@ jobs:
           images: ghcr.io/${{ steps.prep.outputs.owner }}/dsl-frontend
           tags: |
             type=raw,value=latest
+            type=raw,value=${{ github.sha }}
             type=sha,format=long
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
