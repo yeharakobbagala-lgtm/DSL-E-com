@@ -1,0 +1,12 @@
+Dockerfile
+.dockerignore
+node_modules
+dist
+.git
+.gitignore
+*.md
+.env*
+!backend/.env.example
+*.log
+storage
+test

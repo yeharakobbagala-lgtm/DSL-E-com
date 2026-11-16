@@ -1,0 +1,11 @@
+Dockerfile
+.dockerignore
+node_modules
+.next
+out
+.git
+.gitignore
+*.md
+.env*
+!frontend/.env.example
+*.log

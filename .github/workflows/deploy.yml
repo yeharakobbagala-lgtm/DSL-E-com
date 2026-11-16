@@ -1,0 +1,154 @@
+name: Build & Deploy to CapRover
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  # ============================================================================
+  # 1. BACKEND BUILD & DEPLOY (dsl-server)
+  # ============================================================================
+  backend:
+    name: Build & Deploy Backend (dsl-server)
+    # Only execute on this specific repository
+    if: github.repository == 'yeharakobbagala-lgtm/DSL-E-com'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Normalize Repository Owner
+        id: prep
+        run: |
+          echo "owner=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_OUTPUT
+
+      - name: Log in to GitHub Container Registry (ghcr.io)
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker Metadata (Backend)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ steps.prep.outputs.owner }}/dsl-server
+          tags: |
+            type=raw,value=latest
+            type=sha,format=long
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+
+      - name: Build and Push Backend Image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Validate CapRover Backend Credentials
+        id: check_caprover
+        run: |
+          if [ -z "${{ secrets.CAPROVER_SERVER }}" ] || [ -z "${{ secrets.CAPROVER_APP_TOKEN_SERVER }}" ]; then
+            echo "configured=false" >> $GITHUB_OUTPUT
+            echo "::warning::CapRover credentials (CAPROVER_SERVER or CAPROVER_APP_TOKEN_SERVER) are not configured. Image successfully pushed to GHCR, but deployment was skipped."
+          else
+            echo "configured=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Deploy Backend to CapRover
+        if: steps.check_caprover.outputs.configured == 'true'
+        uses: caprover/deploy-from-github@v2
+        with:
+          server: '${{ secrets.CAPROVER_SERVER }}'
+          app: 'dsl-server'
+          token: '${{ secrets.CAPROVER_APP_TOKEN_SERVER }}'
+          image: 'ghcr.io/${{ steps.prep.outputs.owner }}/dsl-server:${{ github.sha }}'
+
+  # ============================================================================
+  # 2. FRONTEND BUILD & DEPLOY (dsl-frontend)
+  # ============================================================================
+  frontend:
+    name: Build & Deploy Frontend (dsl-frontend)
+    # Only execute on this specific repository
+    if: github.repository == 'yeharakobbagala-lgtm/DSL-E-com'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Normalize Repository Owner
+        id: prep
+        run: |
+          echo "owner=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_OUTPUT
+
+      - name: Log in to GitHub Container Registry (ghcr.io)
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker Metadata (Frontend)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ steps.prep.outputs.owner }}/dsl-frontend
+          tags: |
+            type=raw,value=latest
+            type=sha,format=long
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+
+      - name: Build and Push Frontend Image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ vars.NEXT_PUBLIC_API_URL || secrets.NEXT_PUBLIC_API_URL }}
+            NEXT_PUBLIC_BACKEND_URL=${{ vars.NEXT_PUBLIC_BACKEND_URL || secrets.NEXT_PUBLIC_BACKEND_URL }}
+            NEXT_PUBLIC_WHATSAPP_BUSINESS_NUMBER=${{ vars.NEXT_PUBLIC_WHATSAPP_BUSINESS_NUMBER || secrets.NEXT_PUBLIC_WHATSAPP_BUSINESS_NUMBER }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Validate CapRover Frontend Credentials
+        id: check_caprover
+        run: |
+          if [ -z "${{ secrets.CAPROVER_SERVER }}" ] || [ -z "${{ secrets.CAPROVER_APP_TOKEN_FRONTEND }}" ]; then
+            echo "configured=false" >> $GITHUB_OUTPUT
+            echo "::warning::CapRover credentials (CAPROVER_SERVER or CAPROVER_APP_TOKEN_FRONTEND) are not configured. Image successfully pushed to GHCR, but deployment was skipped."
+          else
+            echo "configured=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Deploy Frontend to CapRover
+        if: steps.check_caprover.outputs.configured == 'true'
+        uses: caprover/deploy-from-github@v2
+        with:
+          server: '${{ secrets.CAPROVER_SERVER }}'
+          app: 'dsl-frontend'
+          token: '${{ secrets.CAPROVER_APP_TOKEN_FRONTEND }}'
+          image: 'ghcr.io/${{ steps.prep.outputs.owner }}/dsl-frontend:${{ github.sha }}'
