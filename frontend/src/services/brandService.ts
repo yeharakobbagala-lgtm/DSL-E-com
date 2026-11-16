@@ -154,7 +154,7 @@ class BrandService {
         .map(([k, v]) => [k, String(v)])
     ).toString();
 
-    const response = await fetch(`http://localhost:4000/api/v1/brands/export?${queryString}`, {
+    const response = await fetch(`${apiClient.getBaseUrl()}/brands/export?${queryString}`, {
       method: 'GET',
       credentials: 'include',
       headers: {

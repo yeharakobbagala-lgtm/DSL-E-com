@@ -297,7 +297,7 @@ class ProductService {
         .map(([k, v]) => [k, String(v)])
     ).toString();
 
-    const response = await fetch(`http://localhost:4000/api/v1/products/export?${queryString}`, {
+    const response = await fetch(`${apiClient.getBaseUrl()}/products/export?${queryString}`, {
       method: 'GET',
       credentials: 'include',
       headers: {
