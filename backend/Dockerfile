@@ -23,8 +23,10 @@ RUN apt-get update -y && \
 COPY package*.json ./
 RUN npm ci || npm install
 
-# Copy schema and configuration files
+# Copy schema, scripts, and configuration files
 COPY prisma ./prisma/
+COPY scripts ./scripts/
+COPY docker-entrypoint.sh ./docker-entrypoint.sh
 COPY tsconfig*.json nest-cli.json ./
 COPY src ./src/
 COPY public ./public/
@@ -51,15 +53,20 @@ RUN groupadd -g 1001 nodejs && \
 COPY --from=builder --chown=nestjs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nestjs:nodejs /app/dist ./dist
 COPY --from=builder --chown=nestjs:nodejs /app/prisma ./prisma
+COPY --from=builder --chown=nestjs:nodejs /app/src/generated ./src/generated
+COPY --from=builder --chown=nestjs:nodejs /app/scripts ./scripts
 COPY --from=builder --chown=nestjs:nodejs /app/package*.json ./
 COPY --from=builder --chown=nestjs:nodejs /app/public ./public
+COPY --from=builder --chown=nestjs:nodejs /app/docker-entrypoint.sh ./docker-entrypoint.sh
 
-# Ensure upload and private storage directories exist with proper write permissions
-RUN mkdir -p public/uploads uploads/private_receipts && \
+# Ensure upload, private storage directories exist, and entrypoint is executable
+RUN chmod +x ./docker-entrypoint.sh && \
+    mkdir -p public/uploads uploads/private_receipts && \
     chown -R nestjs:nodejs /app
 
 USER nestjs
 
 EXPOSE 4000
 
+ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["node", "dist/main.js"]

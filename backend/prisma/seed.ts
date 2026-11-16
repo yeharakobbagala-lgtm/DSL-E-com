@@ -1,7 +1,8 @@
 import 'dotenv/config';
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient } from '../src/generated/prisma';
+import * as bcrypt from 'bcrypt';
+import { PrismaClient, UserRole } from '../src/generated/prisma';
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);
@@ -525,6 +526,29 @@ async function main() {
       update: prod,
       create: prod,
     });
+  }
+
+  // ----------------------------------------------------------------------------
+  // 5. Seed Initial System Admin User
+  // ----------------------------------------------------------------------------
+  console.log('👤 Seeding Initial Administrator...');
+  const adminEmail = (process.env.PROVISION_ADMIN_EMAIL || process.env.PRIMARY_SUPER_ADMIN_EMAIL || 'admin@dslstationery.lk').trim().toLowerCase();
+  const adminPassword = process.env.PROVISION_ADMIN_PASSWORD || 'AdminSecurePass123!';
+  const existingAdmin = await prisma.user.findUnique({ where: { email: adminEmail } });
+  if (!existingAdmin) {
+    const passwordHash = await bcrypt.hash(adminPassword, 12);
+    await prisma.user.create({
+      data: {
+        email: adminEmail,
+        name: 'DSL Super Administrator',
+        role: UserRole.ADMIN,
+        passwordHash,
+        isActive: true,
+      },
+    });
+    console.log(`✅ Default admin created: ${adminEmail} (password: ${adminPassword})`);
+  } else {
+    console.log(`ℹ️ Admin user already exists: ${adminEmail}`);
   }
 
   console.log('\n✅ Database seed completed successfully!');
