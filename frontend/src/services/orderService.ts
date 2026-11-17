@@ -212,7 +212,7 @@ class OrderService {
     }
 
     try {
-      const res = await apiClient.get<any>('/admin/orders', { params: queryParams });
+      const res = await apiClient.get<any>('/orders', { params: queryParams });
       
       let rawList: any[] = [];
       let total = 0;
@@ -234,7 +234,7 @@ class OrderService {
         totalPages = Math.ceil(total / (params.limit || 20));
       }
 
-      if (rawList.length > 0 || (res && res.data && res.data.orders !== undefined)) {
+      if (rawList.length > 0 || (res && (Array.isArray(res.data) || (res.data && Array.isArray(res.data.orders))))) {
         const normalizedOrders = rawList.map((o) => this.normalizeOrder(o));
         return {
           orders: normalizedOrders,

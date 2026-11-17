@@ -42,7 +42,22 @@ export default function AccountOverviewPage() {
   }, [isChecking, currentUser, router]);
 
   useEffect(() => {
-    setOrders(orderService.getAll().slice(0, 3));
+    let mounted = true;
+    const loadRecentOrders = async () => {
+      try {
+        const res = await orderService.fetchOrders({ page: 1, limit: 3 });
+        const liveList = res?.orders || [];
+        if (mounted && liveList.length > 0) {
+          setOrders(liveList);
+          return;
+        }
+      } catch {
+        // silent fallback
+      }
+      if (mounted) setOrders(orderService.getAll().slice(0, 3));
+    };
+    loadRecentOrders();
+    return () => { mounted = false; };
   }, []);
 
     if (isChecking) {
