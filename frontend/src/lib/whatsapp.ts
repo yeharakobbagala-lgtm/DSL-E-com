@@ -18,7 +18,9 @@ export function getWhatsAppBusinessNumber(): string {
     }
   }
 
-  const envNumber = process.env.NEXT_PUBLIC_WHATSAPP_BUSINESS_NUMBER;
+  const envNumber =
+    (typeof window !== 'undefined' && (window as any).__ENV__?.NEXT_PUBLIC_WHATSAPP_BUSINESS_NUMBER) ||
+    process.env.NEXT_PUBLIC_WHATSAPP_BUSINESS_NUMBER;
   if (envNumber && envNumber.trim()) {
     return envNumber.trim();
   }

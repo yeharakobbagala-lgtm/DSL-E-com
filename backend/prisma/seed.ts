@@ -1,7 +1,8 @@
 import 'dotenv/config';
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient } from '../src/generated/prisma';
+import * as bcrypt from 'bcrypt';
+import { PrismaClient, UserRole } from '../src/generated/prisma';
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);
@@ -525,6 +526,274 @@ async function main() {
       update: prod,
       create: prod,
     });
+  }
+
+  // ----------------------------------------------------------------------------
+  // 5. Seed Authoritative Permissions & System Roles
+  // ----------------------------------------------------------------------------
+  console.log('🛡️ Seeding Authoritative Permissions & System Roles...');
+
+  const ALL_PERMISSIONS = [
+    // Products (5)
+    { key: 'products.view', displayName: 'View Products', category: 'Products', description: 'View products catalogue and details' },
+    { key: 'products.create', displayName: 'Create Products', category: 'Products', description: 'Create new products and variants' },
+    { key: 'products.edit', displayName: 'Edit Products', category: 'Products', description: 'Update products, variants, and toggle status' },
+    { key: 'products.delete', displayName: 'Delete Products', category: 'Products', description: 'Deactivate products and variants' },
+    { key: 'products.import', displayName: 'Import Products', category: 'Products', description: 'Bulk import products via CSV or Excel' },
+
+    // Categories (4)
+    { key: 'categories.view', displayName: 'View Categories', category: 'Categories', description: 'View categories' },
+    { key: 'categories.create', displayName: 'Create Categories', category: 'Categories', description: 'Create new categories' },
+    { key: 'categories.edit', displayName: 'Edit Categories', category: 'Categories', description: 'Update categories' },
+    { key: 'categories.delete', displayName: 'Delete Categories', category: 'Categories', description: 'Delete categories' },
+
+    // Brands (4)
+    { key: 'brands.view', displayName: 'View Brands', category: 'Brands', description: 'View brands' },
+    { key: 'brands.create', displayName: 'Create Brands', category: 'Brands', description: 'Create new brands' },
+    { key: 'brands.edit', displayName: 'Edit Brands', category: 'Brands', description: 'Update brands' },
+    { key: 'brands.delete', displayName: 'Delete Brands', category: 'Brands', description: 'Delete brands' },
+
+    // Inventory (2)
+    { key: 'inventory.view', displayName: 'View Inventory', category: 'Inventory', description: 'View inventory movements, stock levels, and low-stock alerts' },
+    { key: 'inventory.update', displayName: 'Adjust Inventory', category: 'Inventory', description: 'Perform stock adjustments' },
+
+    // Orders (6)
+    { key: 'orders.view', displayName: 'View Orders', category: 'Orders', description: 'View orders, order details, stats, and audit history' },
+    { key: 'orders.update_status', displayName: 'Update Order Status', category: 'Orders', description: 'Update order processing status' },
+    { key: 'orders.fulfill', displayName: 'Fulfill Orders', category: 'Orders', description: 'Advance order fulfillment workflow' },
+    { key: 'orders.cancel', displayName: 'Cancel Orders', category: 'Orders', description: 'Cancel orders and release or restock reserved inventory' },
+    { key: 'orders.refund', displayName: 'Issue & Manage Refunds', category: 'Orders', description: 'Initiate, approve, execute, and record customer monetary refunds' },
+    { key: 'orders.add_notes', displayName: 'Add Order Notes', category: 'Orders', description: 'Add operational notes to orders' },
+
+    // Payments (1)
+    { key: 'payments.verify_bank_deposit', displayName: 'Verify Bank Deposit Slips', category: 'Payments', description: 'Approve or reject customer bank deposit slips and verify payment transfers' },
+
+    // Dashboard (1)
+    { key: 'dashboard.view', displayName: 'View Dashboard', category: 'Dashboard', description: 'View executive store dashboard and revenue analytics' },
+
+    // Customers (2)
+    { key: 'customers.view', displayName: 'View Customers', category: 'Customers', description: 'View customer accounts and profiles' },
+    { key: 'customers.manage', displayName: 'Manage Customers', category: 'Customers', description: 'Update customer status, addresses, and notes' },
+
+    // Reports (2)
+    { key: 'reports.view', displayName: 'View Reports', category: 'Reports', description: 'View sales, revenue, refund, and product reports' },
+    { key: 'reports.export', displayName: 'Export Reports', category: 'Reports', description: 'Export report data to CSV and Excel' },
+
+    // Settings (3)
+    { key: 'settings.view', displayName: 'View Settings', category: 'Settings', description: 'View store settings and operational variables' },
+    { key: 'settings.manage', displayName: 'Manage Settings', category: 'Settings', description: 'Update store settings and payment configurations' },
+    { key: 'settings.financial', displayName: 'Manage Financial & Bank Settings', category: 'Settings', description: 'View and update store bank account details, SWIFT codes, and payment gateways' },
+
+    // School Packs (2)
+    { key: 'school_packs.view', displayName: 'View School Packs', category: 'School Packs', description: 'View school packs and configuration' },
+    { key: 'school_packs.manage', displayName: 'Manage School Packs', category: 'School Packs', description: 'Create, update, and manage school packs' },
+
+    // Uploaded Documents (2)
+    { key: 'uploaded_documents.view', displayName: 'View Uploaded Documents', category: 'Uploaded Documents', description: 'View customer uploaded stationery lists' },
+    { key: 'uploaded_documents.manage', displayName: 'Manage Uploaded Documents', category: 'Uploaded Documents', description: 'Review and edit customer uploaded stationery items' },
+
+    // Promotions (2)
+    { key: 'promotions.view', displayName: 'View Promotions', category: 'Promotions', description: 'View promotions, codes, and redemptions' },
+    { key: 'promotions.manage', displayName: 'Manage Promotions', category: 'Promotions', description: 'Create, edit, activate, and deactivate promotions' },
+
+    // Banners (2)
+    { key: 'banners.view', displayName: 'View Banners', category: 'Banners', description: 'View homepage banners' },
+    { key: 'banners.manage', displayName: 'Manage Banners', category: 'Banners', description: 'Create, edit, reorder, and duplicate banners' },
+
+    // Newsletter (2)
+    { key: 'newsletter.view', displayName: 'View Newsletter', category: 'Newsletter', description: 'View subscribers and consent history' },
+    { key: 'newsletter.export', displayName: 'Export Newsletter', category: 'Newsletter', description: 'Export newsletter subscriber list' },
+
+    // Recommendations (2)
+    { key: 'recommendations.view', displayName: 'View Recommendations', category: 'Recommendations', description: 'View recommendation rules' },
+    { key: 'recommendations.manage', displayName: 'Manage Recommendations', category: 'Recommendations', description: 'Create, edit, toggle, and delete recommendation rules' },
+
+    // Audit Logs (1)
+    { key: 'audit_logs.view', displayName: 'View Audit Logs', category: 'Audit Logs', description: 'View platform audit logs' },
+
+    // Uploads (1)
+    { key: 'uploads.create', displayName: 'Upload Media', category: 'Uploads', description: 'Upload product, brand, and banner images' },
+
+    // Admins (3)
+    { key: 'admins.view', displayName: 'View Admins', category: 'Admins', description: 'View administrator accounts' },
+    { key: 'admins.manage', displayName: 'Manage Admins', category: 'Admins', description: 'Activate or deactivate administrators' },
+    { key: 'admins.invite', displayName: 'Invite Admins', category: 'Admins', description: 'Send and revoke administrator invitations' },
+
+    // Roles (4)
+    { key: 'roles.view', displayName: 'View Roles', category: 'Roles', description: 'View roles and permissions' },
+    { key: 'roles.manage', displayName: 'Manage Roles', category: 'Roles', description: 'Create, edit, and delete custom roles' },
+    { key: 'roles.assign', displayName: 'Assign Roles', category: 'Roles', description: 'Assign roles to administrators' },
+    { key: 'roles.assign_permissions', displayName: 'Assign Permissions', category: 'Roles', description: 'Assign permissions to roles' },
+  ];
+
+  for (const perm of ALL_PERMISSIONS) {
+    await prisma.permission.upsert({
+      where: { key: perm.key },
+      update: {
+        displayName: perm.displayName,
+        description: perm.description,
+        category: perm.category,
+      },
+      create: {
+        key: perm.key,
+        displayName: perm.displayName,
+        description: perm.description,
+        category: perm.category,
+      },
+    });
+  }
+
+  // System Roles Definition
+  const SYSTEM_ROLES = [
+    {
+      name: 'Super Admin',
+      slug: 'super_admin',
+      description: 'Root system administrator with unrestricted sovereignty and configuration rights.',
+      isSystem: true,
+      permissionKeys: ALL_PERMISSIONS.map((p) => p.key),
+    },
+    {
+      name: 'Project Manager',
+      slug: 'project_manager',
+      description: 'Operations manager overseeing catalogue, inventory, orders, marketing, and school packs.',
+      isSystem: true,
+      permissionKeys: [
+        'products.view', 'products.create', 'products.edit', 'products.delete', 'products.import',
+        'categories.view', 'categories.create', 'categories.edit', 'categories.delete',
+        'brands.view', 'brands.create', 'brands.edit', 'brands.delete',
+        'inventory.view', 'inventory.update',
+        'orders.view', 'orders.update_status', 'orders.fulfill', 'orders.cancel', 'orders.add_notes',
+        'dashboard.view', 'customers.view', 'reports.view',
+        'school_packs.view', 'school_packs.manage',
+        'uploaded_documents.view', 'uploaded_documents.manage',
+        'promotions.view', 'promotions.manage',
+        'banners.view', 'banners.manage',
+        'newsletter.view', 'newsletter.export',
+        'recommendations.view', 'recommendations.manage',
+        'audit_logs.view',
+        'uploads.create',
+        'admins.view',
+      ],
+    },
+    {
+      name: 'Product Manager',
+      slug: 'product_manager',
+      description: 'Catalogue manager handling products, categories, brands, school packs, and recommendations.',
+      isSystem: true,
+      permissionKeys: [
+        'products.view', 'products.create', 'products.edit', 'products.delete', 'products.import',
+        'categories.view', 'categories.create', 'categories.edit', 'categories.delete',
+        'brands.view', 'brands.create', 'brands.edit', 'brands.delete',
+        'inventory.view', 'inventory.update',
+        'school_packs.view', 'school_packs.manage',
+        'recommendations.view', 'recommendations.manage',
+        'uploads.create',
+      ],
+    },
+    {
+      name: 'Order Manager',
+      slug: 'order_manager',
+      description: 'Fulfillment specialist processing orders, verifying stock, and reviewing uploaded stationery lists.',
+      isSystem: true,
+      permissionKeys: [
+        'orders.view', 'orders.update_status', 'orders.fulfill', 'orders.cancel', 'orders.add_notes',
+        'inventory.view',
+        'dashboard.view', 'customers.view',
+        'uploaded_documents.view', 'uploaded_documents.manage',
+      ],
+    },
+    {
+      name: 'Customer Manager',
+      slug: 'customer_manager',
+      description: 'Customer service and marketing representative handling promotions, newsletters, and order lookups.',
+      isSystem: true,
+      permissionKeys: [
+        'promotions.view', 'promotions.manage',
+        'newsletter.view', 'newsletter.export',
+        'orders.view',
+        'customers.view', 'customers.manage',
+        'uploaded_documents.view',
+      ],
+    },
+  ];
+
+  let superAdminRoleId = '';
+
+  for (const roleDef of SYSTEM_ROLES) {
+    const role = await prisma.role.upsert({
+      where: { slug: roleDef.slug },
+      update: {
+        name: roleDef.name,
+        description: roleDef.description,
+        isSystem: true,
+        isActive: true,
+      },
+      create: {
+        name: roleDef.name,
+        slug: roleDef.slug,
+        description: roleDef.description,
+        isSystem: true,
+        isActive: true,
+      },
+    });
+
+    if (roleDef.slug === 'super_admin') {
+      superAdminRoleId = role.id;
+    }
+
+    // Connect permissions to role
+    for (const permKey of roleDef.permissionKeys) {
+      const perm = await prisma.permission.findUnique({ where: { key: permKey } });
+      if (perm) {
+        await prisma.rolePermission.upsert({
+          where: {
+            roleId_permissionId: {
+              roleId: role.id,
+              permissionId: perm.id,
+            },
+          },
+          update: {},
+          create: {
+            roleId: role.id,
+            permissionId: perm.id,
+          },
+        });
+      }
+    }
+  }
+
+  // ----------------------------------------------------------------------------
+  // 6. Seed / Update Initial System Super Admin User
+  // ----------------------------------------------------------------------------
+  console.log('👑 Seeding/Updating Super Admin User...');
+  const adminEmail = (process.env.PROVISION_ADMIN_EMAIL || process.env.PRIMARY_SUPER_ADMIN_EMAIL || 'admin@dslstationery.lk').trim().toLowerCase();
+  const adminPassword = process.env.PROVISION_ADMIN_PASSWORD || 'AdminSecurePass123!';
+  const existingAdmin = await prisma.user.findUnique({ where: { email: adminEmail } });
+
+  if (!existingAdmin) {
+    const passwordHash = await bcrypt.hash(adminPassword, 12);
+    await prisma.user.create({
+      data: {
+        email: adminEmail,
+        name: 'DSL Super Administrator',
+        role: UserRole.ADMIN,
+        roleId: superAdminRoleId,
+        passwordHash,
+        isActive: true,
+      },
+    });
+    console.log(`✅ Default Super Admin created: ${adminEmail} (Role: super_admin)`);
+  } else {
+    // Crucial: assign the dynamic super_admin roleId to existing admin user
+    await prisma.user.update({
+      where: { id: existingAdmin.id },
+      data: {
+        role: UserRole.ADMIN,
+        roleId: superAdminRoleId,
+        isActive: true,
+      },
+    });
+    console.log(`✅ Existing admin upgraded to Super Admin with roleId: ${adminEmail}`);
   }
 
   console.log('\n✅ Database seed completed successfully!');

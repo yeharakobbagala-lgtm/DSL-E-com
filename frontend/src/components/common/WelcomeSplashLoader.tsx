@@ -110,28 +110,41 @@ export const WelcomeSplashLoader: React.FC<WelcomeSplashLoaderProps> = ({
 
           {/* CENTER OFFICIAL LOGO LOCKUP */}
           <div className="relative z-10 max-w-5xl mx-auto px-6 text-center my-auto py-6 flex flex-col items-center justify-center">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-              className="relative flex items-center justify-center px-8 sm:px-14 md:px-20 py-8 sm:py-12"
-            >
-              {/* Soft horizontal white radial glow backdrop matching reference */}
+            <div className="relative flex items-center justify-center py-2 px-2 transition-transform duration-300">
+              {/* Soft Organic Mist Cloud directly hugging the logo without any rectangle */}
               <div
-                className="absolute inset-0 pointer-events-none rounded-full"
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[105%] max-w-[500px] h-[130px] pointer-events-none rounded-full"
                 style={{
                   background:
-                    'radial-gradient(ellipse 70% 60% at 50% 50%, rgba(255, 255, 255, 0.96) 0%, rgba(255, 255, 255, 0.85) 45%, rgba(255, 255, 255, 0) 100%)',
+                    'radial-gradient(ellipse 65% 55% at 50% 50%, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.9) 35%, rgba(255, 255, 255, 0.5) 60%, rgba(255, 255, 255, 0) 85%)',
+                  filter: 'blur(20px)',
                 }}
                 aria-hidden="true"
               />
+
+              {/* Very soft outer feather mist */}
+              <div
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[115%] max-w-[560px] h-[160px] pointer-events-none rounded-full"
+                style={{
+                  background:
+                    'radial-gradient(ellipse 60% 50% at 50% 50%, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.3) 45%, rgba(255, 255, 255, 0) 80%)',
+                  filter: 'blur(30px)',
+                }}
+                aria-hidden="true"
+              />
+
+              {/* DSL Official Logo with contoured mist glow following letter contours */}
               <img
                 src="/images/dsl-logo-header.png"
                 alt="DSL Enterprises (Pvt) Ltd"
-                className="relative z-10 w-auto h-16 sm:h-20 md:h-24 lg:h-28 max-w-[88vw] object-contain drop-shadow-[0_2px_12px_rgba(255,255,255,0.85)] select-none"
+                className="relative z-10 w-auto h-16 sm:h-20 md:h-24 lg:h-28 max-w-[88vw] object-contain select-none"
+                style={{
+                  filter:
+                    'drop-shadow(0 0 6px #ffffff) drop-shadow(0 0 14px rgba(255, 255, 255, 0.95)) drop-shadow(0 0 24px rgba(255, 255, 255, 0.75))',
+                }}
                 draggable={false}
               />
-            </motion.div>
+            </div>
           </div>
 
           {/* CLEAN BOTTOM SPACER */}

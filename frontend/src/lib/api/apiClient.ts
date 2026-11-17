@@ -82,27 +82,43 @@ class ApiClient {
   }
 
   public getBaseUrl(): string {
-    if (typeof window !== 'undefined' && window.location.hostname) {
-      try {
-        const parsed = new URL(this.baseUrl);
-        if (window.location.hostname === '127.0.0.1' && parsed.hostname === 'localhost') {
-          parsed.hostname = '127.0.0.1';
-          return parsed.toString().replace(/\/+$/, '');
-        }
-        if (
-          window.location.hostname !== 'localhost' &&
-          window.location.hostname !== '127.0.0.1'
-        ) {
-          if (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1') {
-            parsed.hostname = window.location.hostname;
-            return parsed.toString().replace(/\/+$/, '');
-          }
-        }
-      } catch {
-        // Fallback to configured baseUrl
+    // 1. Check runtime environment variables injected from CapRover container into window.__ENV__
+    if (typeof window !== 'undefined') {
+      const runtimeEnv = (window as any).__ENV__;
+      if (
+        runtimeEnv?.NEXT_PUBLIC_API_URL &&
+        typeof runtimeEnv.NEXT_PUBLIC_API_URL === 'string' &&
+        runtimeEnv.NEXT_PUBLIC_API_URL.trim() !== ''
+      ) {
+        return runtimeEnv.NEXT_PUBLIC_API_URL.replace(/\/+$/, '');
       }
     }
-    return this.baseUrl;
+
+    // 2. Check build-time environment variable if it does not point to localhost
+    if (
+      this.baseUrl &&
+      !this.baseUrl.includes('localhost') &&
+      !this.baseUrl.includes('127.0.0.1')
+    ) {
+      return this.baseUrl.replace(/\/+$/, '');
+    }
+
+    // 3. Fallback for browser execution in production (non-localhost)
+    if (typeof window !== 'undefined' && window.location.hostname) {
+      const host = window.location.hostname;
+      if (host !== 'localhost' && host !== '127.0.0.1') {
+        const protocol = window.location.protocol;
+        // If domain is dsl-frontend.xxx, automatically target dsl-server.xxx without port 4000
+        if (host.includes('dsl-frontend')) {
+          const backendHost = host.replace('dsl-frontend', 'dsl-server');
+          return `${protocol}//${backendHost}/api/v1`;
+        }
+        // Fallback to same-origin /api/v1 (handled by Next.js proxy rewrite)
+        return `${window.location.origin}/api/v1`;
+      }
+    }
+
+    return this.baseUrl || 'http://localhost:4000/api/v1';
   }
 
   public getIsMockMode(): boolean {
