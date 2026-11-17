@@ -164,6 +164,8 @@ export interface BankTransferQueryParams {
   limit?: number;
   status?: BankDepositStatus | 'ALL';
   search?: string;
+  startDate?: string;
+  endDate?: string;
   dateFrom?: string;
   dateTo?: string;
   sortBy?: 'createdAt' | 'amountCents' | 'depositDate';

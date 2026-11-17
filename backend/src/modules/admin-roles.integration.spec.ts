@@ -66,6 +66,22 @@ describe('Phase 3 RBAC & Concurrency Security (E2E & Integration)', () => {
       });
     }
 
+    // Ensure no dangling test super admins from prior test runs
+    await prisma.user.updateMany({
+      where: {
+        email: {
+          in: [
+            'test.super2@dsl.lk',
+            'test.super3@dsl.lk',
+            'test.super2.demotion@dsl.lk',
+            'test.scenarios.super@dsl.lk',
+            'test.inv.concurrent@dsl.lk',
+          ],
+        },
+      },
+      data: { isActive: false, roleId: null },
+    });
+
     // Create isolated test secondary admin
     const passwordHash = await bcrypt.hash('TestPass123!', 10);
     secondaryAdminUser = await prisma.user.upsert({
@@ -93,7 +109,12 @@ describe('Phase 3 RBAC & Concurrency Security (E2E & Integration)', () => {
       where: { email: { contains: 'test.inv' } },
     });
     await prisma.user.deleteMany({
-      where: { email: { in: ['test.secondary.admin@dslstationery.lk', 'test.super2@dsl.lk', 'test.super3@dsl.lk', 'test.created@dsl.lk'] } },
+      where: { email: { in: ['test.secondary.admin@dslstationery.lk', 'test.super2@dsl.lk', 'test.super3@dsl.lk', 'test.created@dsl.lk', 'test.super2.demotion@dsl.lk'] } },
+    }).catch(async () => {
+      await prisma.user.updateMany({
+        where: { email: { in: ['test.secondary.admin@dslstationery.lk', 'test.super2@dsl.lk', 'test.super3@dsl.lk', 'test.created@dsl.lk', 'test.super2.demotion@dsl.lk', 'test.inv.concurrent@dsl.lk'] } },
+        data: { isActive: false, roleId: null },
+      });
     });
     await app.close();
   });
@@ -146,9 +167,16 @@ describe('Phase 3 RBAC & Concurrency Security (E2E & Integration)', () => {
       expect(count).toBe(1);
 
       // Create a dummy second Super Admin to test demotion/deactivation
-      const super2 = await prisma.user.create({
-        data: {
-          email: 'test.super2@dsl.lk',
+      const super2 = await prisma.user.upsert({
+        where: { email: 'test.super2.demotion@dsl.lk' },
+        update: {
+          name: 'Super 2',
+          role: UserRole.ADMIN,
+          roleId: superAdminRole.id,
+          isActive: true,
+        },
+        create: {
+          email: 'test.super2.demotion@dsl.lk',
           name: 'Super 2',
           role: UserRole.ADMIN,
           roleId: superAdminRole.id,
@@ -173,15 +201,27 @@ describe('Phase 3 RBAC & Concurrency Security (E2E & Integration)', () => {
       ).rejects.toThrow();
 
       // Clean up super2
-      await prisma.user.delete({ where: { id: super2.id } });
+      await prisma.user.delete({ where: { id: super2.id } }).catch(async () => {
+        await prisma.user.update({
+          where: { id: super2.id },
+          data: { isActive: false, roleId: null },
+        });
+      });
     });
   });
 
   describe('2. Concurrency: Simultaneous Last Super Admin Deactivations', () => {
     it('should serialize simultaneous deactivations and prevent zero Super Admins', async () => {
       // Create two active Super Admins: Super A and Super B
-      const superA = await prisma.user.create({
-        data: {
+      const superA = await prisma.user.upsert({
+        where: { email: 'test.super2@dsl.lk' },
+        update: {
+          name: 'Super A',
+          role: UserRole.ADMIN,
+          roleId: superAdminRole.id,
+          isActive: true,
+        },
+        create: {
           email: 'test.super2@dsl.lk',
           name: 'Super A',
           role: UserRole.ADMIN,
@@ -190,8 +230,15 @@ describe('Phase 3 RBAC & Concurrency Security (E2E & Integration)', () => {
         },
       });
 
-      const superB = await prisma.user.create({
-        data: {
+      const superB = await prisma.user.upsert({
+        where: { email: 'test.super3@dsl.lk' },
+        update: {
+          name: 'Super B',
+          role: UserRole.ADMIN,
+          roleId: superAdminRole.id,
+          isActive: true,
+        },
+        create: {
           email: 'test.super3@dsl.lk',
           name: 'Super B',
           role: UserRole.ADMIN,
@@ -238,7 +285,12 @@ describe('Phase 3 RBAC & Concurrency Security (E2E & Integration)', () => {
         where: { id: superAdminUser.id },
         data: { isActive: true },
       });
-      await prisma.user.deleteMany({ where: { id: { in: [superA.id, superB.id] } } });
+      await prisma.user.deleteMany({ where: { id: { in: [superA.id, superB.id] } } }).catch(async () => {
+        await prisma.user.updateMany({
+          where: { id: { in: [superA.id, superB.id] } },
+          data: { isActive: false, roleId: null },
+        });
+      });
     });
   });
 
@@ -281,7 +333,12 @@ describe('Phase 3 RBAC & Concurrency Security (E2E & Integration)', () => {
       expect(createdUsers.length).toBe(1);
 
       // Cleanup
-      await prisma.user.deleteMany({ where: { email: 'test.inv.concurrent@dsl.lk' } });
+      await prisma.user.deleteMany({ where: { email: 'test.inv.concurrent@dsl.lk' } }).catch(async () => {
+        await prisma.user.updateMany({
+          where: { email: 'test.inv.concurrent@dsl.lk' },
+          data: { isActive: false, roleId: null },
+        });
+      });
       await prisma.adminInvitation.deleteMany({ where: { id: invitation.id } });
     });
   });

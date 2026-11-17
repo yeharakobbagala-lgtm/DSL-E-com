@@ -141,7 +141,7 @@ describe('StoreSettingsService - PostgreSQL Integration Tests (dsl_stationery_te
     expect(auditCheck.rows[0].action).toBe('UPDATE_STORE_SETTINGS');
     // Ensure raw account number is NOT in the audit description
     expect(auditCheck.rows[0].description).not.toContain('009988776655');
-    expect(auditCheck.rows[0].description).toContain('••••••••6655');
+    expect(auditCheck.rows[0].description).toContain('bank transfer configuration (enabled: true)');
   });
 
   it('allows disabling Bank Transfer while preserving configured bank information', async () => {
@@ -154,7 +154,7 @@ describe('StoreSettingsService - PostgreSQL Integration Tests (dsl_stationery_te
 
     expect(adminResult.bankTransferEnabled).toBe(false);
     expect(adminResult.bankTransfer.bankName).toBe('Hatton National Bank');
-    expect(adminResult.bankTransfer.accountNumber).toBe('009988776655');
+    expect(adminResult.bankTransfer.accountNumber).toBe('••••••••6655');
 
     // Public endpoint must now suppress Bank Transfer
     const publicSettings = await service.getPublicSettings();

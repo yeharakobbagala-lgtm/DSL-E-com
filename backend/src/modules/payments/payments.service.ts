@@ -134,10 +134,12 @@ export class PaymentsService {
         submittedAt: sub.createdAt,
         referenceNumber: sub.referenceNumber,
         submittedAmountCents: sub.amountCents,
+        amountCents: sub.amountCents,
         orderTotalCents: sub.order.totalCents,
         amountMatches: sub.amountCents === sub.order.totalCents,
         orderStatus: sub.order.orderStatus,
         paymentStatus: sub.order.paymentStatus,
+        status: sub.status,
         verificationStatus: sub.status,
         receiptFilename: sub.originalFilename,
         receiptMimeType: sub.mimeType,
@@ -147,6 +149,20 @@ export class PaymentsService {
         rejectionReason: sub.rejectionReason,
         reviewedAt: sub.reviewedAt,
         reviewedBy: sub.reviewedBy ? { id: sub.reviewedBy.id, name: sub.reviewedBy.name } : null,
+        order: {
+          id: sub.order.id,
+          orderNumber: sub.order.orderNumber,
+          totalAmountCents: sub.order.totalCents,
+          orderStatus: sub.order.orderStatus,
+          paymentStatus: sub.order.paymentStatus,
+          createdAt: sub.order.createdAt,
+          customer: {
+            id: sub.order.id,
+            name: sub.order.customerName,
+            email: sub.order.customerEmail,
+            phone: sub.order.customerPhone,
+          },
+        },
       })),
       pagination: {
         total,
@@ -188,6 +204,20 @@ export class PaymentsService {
     }
 
     return {
+      id: sub.id,
+      status: sub.status,
+      referenceNumber: sub.referenceNumber,
+      depositDate: sub.depositDate,
+      amountCents: sub.amountCents,
+      customerNotes: sub.customerNotes,
+      rejectionReason: sub.rejectionReason,
+      reviewedAt: sub.reviewedAt,
+      reviewedBy: sub.reviewedBy ? { id: sub.reviewedBy.id, name: sub.reviewedBy.name, email: sub.reviewedBy.email } : null,
+      originalFilename: sub.originalFilename,
+      mimeType: sub.mimeType,
+      fileSizeBytes: sub.fileSizeBytes,
+      createdAt: sub.createdAt,
+      receiptStorageKey: sub.receiptStorageKey,
       submission: {
         id: sub.id,
         referenceNumber: sub.referenceNumber,
@@ -213,6 +243,7 @@ export class PaymentsService {
         discountCents: sub.order.discountCents,
         deliveryCents: sub.order.deliveryCents,
         totalCents: sub.order.totalCents,
+        totalAmountCents: sub.order.totalCents,
         orderStatus: sub.order.orderStatus,
         paymentStatus: sub.order.paymentStatus,
         notes: sub.order.notes,
@@ -220,6 +251,12 @@ export class PaymentsService {
         items: sub.order.items,
         addressSnapshot: sub.order.addressSnapshot,
         paymentAttempts: sub.order.paymentAttempts,
+        customer: {
+          id: sub.order.id,
+          name: sub.order.customerName,
+          email: sub.order.customerEmail,
+          phone: sub.order.customerPhone,
+        },
       },
     };
   }

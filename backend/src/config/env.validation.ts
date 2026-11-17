@@ -10,6 +10,10 @@ export const envSchema = z.object({
   NODE_ENV: z
     .enum(['development', 'test', 'production'])
     .default('development'),
+  APP_ENV: z
+    .enum(['development', 'test', 'e2e', 'production'])
+    .optional()
+    .default('development'),
   DATABASE_URL: z
     .string({
       required_error: 'DATABASE_URL is required',
@@ -19,6 +23,15 @@ export const envSchema = z.object({
       (val) => val.startsWith('postgresql://') || val.startsWith('postgres://'),
       {
         message: 'DATABASE_URL must start with postgresql:// or postgres://',
+      }
+    ),
+  E2E_DATABASE_URL: z
+    .string()
+    .optional()
+    .refine(
+      (val) => !val || val.startsWith('postgresql://') || val.startsWith('postgres://'),
+      {
+        message: 'E2E_DATABASE_URL must start with postgresql:// or postgres://',
       }
     ),
   CORS_ORIGIN: z

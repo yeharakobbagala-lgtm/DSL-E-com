@@ -47,6 +47,13 @@ describe('CustomersController — RBAC & Authorization Tests', () => {
       const ctx = createMockContext(CustomersController.prototype.exportCustomers, {
         id: 'admin-1',
         role: UserRole.ADMIN,
+        roleId: 'role-admin',
+        assignedRole: {
+          id: 'role-admin',
+          slug: 'super_admin',
+          isActive: true,
+          permissions: ['customers.view', 'customers.manage'],
+        },
       });
       expect(rolesGuard.canActivate(ctx)).toBe(true);
     });
@@ -55,6 +62,13 @@ describe('CustomersController — RBAC & Authorization Tests', () => {
       const ctx = createMockContext(CustomersController.prototype.exportCustomers, {
         id: 'mgr-1',
         role: UserRole.MANAGER,
+        roleId: 'role-mgr',
+        assignedRole: {
+          id: 'role-mgr',
+          slug: 'manager',
+          isActive: true,
+          permissions: ['customers.view', 'customers.manage'],
+        },
       });
       expect(rolesGuard.canActivate(ctx)).toBe(true);
     });
@@ -63,6 +77,13 @@ describe('CustomersController — RBAC & Authorization Tests', () => {
       const ctx = createMockContext(CustomersController.prototype.exportCustomers, {
         id: 'staff-1',
         role: UserRole.STAFF,
+        roleId: 'role-staff',
+        assignedRole: {
+          id: 'role-staff',
+          slug: 'staff',
+          isActive: true,
+          permissions: ['customers.view'],
+        },
       });
       expect(() => rolesGuard.canActivate(ctx)).toThrow(ForbiddenException);
     });
@@ -82,6 +103,13 @@ describe('CustomersController — RBAC & Authorization Tests', () => {
       const ctx = createMockContext(CustomersController.prototype.updateStatus, {
         id: 'admin-1',
         role: UserRole.ADMIN,
+        roleId: 'role-admin',
+        assignedRole: {
+          id: 'role-admin',
+          slug: 'super_admin',
+          isActive: true,
+          permissions: ['customers.view', 'customers.manage'],
+        },
       });
       expect(rolesGuard.canActivate(ctx)).toBe(true);
     });
@@ -90,6 +118,13 @@ describe('CustomersController — RBAC & Authorization Tests', () => {
       const ctx = createMockContext(CustomersController.prototype.updateStatus, {
         id: 'mgr-1',
         role: UserRole.MANAGER,
+        roleId: 'role-mgr',
+        assignedRole: {
+          id: 'role-mgr',
+          slug: 'manager',
+          isActive: true,
+          permissions: ['customers.view', 'customers.manage'],
+        },
       });
       expect(rolesGuard.canActivate(ctx)).toBe(true);
     });
@@ -98,6 +133,13 @@ describe('CustomersController — RBAC & Authorization Tests', () => {
       const ctx = createMockContext(CustomersController.prototype.updateStatus, {
         id: 'staff-1',
         role: UserRole.STAFF,
+        roleId: 'role-staff',
+        assignedRole: {
+          id: 'role-staff',
+          slug: 'staff',
+          isActive: true,
+          permissions: ['customers.view'],
+        },
       });
       expect(() => rolesGuard.canActivate(ctx)).toThrow(ForbiddenException);
     });
@@ -105,7 +147,17 @@ describe('CustomersController — RBAC & Authorization Tests', () => {
 
   describe('Read-only endpoints (findAll, findById, getAnalytics)', () => {
     it('permits STAFF user to list customers, view details, and view analytics', () => {
-      const staffUser = { id: 'staff-1', role: UserRole.STAFF };
+      const staffUser = {
+        id: 'staff-1',
+        role: UserRole.STAFF,
+        roleId: 'role-staff',
+        assignedRole: {
+          id: 'role-staff',
+          slug: 'staff',
+          isActive: true,
+          permissions: ['customers.view'],
+        },
+      };
 
       const ctxList = createMockContext(CustomersController.prototype.findAll, staffUser);
       expect(rolesGuard.canActivate(ctxList)).toBe(true);

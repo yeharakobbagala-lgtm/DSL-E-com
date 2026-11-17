@@ -11,6 +11,14 @@ vi.mock('@/services/storeSettingsService', () => ({
   },
 }));
 
+vi.mock('@/services/userStore', () => ({
+  useUserStore: (selector: any) =>
+    selector({
+      currentUser: { id: 'admin-1', role: 'ADMIN', name: 'Super Admin' },
+      hasPermission: (perm: string) => true,
+    }),
+}));
+
 describe('AdminSettingsPage Component', () => {
   const mockSettings: AdminStoreSettingsResponse = {
     id: 'default',
@@ -115,6 +123,17 @@ describe('AdminSettingsPage Component', () => {
     const saveButton = screen.getByRole('button', { name: /Save Bank Settings/i });
     fireEvent.click(saveButton);
 
+    // Modal opens for sensitive action typed confirmation
+    await waitFor(() => {
+      expect(screen.getByText('Update Store Financial & Bank Settings')).toBeDefined();
+    });
+
+    const confirmInput = screen.getByPlaceholderText('Type "CONFIRM FINANCIAL SETTINGS" to confirm');
+    fireEvent.change(confirmInput, { target: { value: 'CONFIRM FINANCIAL SETTINGS' } });
+
+    const confirmBtn = screen.getByRole('button', { name: 'Confirm & Save Settings' });
+    fireEvent.click(confirmBtn);
+
     await waitFor(() => {
       expect(storeSettingsService.updateBankTransfer).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -122,6 +141,7 @@ describe('AdminSettingsPage Component', () => {
           accountNumber: '1000123456',
           bankTransferEnabled: true,
         }),
+        'CONFIRM FINANCIAL SETTINGS'
       );
     });
   });
@@ -141,9 +161,20 @@ describe('AdminSettingsPage Component', () => {
     const saveButton = screen.getByRole('button', { name: /Save Bank Settings/i });
     fireEvent.click(saveButton);
 
+    // Modal opens for sensitive action typed confirmation
+    await waitFor(() => {
+      expect(screen.getByText('Update Store Financial & Bank Settings')).toBeDefined();
+    });
+
+    const confirmInput = screen.getByPlaceholderText('Type "CONFIRM FINANCIAL SETTINGS" to confirm');
+    fireEvent.change(confirmInput, { target: { value: 'CONFIRM FINANCIAL SETTINGS' } });
+
+    const confirmBtn = screen.getByRole('button', { name: 'Confirm & Save Settings' });
+    fireEvent.click(confirmBtn);
+
     await waitFor(() => {
       expect(screen.getByText('Settings Update Failed')).toBeDefined();
-      expect(screen.getByText('Database connectivity error')).toBeDefined();
+      expect(screen.getAllByText('Database connectivity error').length).toBeGreaterThanOrEqual(1);
     });
   });
 

@@ -305,4 +305,50 @@ export class VerifyInvitationQueryDto {
   token: string;
 }
 
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, 'Current password is required'),
+    newPassword: z
+      .string()
+      .min(8, 'Password must be at least 8 characters')
+      .max(128, 'Password cannot exceed 128 characters')
+      .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+      .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+      .regex(/[0-9]/, 'Password must contain at least one number'),
+    confirmNewPassword: z.string().min(1, 'Password confirmation is required'),
+  })
+  .refine((data) => data.newPassword === data.confirmNewPassword, {
+    message: 'New password and confirmation do not match',
+    path: ['confirmNewPassword'],
+  })
+  .refine((data) => data.newPassword !== data.currentPassword, {
+    message: 'New password cannot be the same as current password',
+    path: ['newPassword'],
+  });
+
+export class ChangePasswordDto {
+  @ApiProperty({
+    description: 'Current password for verification',
+    example: 'CurrentPassword123!',
+  })
+  currentPassword: string;
+
+  @ApiProperty({
+    description:
+      'New password (min 8 chars, at least 1 uppercase, 1 lowercase, 1 number)',
+    example: 'NewSecurePassword123!',
+    minLength: 8,
+    maxLength: 128,
+  })
+  newPassword: string;
+
+  @ApiProperty({
+    description: 'Confirmation matching the new password',
+    example: 'NewSecurePassword123!',
+    minLength: 8,
+    maxLength: 128,
+  })
+  confirmNewPassword: string;
+}
+
 

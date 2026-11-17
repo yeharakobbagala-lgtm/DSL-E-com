@@ -157,6 +157,7 @@ async function bootstrap() {
       'x-session-id',
       'x-tracking-otp',
       'Origin',
+      'x-action-confirmation',
     ],
     exposedHeaders: [
       'x-guest-session-id',

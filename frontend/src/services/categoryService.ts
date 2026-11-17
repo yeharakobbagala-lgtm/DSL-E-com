@@ -364,11 +364,19 @@ class CategoryService {
   }
 
   /**
-   * Delete / deactivate category via backend NestJS API.
+   * Delete / deactivate category via backend NestJS API with typed confirmation support.
    */
-  public async deleteCategoryApi(id: string): Promise<boolean> {
+  public async deleteCategoryApi(id: string, confirmationPhrase?: string): Promise<boolean> {
+    const headers: Record<string, string> = {};
+    if (confirmationPhrase) {
+      headers['x-action-confirmation'] = confirmationPhrase;
+    }
     const res = await apiClient.delete<BackendApiResponse<{ id: string }>>(
-      `categories/${encodeURIComponent(id)}`
+      `categories/${encodeURIComponent(id)}`,
+      {
+        headers,
+        body: confirmationPhrase ? JSON.stringify({ confirmationValue: confirmationPhrase }) : undefined,
+      }
     );
     if (res.success) {
       this.categories = this.categories.filter((c) => c.id !== id);

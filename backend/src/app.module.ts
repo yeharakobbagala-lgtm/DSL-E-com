@@ -48,7 +48,7 @@ import { SecurityModule } from './modules/security/security.module';
     ThrottlerModule.forRoot([
       {
         ttl: 60000,
-        limit: 120,
+        limit: 1000,
       },
     ]),
     PrismaModule,

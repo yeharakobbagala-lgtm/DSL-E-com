@@ -93,7 +93,7 @@ export const SpeedWriteHeroSlide: React.FC = () => {
           }}
         >
           {/* ========================================================= */}
-          {/* LAYER 2: FEATURE BULLET ICONS (Shifted Left & Scaled Up)  */}
+          {/* LAYER 2: FEATURE BULLET ICONS (Top Left)                  */}
           {/* 3 Icons Revealed Sequentially with Slow, Smooth Glide     */}
           {/* ========================================================= */}
           <div className="absolute inset-0 w-full h-full pointer-events-none z-[35] speed-left-shift">
@@ -141,6 +141,28 @@ export const SpeedWriteHeroSlide: React.FC = () => {
                   draggable={false}
                 />
               </div>
+            </div>
+          </div>
+
+          {/* ========================================================= */}
+          {/* LAYER 11: MANUFACTURER & DISTRIBUTOR TEXT (Below 3 Badges)*/}
+          {/* ========================================================= */}
+          <div className="absolute inset-0 w-full h-full pointer-events-none z-[36]">
+            <div
+              className="absolute speed-entrance-manufacturer"
+              style={{
+                left: '6%',
+                top: '47.5%',
+                width: '23.5%',
+                maxWidth: '380px',
+              }}
+            >
+              <img
+                src="/images/hero/speed-hero/speed-manufacturer-text.png"
+                alt="Manufacturer & Distributor of Quality Stationery - SPEED delivers quality, innovation and performance through stationery products designed for every writing and creative need."
+                className="w-full h-auto object-contain drop-shadow-[0_12px_28px_rgba(0,0,0,0.45)] select-none"
+                draggable={false}
+              />
             </div>
           </div>
 
@@ -446,6 +468,23 @@ export const SpeedWriteHeroSlide: React.FC = () => {
           will-change: transform, opacity;
         }
 
+        /* 0.35s – Manufacturer & Distributor Entrance (Smooth Fluid Slide From Left, 1.0s) */
+        @keyframes speedEntranceManufacturer {
+          0% {
+            opacity: 0;
+            transform: translate3d(-24px, 0, 0);
+          }
+          100% {
+            opacity: 1;
+            transform: translate3d(0, 0, 0);
+          }
+        }
+        .speed-stage-active .speed-entrance-manufacturer {
+          animation: speedEntranceManufacturer 1.0s cubic-bezier(0.16, 1, 0.3, 1) 0.35s backwards;
+          animation-fill-mode: forwards;
+          will-change: transform, opacity;
+        }
+
         /* 1.15s – Feature Icons Sequential Reveal (Smooth Fluid Slide From Left, 0.9s) */
         @keyframes speedEntranceIcon {
           0% {
@@ -518,6 +557,7 @@ export const SpeedWriteHeroSlide: React.FC = () => {
         /* ACCESSIBILITY: PREFERS-REDUCED-MOTION                     */
         /* --------------------------------------------------------- */
         @media (prefers-reduced-motion: reduce) {
+          .speed-stage-active .speed-entrance-manufacturer,
           .speed-stage-active .speed-entrance-write,
           .speed-stage-active .speed-entrance-beyond,
           .speed-stage-active .speed-entrance-limits,

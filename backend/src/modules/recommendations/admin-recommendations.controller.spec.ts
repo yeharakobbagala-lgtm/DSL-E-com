@@ -23,13 +23,21 @@ describe('AdminRecommendationsController', () => {
   });
 
   describe('Security & Authorization Guard Checks', () => {
-    it('restricts admin recommendation management to ADMIN and MANAGER roles', () => {
+    it('restricts recommendation endpoints using dynamic permissions', () => {
       const reflector = new Reflector();
-      const roles = reflector.get<UserRole[]>(ROLES_KEY, AdminRecommendationsController);
-      expect(roles).toBeDefined();
-      expect(roles).toContain(UserRole.ADMIN);
-      expect(roles).toContain(UserRole.MANAGER);
-      expect(roles).not.toContain(UserRole.CUSTOMER);
+      const viewPerms = reflector.get<string[]>(
+        'permissions',
+        AdminRecommendationsController.prototype.getAllRules
+      );
+      expect(viewPerms).toBeDefined();
+      expect(viewPerms).toContain('recommendations.view');
+
+      const managePerms = reflector.get<string[]>(
+        'permissions',
+        AdminRecommendationsController.prototype.createRule
+      );
+      expect(managePerms).toBeDefined();
+      expect(managePerms).toContain('recommendations.manage');
     });
   });
 

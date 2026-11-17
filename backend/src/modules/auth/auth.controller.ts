@@ -51,6 +51,8 @@ import {
   AcceptInvitationDto,
   verifyInvitationQuerySchema,
   VerifyInvitationQueryDto,
+  changePasswordSchema,
+  ChangePasswordDto,
 } from './dto/auth.dto';
 import { createZodPipe } from '../../common/pipes/zod-validation.pipe';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -142,7 +144,7 @@ export class AuthController {
   @ApiTags('Authentication')
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @Throttle({ default: { limit: parseInt(process.env.THROTTLE_LOGIN_LIMIT || (process.env.NODE_ENV === 'production' ? '10' : '100'), 10), ttl: 60000 } })
   @ApiOperation({
     summary: 'Customer or administrator login',
     description:
@@ -324,6 +326,44 @@ export class AuthController {
     @Body(createZodPipe(resetPasswordSchema)) dto: ResetPasswordDto
   ) {
     return this.authService.resetPassword(dto);
+  }
+
+  @ApiTags('Authentication')
+  @Post('change-password')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 15, ttl: 60000 } })
+  @ApiOperation({
+    summary: 'Change password for authenticated user',
+    description:
+      'Allows an authenticated customer or administrator to change their account password. ' +
+      'Verifies current password, enforces password complexity, prevents password reuse, ' +
+      'revokes all active sessions/refresh tokens across all devices, records an audit event, ' +
+      'and clears session cookies.',
+  })
+  @ApiCookieAuth('dsl_access_token')
+  @ApiBearerAuth('bearerAuth')
+  @ApiBody({ type: ChangePasswordDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Password changed successfully; active sessions revoked',
+    schema: {
+      example: {
+        success: true,
+        message: 'Password changed successfully. Please log in with your new password.',
+        requireReauth: true,
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: 'Validation error (wrong current password, password mismatch, or complexity requirement not met)' })
+  @ApiResponse({ status: 401, description: 'Unauthorized — valid authenticated session required, account deactivated, or account locked' })
+  @ApiResponse({ status: 429, description: 'Too Many Requests (Rate limit: 5 attempts per minute)' })
+  async changePassword(
+    @CurrentUser('id') userId: string,
+    @Body(createZodPipe(changePasswordSchema)) dto: ChangePasswordDto,
+    @Res({ passthrough: true }) res: Response
+  ) {
+    return this.authService.changePassword(userId, dto, res);
   }
 
   // --------------------------------------------------------------------------
@@ -527,7 +567,7 @@ export class AuthController {
 
   @ApiTags('Admin Authentication')
   @Post('admin/login')
-  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @Throttle({ default: { limit: parseInt(process.env.THROTTLE_ADMIN_LOGIN_LIMIT || (process.env.NODE_ENV === 'production' ? '15' : '200'), 10), ttl: 60000 } })
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Administrator login',

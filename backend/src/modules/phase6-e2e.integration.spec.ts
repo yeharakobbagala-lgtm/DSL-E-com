@@ -436,10 +436,12 @@ describe('Phase 6: E2E Integration Workflows (E2E-01 to E2E-15)', () => {
   // ============================================================================
   it('E2E-10: Delete referenced category/brand - safe conflict handling preserves data', async () => {
     // testCategoryId has at least one active product (testProductId)
+    const catRecord = await prisma.category.findUnique({ where: { id: testCategoryId } });
     const res = await fetch(`${baseUrl}/categories/${testCategoryId}`, {
       method: 'DELETE',
       headers: {
         Authorization: `Bearer ${adminToken}`,
+        'x-action-confirmation': catRecord?.name || '',
       },
     });
 

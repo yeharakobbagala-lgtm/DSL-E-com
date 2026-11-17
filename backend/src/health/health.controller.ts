@@ -1,10 +1,12 @@
-import { Controller, Get, ServiceUnavailableException, Inject } from '@nestjs/common';
+import { Controller, Get, ServiceUnavailableException, Inject, Logger } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { PrismaService } from '../prisma/prisma.service';
 
 @ApiTags('Health')
 @Controller('health')
 export class HealthController {
+  private readonly logger = new Logger(HealthController.name);
+
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
   @Get()
@@ -35,6 +37,22 @@ export class HealthController {
   @ApiResponse({
     status: 503,
     description: 'Database is unreachable or degraded',
+    schema: {
+      example: {
+        status: 'degraded',
+        service: 'dsl-stationery-backend',
+        timestamp: '2026-11-03T11:00:00.000Z',
+        uptime: 120.45,
+        database: {
+          status: 'disconnected',
+          error: 'Database connectivity check failed',
+          counts: {
+            products: 0,
+            categories: 0,
+          },
+        },
+      },
+    },
   })
   async checkHealth() {
     const dbHealth = await this.prisma.isHealthy();
@@ -54,6 +72,13 @@ export class HealthController {
       }
     }
 
+    if (!dbHealth.connected) {
+      // Preserve detailed diagnostic context in server logs, but never expose raw errors or credentials to clients
+      this.logger.error(
+        `Database health check failed: ${dbHealth.error || 'Unknown database error'}`
+      );
+    }
+
     const response = {
       status: dbHealth.connected ? 'healthy' : 'degraded',
       service: 'dsl-stationery-backend',
@@ -62,7 +87,7 @@ export class HealthController {
       database: {
         status: dbHealth.connected ? 'connected' : 'disconnected',
         ...(dbHealth.latencyMs !== undefined ? { latencyMs: dbHealth.latencyMs } : {}),
-        ...(dbHealth.error ? { error: dbHealth.error } : {}),
+        ...(!dbHealth.connected ? { error: 'Database connectivity check failed' } : {}),
         counts: {
           products: productCount,
           categories: categoryCount,

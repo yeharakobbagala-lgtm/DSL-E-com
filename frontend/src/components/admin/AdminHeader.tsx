@@ -76,13 +76,17 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({ onOpenMobileNav }) => 
         <div className="h-4 w-px bg-slate-200 hidden md:block" />
 
         {/* Admin Profile Pill */}
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-full bg-[#0066CC] text-white flex items-center justify-center font-black text-xs shadow-xs ring-2 ring-sky-100">
+        <Link
+          href="/admin/profile"
+          className="flex items-center gap-2.5 p-1.5 -mr-1.5 rounded-2xl hover:bg-slate-100 transition-colors group cursor-pointer"
+          title="My Profile & Security Settings"
+        >
+          <div className="w-8 h-8 rounded-full bg-[#0066CC] group-hover:bg-[#0052A3] text-white flex items-center justify-center font-black text-xs shadow-xs ring-2 ring-sky-100 transition-colors">
             {initials}
           </div>
           <div className="text-left text-xs leading-tight">
             <div className="flex items-center gap-1.5">
-              <span className="font-bold text-slate-800 max-w-[140px] sm:max-w-[180px] truncate">
+              <span className="font-bold text-slate-800 group-hover:text-[#0066CC] max-w-[140px] sm:max-w-[180px] truncate transition-colors">
                 {displayName}
               </span>
               <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-amber-100 text-amber-900 border border-amber-200">
@@ -93,7 +97,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({ onOpenMobileNav }) => 
               {displayEmail}
             </span>
           </div>
-        </div>
+        </Link>
       </div>
     </header>
   );

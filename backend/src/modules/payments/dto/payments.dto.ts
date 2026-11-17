@@ -5,7 +5,7 @@ export const bankTransferQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
   search: z.string().trim().optional(), // order number, customer name, email, reference number
-  status: z.nativeEnum(BankDepositStatus).optional(),
+  status: z.preprocess((val) => (val === 'ALL' || val === '' ? undefined : val), z.nativeEnum(BankDepositStatus).optional()),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
   minAmountCents: z.coerce.number().int().min(0).optional(),

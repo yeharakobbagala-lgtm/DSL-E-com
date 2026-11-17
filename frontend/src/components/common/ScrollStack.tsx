@@ -75,6 +75,7 @@ export interface ScrollStackProps {
   snap?: boolean;
   useWindowScroll?: boolean;
   onStackComplete?: () => void;
+  wheelTargetRef?: React.RefObject<HTMLElement | null>;
 }
 
 interface StackSettings {
@@ -110,6 +111,7 @@ export const ScrollStack: React.FC<ScrollStackProps> = ({
   snap = false,
   useWindowScroll = false,
   onStackComplete,
+  wheelTargetRef,
 }) => {
   const rootRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
@@ -166,8 +168,13 @@ export const ScrollStack: React.FC<ScrollStackProps> = ({
         ? document.documentElement.scrollHeight - window.innerHeight
         : root.scrollHeight - root.clientHeight;
     const writeScroll = (value: number) => {
-      written = value;
-      target.scrollTo({ top: value, behavior: 'instant' as ScrollBehavior });
+      if (windowed) {
+        window.scrollTo(0, value);
+        written = window.scrollY;
+      } else {
+        root.scrollTop = value;
+        written = root.scrollTop;
+      }
     };
 
     const write = (key: string, value: string | number, apply: (val: any) => void) => {
@@ -330,13 +337,49 @@ export const ScrollStack: React.FC<ScrollStackProps> = ({
       if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
       const page = windowed ? window.innerHeight : root.clientHeight;
       const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? page : 1);
-      if (!delta || scrollsInside(event.target as HTMLElement, windowed ? document.body : root, delta))
+      if (!delta) return;
+
+      if (root.contains(event.target as HTMLElement) && scrollsInside(event.target as HTMLElement, root, delta))
         return;
+
       const base = gliding ? goal : readScroll();
-      if ((delta < 0 && base <= 0) || (delta > 0 && base >= maxScroll() - 0.5)) return;
+      const max = maxScroll();
+
+      if ((delta < 0 && base <= 0) || (delta > 0 && base >= max - 0.5)) return;
+
+      // Prevent page from scrolling so the 2nd section background stays pinned/fixed!
       event.preventDefault();
       window.clearTimeout(rest);
       glideTo(base + delta);
+    };
+
+    let touchLastY = 0;
+    const onTouchStart = (e: TouchEvent) => {
+      if (!e.touches.length) return;
+      touchLastY = e.touches[0].clientY;
+      pressed = true;
+      window.clearTimeout(rest);
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (!e.touches.length || motion.matches) return;
+      const clientY = e.touches[0].clientY;
+      const delta = (touchLastY - clientY) * 1.5;
+      touchLastY = clientY;
+      if (!delta) return;
+
+      const base = gliding ? goal : readScroll();
+      const max = maxScroll();
+
+      if ((delta < 0 && base <= 0) || (delta > 0 && base >= max - 0.5)) return;
+
+      if (e.cancelable) e.preventDefault();
+      glideTo(base + delta);
+    };
+
+    const onTouchEnd = () => {
+      pressed = false;
+      settleSoon();
     };
 
     const onPress = () => {
@@ -359,6 +402,16 @@ export const ScrollStack: React.FC<ScrollStackProps> = ({
     window.addEventListener('pointerup', onRelease, { passive: true });
     window.addEventListener('pointercancel', onRelease, { passive: true });
     window.addEventListener('resize', schedule);
+
+    // Also attach to the parent section background (e.g. section#our-brands)
+    const extraTarget = (wheelTargetRef?.current as HTMLElement | null) || (root.closest('#our-brands') as HTMLElement | null) || (root.closest('section') as HTMLElement | null);
+    if (extraTarget && extraTarget !== target) {
+      extraTarget.addEventListener('wheel', onWheel as EventListener, { passive: false });
+      extraTarget.addEventListener('touchstart', onTouchStart as EventListener, { passive: true });
+      extraTarget.addEventListener('touchmove', onTouchMove as EventListener, { passive: false });
+      extraTarget.addEventListener('touchend', onTouchEnd as EventListener, { passive: true });
+    }
+
     scheduleRef.current = schedule;
     update();
 
@@ -373,9 +426,17 @@ export const ScrollStack: React.FC<ScrollStackProps> = ({
       window.removeEventListener('pointerup', onRelease);
       window.removeEventListener('pointercancel', onRelease);
       window.removeEventListener('resize', schedule);
+
+      if (extraTarget && extraTarget !== target) {
+        extraTarget.removeEventListener('wheel', onWheel as EventListener);
+        extraTarget.removeEventListener('touchstart', onTouchStart as EventListener);
+        extraTarget.removeEventListener('touchmove', onTouchMove as EventListener);
+        extraTarget.removeEventListener('touchend', onTouchEnd as EventListener);
+      }
+
       scheduleRef.current = null;
     };
-  }, [useWindowScroll]);
+  }, [useWindowScroll, wheelTargetRef]);
 
   return (
     <div

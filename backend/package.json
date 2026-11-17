@@ -10,7 +10,8 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
-    "test": "vitest run"
+    "test": "vitest run",
+    "audit:validate": "tsx scripts/validate-audit-tables.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.11",

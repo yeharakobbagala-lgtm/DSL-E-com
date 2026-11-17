@@ -589,10 +589,20 @@ class ProductService {
   }
 
   /**
-   * Soft-delete / deactivate product via backend NestJS API.
+   * Soft-delete / deactivate product via backend NestJS API with typed confirmation support.
    */
-  public async deleteProductApi(id: string): Promise<boolean> {
-    const res = await apiClient.delete<BackendApiResponse<{ id: string }>>(`products/${encodeURIComponent(id)}`);
+  public async deleteProductApi(id: string, confirmationPhrase?: string): Promise<boolean> {
+    const headers: Record<string, string> = {};
+    if (confirmationPhrase) {
+      headers['x-action-confirmation'] = confirmationPhrase;
+    }
+    const res = await apiClient.delete<BackendApiResponse<{ id: string }>>(
+      `products/${encodeURIComponent(id)}`,
+      {
+        headers,
+        body: confirmationPhrase ? JSON.stringify({ confirmationValue: confirmationPhrase }) : undefined,
+      }
+    );
     if (res.success) {
       this.products = this.products.filter((p) => p.id !== id);
       this.persistAndNotify();
@@ -759,12 +769,21 @@ class ProductService {
   }
 
   /**
-   * Execute an import batch for a validated preview.
+   * Execute an import batch for a validated preview with typed confirmation.
    */
-  public async executeImport(payload: ExecuteImportPayload): Promise<ImportBatchResponse> {
+  public async executeImport(payload: ExecuteImportPayload, confirmationPhrase?: string): Promise<ImportBatchResponse> {
+    const phrase = confirmationPhrase || 'CONFIRM PRODUCT IMPORT';
     const res = await apiClient.post<BackendApiResponse<ImportBatchResponse>>(
       'products/import/execute',
-      payload
+      {
+        ...payload,
+        confirmationValue: phrase,
+      },
+      {
+        headers: {
+          'x-action-confirmation': phrase,
+        },
+      }
     );
     if (res.success && res.data) {
       return res.data;

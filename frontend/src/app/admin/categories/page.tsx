@@ -36,6 +36,7 @@ import {
 } from '@/components/admin/catalog';
 import { AdminPageAccess } from '@/components/admin/AdminPageAccess';
 import { useUserStore } from '@/services/userStore';
+import { SensitiveActionConfirmationModal } from '@/components/admin/security/SensitiveActionConfirmationModal';
 
 interface CategoryFormData {
   id?: string;
@@ -87,6 +88,7 @@ export default function AdminCategoriesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<ProductCategory | null>(null);
+  const [pendingDeleteCategory, setPendingDeleteCategory] = useState<ProductCategory | null>(null);
   const [formData, setFormData] = useState<CategoryFormData>(emptyFormData);
   const [collapsedRoots, setCollapsedRoots] = useState<Record<string, boolean>>({});
   const [columns, setColumns] = useState<ColumnDefinition[]>(DEFAULT_CATEGORY_COLUMNS);
@@ -203,7 +205,7 @@ export default function AdminCategoriesPage() {
     }
   };
 
-  const handleDeleteCategory = async (cat: ProductCategory) => {
+  const handleDeleteCategory = (cat: ProductCategory) => {
     const hasChildren = (cat.children && cat.children.length > 0) || (cat.subcategoryCount ?? 0) > 0;
     const directProd = cat.directProductCount ?? 0;
     const totalProd = cat.itemCount ?? 0;
@@ -218,19 +220,25 @@ export default function AdminCategoriesPage() {
       return;
     }
 
-    if (!confirm(`Are you sure you want to permanently delete category "${cat.name}"?`)) return;
+    setError(null);
+    setSuccessMsg(null);
+    setPendingDeleteCategory(cat);
+  };
 
+  const executeDeleteCategory = async (cat: ProductCategory, phrase: string) => {
     setIsMutating(true);
     setError(null);
     setSuccessMsg(null);
 
     try {
-      await categoryService.deleteCategoryApi(cat.id);
+      await categoryService.deleteCategoryApi(cat.id, phrase);
       setSuccessMsg(`Category "${cat.name}" deleted successfully`);
+      setPendingDeleteCategory(null);
       await loadData();
     } catch (err: any) {
       console.error('Failed to delete category:', err);
       setError(err?.message || 'Failed to delete category on server');
+      throw err;
     } finally {
       setIsMutating(false);
     }
@@ -963,6 +971,23 @@ export default function AdminCategoriesPage() {
           </div>
         </div>
       )}
+      {/* GitHub-Style Typed Delete Confirmation Modal for Any Authorized Admin */}
+      <SensitiveActionConfirmationModal
+        isOpen={Boolean(pendingDeleteCategory)}
+        onClose={() => setPendingDeleteCategory(null)}
+        actionTitle={`Delete Category: "${pendingDeleteCategory?.name || 'Category'}"`}
+        actionDescription="Permanently removing this category from store taxonomy and customer navigation"
+        targetResourceType="Category"
+        targetResourceName={pendingDeleteCategory?.name}
+        expectedConfirmationPhrase={pendingDeleteCategory?.name || ''}
+        confirmButtonLabel="Confirm & Delete Category"
+        impactWarning="Deleting this category removes it from navigation menus and product filters. Type the exact category name to proceed."
+        onConfirmed={async (phrase) => {
+          if (pendingDeleteCategory) {
+            await executeDeleteCategory(pendingDeleteCategory, phrase);
+          }
+        }}
+      />
     </div>
     </AdminPageAccess>
   );

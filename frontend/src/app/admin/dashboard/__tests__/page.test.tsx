@@ -94,7 +94,7 @@ describe('AdminDashboardPage (Stage 4.4)', () => {
 
     // Wait for data load
     await waitFor(() => {
-      expect(screen.getByText('Admin Dashboard')).toBeDefined();
+      expect(screen.getByText('Store Operations Dashboard')).toBeDefined();
     });
 
     // Financial Cards are displayed
@@ -107,7 +107,7 @@ describe('AdminDashboardPage (Stage 4.4)', () => {
     expect(screen.getByText('Pending Queue')).toBeDefined();
     expect(screen.getByText('Low Stock SKUs')).toBeDefined();
     expect(screen.getByText('32')).toBeDefined();
-    expect(screen.getByText('5')).toBeDefined();
+    expect(screen.getAllByText('5').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('2')).toBeDefined();
 
     // Recent Orders Table includes order total for ADMIN
@@ -125,7 +125,7 @@ describe('AdminDashboardPage (Stage 4.4)', () => {
     render(<AdminDashboardPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Admin Dashboard')).toBeDefined();
+      expect(screen.getByText('Total Orders')).toBeDefined();
     });
 
     // Financial cards must NOT be displayed
@@ -134,7 +134,6 @@ describe('AdminDashboardPage (Stage 4.4)', () => {
     expect(screen.queryByText('Refunds')).toBeNull();
 
     // Operational cards must remain visible
-    expect(screen.getByText('Total Orders')).toBeDefined();
     expect(screen.getByText('Pending Queue')).toBeDefined();
     expect(screen.getByText('Low Stock SKUs')).toBeDefined();
     expect(screen.getByText('32')).toBeDefined();
@@ -188,7 +187,7 @@ describe('AdminDashboardPage (Stage 4.4)', () => {
     render(<AdminDashboardPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Admin Dashboard')).toBeDefined();
+      expect(screen.getByText('Store Operations Dashboard')).toBeDefined();
     });
 
     const todayBtn = screen.getByRole('button', { name: 'Today' });
@@ -227,9 +226,9 @@ describe('AdminDashboardPage (Stage 4.4)', () => {
     render(<AdminDashboardPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('All inventory stock healthy.')).toBeDefined();
+      expect(screen.getByText(/All inventory stock healthy/i)).toBeDefined();
       expect(screen.getByText('No stationery sales recorded in this period.')).toBeDefined();
-      expect(screen.getByText('No customer orders recorded yet.')).toBeDefined();
+      expect(screen.getByText('No matching orders found')).toBeDefined();
     });
   });
 });

@@ -58,14 +58,14 @@ describe('Product Import Execution Engine Integration Tests (Stage 4)', () => {
       });
     }
 
-    const orderRole = await prisma.role.findUnique({ where: { slug: 'order_manager' } });
+    const productRole = await prisma.role.findUnique({ where: { slug: 'product_manager' } });
     // Create a secondary admin for ownership & cross-admin tests
     const secAdmin = await prisma.user.create({
       data: {
         email: `sec-admin-${Date.now()}@dslstationery.lk`,
         name: 'Secondary Admin',
         role: 'ADMIN',
-        roleId: orderRole?.id,
+        roleId: productRole?.id,
         isActive: true,
       },
     });
@@ -251,6 +251,7 @@ S4-ITEM-TAMPER,Stage4 Tamper Item,${testCategoryId},${testSubcategoryId},${testB
         headers: {
           Authorization: `Bearer ${superAdminToken}`,
           'Content-Type': 'application/json',
+          'x-action-confirmation': 'CONFIRM PRODUCT IMPORT',
         },
         body: JSON.stringify({
           previewId: data.previewId,
@@ -278,6 +279,7 @@ S4-ITEM-OWNER,Stage4 Owner Item,${testCategoryId},${testSubcategoryId},${testBra
         headers: {
           Authorization: `Bearer ${secondaryAdminToken}`,
           'Content-Type': 'application/json',
+          'x-action-confirmation': 'CONFIRM PRODUCT IMPORT',
         },
         body: JSON.stringify({
           previewId: data.previewId,
@@ -308,6 +310,7 @@ S4-ITEM-EXP,Stage4 Expired Item,${testCategoryId},${testSubcategoryId},${testBra
         headers: {
           Authorization: `Bearer ${superAdminToken}`,
           'Content-Type': 'application/json',
+          'x-action-confirmation': 'CONFIRM PRODUCT IMPORT',
         },
         body: JSON.stringify({
           previewId: data.previewId,
@@ -338,6 +341,7 @@ ${sku},Execution Product ${sku},${testCategoryId},${testSubcategoryId},${testBra
         headers: {
           Authorization: `Bearer ${superAdminToken}`,
           'Content-Type': 'application/json',
+          'x-action-confirmation': 'CONFIRM PRODUCT IMPORT',
         },
         body: JSON.stringify({
           previewId: previewData.previewId,
@@ -391,6 +395,7 @@ ${sku},Idempotent Product ${sku},${testCategoryId},${testSubcategoryId},${testBr
         headers: {
           Authorization: `Bearer ${superAdminToken}`,
           'Content-Type': 'application/json',
+          'x-action-confirmation': 'CONFIRM PRODUCT IMPORT',
         },
         body: JSON.stringify({
           previewId: previewData.previewId,
@@ -414,6 +419,7 @@ ${sku},Idempotent Product ${sku},${testCategoryId},${testSubcategoryId},${testBr
         headers: {
           Authorization: `Bearer ${superAdminToken}`,
           'Content-Type': 'application/json',
+          'x-action-confirmation': 'CONFIRM PRODUCT IMPORT',
         },
         body: JSON.stringify({
           previewId: previewData.previewId,
@@ -446,6 +452,7 @@ ${sku},Mismatch Product ${sku},${testCategoryId},${testSubcategoryId},${testBran
         headers: {
           Authorization: `Bearer ${superAdminToken}`,
           'Content-Type': 'application/json',
+          'x-action-confirmation': 'CONFIRM PRODUCT IMPORT',
         },
         body: JSON.stringify({
           previewId: previewData.previewId,
@@ -462,6 +469,7 @@ ${sku},Mismatch Product ${sku},${testCategoryId},${testSubcategoryId},${testBran
         headers: {
           Authorization: `Bearer ${superAdminToken}`,
           'Content-Type': 'application/json',
+          'x-action-confirmation': 'CONFIRM PRODUCT IMPORT',
         },
         body: JSON.stringify({
           previewId: previewData.previewId,
@@ -491,6 +499,7 @@ ${sku},Cross Admin Product ${sku},${testCategoryId},${testSubcategoryId},${testB
         headers: {
           Authorization: `Bearer ${superAdminToken}`,
           'Content-Type': 'application/json',
+          'x-action-confirmation': 'CONFIRM PRODUCT IMPORT',
         },
         body: JSON.stringify({
           previewId: previewData.previewId,
@@ -507,6 +516,7 @@ ${sku},Cross Admin Product ${sku},${testCategoryId},${testSubcategoryId},${testB
         headers: {
           Authorization: `Bearer ${secondaryAdminToken}`,
           'Content-Type': 'application/json',
+          'x-action-confirmation': 'CONFIRM PRODUCT IMPORT',
         },
         body: JSON.stringify({
           previewId: previewData.previewId,
@@ -534,6 +544,7 @@ ${sku},Stock Modes Product,${testCategoryId},${testSubcategoryId},${testBrandId}
         headers: {
           Authorization: `Bearer ${superAdminToken}`,
           'Content-Type': 'application/json',
+          'x-action-confirmation': 'CONFIRM PRODUCT IMPORT',
         },
         body: JSON.stringify({
           previewId: p1.previewId,
@@ -557,6 +568,7 @@ ${sku},Stock Modes Product,${testCategoryId},${testSubcategoryId},${testBrandId}
         headers: {
           Authorization: `Bearer ${superAdminToken}`,
           'Content-Type': 'application/json',
+          'x-action-confirmation': 'CONFIRM PRODUCT IMPORT',
         },
         body: JSON.stringify({
           previewId: p2.previewId,
@@ -579,6 +591,7 @@ ${sku},Stock Modes Product,${testCategoryId},${testSubcategoryId},${testBrandId}
         headers: {
           Authorization: `Bearer ${superAdminToken}`,
           'Content-Type': 'application/json',
+          'x-action-confirmation': 'CONFIRM PRODUCT IMPORT',
         },
         body: JSON.stringify({
           previewId: p3.previewId,
@@ -605,6 +618,7 @@ ${sku},Reserved Product,${testCategoryId},${testSubcategoryId},${testBrandId},10
         headers: {
           Authorization: `Bearer ${superAdminToken}`,
           'Content-Type': 'application/json',
+          'x-action-confirmation': 'CONFIRM PRODUCT IMPORT',
         },
         body: JSON.stringify({
           previewId: pInit.previewId,
@@ -643,6 +657,7 @@ ${sku},Reserved Product,${testCategoryId},${testSubcategoryId},${testBrandId},10
         headers: {
           Authorization: `Bearer ${superAdminToken}`,
           'Content-Type': 'application/json',
+          'x-action-confirmation': 'CONFIRM PRODUCT IMPORT',
         },
         body: JSON.stringify({
           previewId: pBreach.previewId,
@@ -687,6 +702,7 @@ ${sku},Concurrency Product,${testCategoryId},${testSubcategoryId},${testBrandId}
         headers: {
           Authorization: `Bearer ${superAdminToken}`,
           'Content-Type': 'application/json',
+          'x-action-confirmation': 'CONFIRM PRODUCT IMPORT',
         },
         body: JSON.stringify({
           previewId: pInit.previewId,
@@ -717,6 +733,7 @@ ${sku},Concurrency Product New Name,${testCategoryId},${testSubcategoryId},${tes
         headers: {
           Authorization: `Bearer ${superAdminToken}`,
           'Content-Type': 'application/json',
+          'x-action-confirmation': 'CONFIRM PRODUCT IMPORT',
         },
         body: JSON.stringify({
           previewId: pUpdate.previewId,

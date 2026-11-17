@@ -31,78 +31,40 @@ export const EditorialHero: React.FC = () => {
       </div>
 
       {/* TOP HEADER */}
-      <header className="relative z-20 w-full px-4 sm:px-8 lg:px-12 pt-6 sm:pt-8 flex items-center justify-between">
-        {/* Official DSL Enterprises (Pvt) Ltd Logo - Only the Logo */}
+      <header className="relative z-20 w-full px-4 sm:px-8 lg:px-12 pt-6 sm:pt-8 flex items-center justify-end">
         <Link
           href="/home"
-          className="inline-flex items-center hover:opacity-90 transition-opacity"
-          title="DSL Enterprises (Pvt) Ltd"
+          className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white/20 hover:bg-white/30 border border-white/40 text-slate-800 text-xs sm:text-sm font-bold backdrop-blur-md transition-all shadow-md hover:scale-105"
         >
-          <img
-            src="/dsl-logo-clean.png"
-            alt="DSL Enterprises (Pvt) Ltd"
-            className="h-10 sm:h-12 w-auto object-contain drop-shadow-[0_2px_10px_rgba(255,255,255,0.9)]"
-          />
+          Enter Storefront &rarr;
         </Link>
       </header>
 
-      {/* CENTER EDITORIAL HERO - Clean, Minimal Matching Photo 2 (No Unnecessary Words) */}
+      {/* CENTER OFFICIAL LOGO LOCKUP */}
       <div className="relative z-10 max-w-5xl mx-auto px-6 text-center my-auto py-6 flex flex-col items-center justify-center">
-        {/* Main Editorial Headline with Multi-Color Stationery Palette */}
-        <h1 className="font-shooting-star text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-normal tracking-wide leading-snug drop-shadow-[0_4px_22px_rgba(0,0,0,0.95)] max-w-3xl">
-          <span className="text-white">Our </span>
-          <span className="text-[#FFD21C]">Partner </span>
-          <span className="text-white">in </span>
-          <span className="text-[#38BDF8]">Learning</span>
-          <span className="text-white">, </span>
-          <span className="text-[#FF5C8D]">Creating </span>
-          <span className="text-white">&amp; </span>
-          <span className="text-[#4ADE80]">Working</span>
-        </h1>
-
-        {/* Light Pastel Blue Rounded Pill "Shop Now" Button with Heylowitch Font */}
-        <div className="mt-8 sm:mt-10">
-          <Link
-            href="/home"
-            className="inline-flex items-center justify-center bg-[#C6E7FF] hover:bg-[#B3DEFC] text-[#08275E] font-heylowitch text-xl sm:text-2xl px-10 sm:px-12 py-2.5 sm:py-3 rounded-full shadow-2xl transition-all duration-200 hover:scale-105 tracking-wide cursor-pointer border-2 border-white/80"
-          >
-            Shop Now
-          </Link>
-        </div>
+        <Link href="/home" className="group" title="Enter DSL Storefront">
+          <div className="relative flex items-center justify-center px-8 sm:px-14 md:px-20 py-8 sm:py-12 transition-transform duration-300 group-hover:scale-105">
+            {/* Soft horizontal white radial glow backdrop matching reference */}
+            <div
+              className="absolute inset-0 pointer-events-none rounded-full"
+              style={{
+                background:
+                  'radial-gradient(ellipse 70% 60% at 50% 50%, rgba(255, 255, 255, 0.96) 0%, rgba(255, 255, 255, 0.85) 45%, rgba(255, 255, 255, 0) 100%)',
+              }}
+              aria-hidden="true"
+            />
+            <img
+              src="/images/dsl-logo-header.png"
+              alt="DSL Enterprises (Pvt) Ltd"
+              className="relative z-10 w-auto h-16 sm:h-20 md:h-24 lg:h-28 max-w-[88vw] object-contain drop-shadow-[0_2px_12px_rgba(255,255,255,0.85)] select-none"
+              draggable={false}
+            />
+          </div>
+        </Link>
       </div>
 
-      {/* BOTTOM BRAND STRIP - Full Glassy Glassmorphism Bar */}
-      <div className="relative z-10 w-full px-4 sm:px-8 lg:px-12 pb-6 sm:pb-8">
-        <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-center sm:justify-between gap-4 sm:gap-6 bg-white/25 backdrop-blur-2xl px-8 sm:px-12 py-3.5 rounded-full border border-white/60 shadow-[0_8px_32px_0_rgba(0,0,0,0.18)]">
-          <span className="font-shooting-star text-base sm:text-lg text-slate-900 hover:text-[#08275E] transition-colors cursor-default tracking-wide">
-            Doms
-          </span>
-          <span className="font-shooting-star text-base sm:text-lg text-slate-900 hover:text-[#08275E] transition-colors cursor-default tracking-wide">
-            Linc
-          </span>
-          <span className="font-shooting-star text-base sm:text-lg text-slate-900 hover:text-[#08275E] transition-colors cursor-default tracking-wide">
-            Luxor
-          </span>
-          <span className="font-shooting-star text-base sm:text-lg text-slate-900 hover:text-[#08275E] transition-colors cursor-default tracking-wide">
-            Speed
-          </span>
-          <span className="font-shooting-star text-base sm:text-lg text-slate-900 hover:text-[#08275E] transition-colors cursor-default tracking-wide">
-            Camlin
-          </span>
-          <span className="font-shooting-star text-base sm:text-lg text-slate-900 hover:text-[#08275E] transition-colors cursor-default tracking-wide">
-            Fine
-          </span>
-          <span className="font-shooting-star text-base sm:text-lg text-slate-900 hover:text-[#08275E] transition-colors cursor-default tracking-wide">
-            HP
-          </span>
-          <span className="font-shooting-star text-base sm:text-lg text-slate-900 hover:text-[#08275E] transition-colors cursor-default tracking-wide">
-            Wetex
-          </span>
-          <span className="font-shooting-star text-base sm:text-lg text-slate-900 hover:text-[#08275E] transition-colors cursor-default tracking-wide">
-            Lido
-          </span>
-        </div>
-      </div>
+      {/* CLEAN BOTTOM SPACER */}
+      <div className="relative z-10 h-10 sm:h-12 w-full pointer-events-none" />
     </section>
   );
 };

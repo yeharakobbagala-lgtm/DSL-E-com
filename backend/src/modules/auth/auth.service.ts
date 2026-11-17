@@ -27,6 +27,7 @@ import {
   UpdateAddressDto,
   VerifyEmailDto,
   ResendVerificationOtpDto,
+  ChangePasswordDto,
 } from './dto/auth.dto';
 import { UserRole } from '../../generated/prisma';
 
@@ -943,6 +944,108 @@ export class AuthService {
     return {
       success: true,
       message: 'Password reset successfully. Please log in with your new password.',
+    };
+  }
+
+  /**
+   * Phase 3B: Authenticated Password Change
+   * Allows authenticated customers or administrators to change their account password.
+   * Enforces:
+   * 1. Identification strictly via authenticated JWT identity (userId).
+   * 2. Verification of active status and lockout status.
+   * 3. Bcrypt comparison of current password.
+   * 4. Rejection of identical new password.
+   * 5. Password confirmation validation.
+   * 6. Bcrypt hashing of new password with 12 rounds.
+   * 7. Atomic transaction: updates passwordHash, clears failed attempts/lockouts,
+   *    revokes ALL existing refresh-token sessions across all devices,
+   *    and writes an audit log entry (never logging plaintext passwords or hashes).
+   * 8. Clears auth session cookies to prevent stale/unauthorized access.
+   */
+  async changePassword(userId: string, dto: ChangePasswordDto, res: Response) {
+    if (!userId) {
+      throw new UnauthorizedException('Authentication required');
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User account no longer exists');
+    }
+
+    if (!user.isActive) {
+      throw new UnauthorizedException('User account has been deactivated');
+    }
+
+    if (user.lockedUntil && user.lockedUntil > new Date()) {
+      throw new UnauthorizedException('User account is temporarily locked');
+    }
+
+    if (!user.passwordHash) {
+      throw new BadRequestException('Account does not have a password configured');
+    }
+
+    const currentMatches = await bcrypt.compare(dto.currentPassword, user.passwordHash);
+    if (!currentMatches) {
+      throw new BadRequestException('Current password is incorrect');
+    }
+
+    if (dto.newPassword === dto.currentPassword) {
+      throw new BadRequestException('New password cannot be the same as current password');
+    }
+
+    const isIdentical = await bcrypt.compare(dto.newPassword, user.passwordHash);
+    if (isIdentical) {
+      throw new BadRequestException('New password cannot be identical to current password');
+    }
+
+    if (dto.newPassword !== dto.confirmNewPassword) {
+      throw new BadRequestException('New password and confirmation do not match');
+    }
+
+    const newHash = await bcrypt.hash(dto.newPassword, this.bcryptRounds);
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: user.id },
+        data: {
+          passwordHash: newHash,
+          failedLoginAttempts: 0,
+          lockedUntil: null,
+          passwordResetTokenHash: null,
+          passwordResetExpiresAt: null,
+        },
+      });
+
+      // Revoke all existing refresh sessions across all devices
+      await tx.refreshToken.updateMany({
+        where: { userId: user.id },
+        data: { isRevoked: true },
+      });
+
+      // Record audit event — never logging passwords or hashes
+      await tx.auditLog.create({
+        data: {
+          action: 'PASSWORD_CHANGED',
+          entityType: 'user',
+          entityId: user.id,
+          description: `Password changed successfully for user ${user.email} (${user.role})`,
+          userId: user.id,
+        },
+      });
+    });
+
+    // Revoke current session cookies
+    this.clearAuthCookies(res);
+
+    this.logger.log(`Password changed successfully for user ${user.email} (${user.role}). All sessions revoked.`);
+
+    return {
+      success: true,
+      message: 'Password changed successfully. Please log in with your new password.',
+      requireReauth: true,
     };
   }
 

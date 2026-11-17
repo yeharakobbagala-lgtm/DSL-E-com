@@ -161,10 +161,30 @@ describe('paymentsService', () => {
         adminNotes: 'Verified on statement',
       });
 
-      expect(postSpy).toHaveBeenCalledWith('/admin/payments/bank-transfers/sub-100/approve', {
-        adminNotes: 'Verified on statement',
-      });
+      expect(postSpy).toHaveBeenCalledWith(
+        '/admin/payments/bank-transfers/sub-100/approve',
+        { adminNotes: 'Verified on statement' },
+        undefined
+      );
       expect(res.success).toBe(true);
+
+      // Verify typed confirmation header when confirmationPhrase is provided
+      const confirmedPostSpy = vi.spyOn(apiClient, 'post').mockResolvedValueOnce({
+        success: true,
+        data: { success: true, message: 'Bank transfer verified' },
+      } as any);
+
+      await paymentsService.approveBankTransfer(
+        'sub-100',
+        { adminNotes: 'Verified on statement' },
+        'APPROVE BANK DEPOSIT'
+      );
+
+      expect(confirmedPostSpy).toHaveBeenCalledWith(
+        '/admin/payments/bank-transfers/sub-100/approve',
+        { adminNotes: 'Verified on statement' },
+        { headers: { 'x-action-confirmation': 'APPROVE BANK DEPOSIT' } }
+      );
     });
   });
 
@@ -180,10 +200,14 @@ describe('paymentsService', () => {
         explanation: 'Reference TX9988 does not appear on statement.',
       });
 
-      expect(postSpy).toHaveBeenCalledWith('/admin/payments/bank-transfers/sub-100/reject', {
-        category: 'REFERENCE_NOT_FOUND',
-        explanation: 'Reference TX9988 does not appear on statement.',
-      });
+      expect(postSpy).toHaveBeenCalledWith(
+        '/admin/payments/bank-transfers/sub-100/reject',
+        {
+          category: 'REFERENCE_NOT_FOUND',
+          explanation: 'Reference TX9988 does not appear on statement.',
+        },
+        undefined
+      );
       expect(res.stockRestored).toBe(true);
     });
   });

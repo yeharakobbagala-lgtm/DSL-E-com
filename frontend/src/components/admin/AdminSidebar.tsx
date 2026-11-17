@@ -189,6 +189,18 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
       {/* Footer with Store Switcher & Logout */}
       <div className="p-4 border-t border-slate-800/80 space-y-2 bg-[#08101E]">
         <Link
+          href="/admin/profile"
+          onClick={onCloseMobile}
+          className={`flex items-center gap-2.5 px-3 py-2 text-xs font-bold rounded-xl transition ${
+            pathname === '/admin/profile'
+              ? 'bg-[#0066CC] text-white shadow-sm ring-1 ring-sky-400/30'
+              : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+          }`}
+        >
+          <KeyRound className="w-4 h-4 text-sky-400" />
+          <span>My Profile & Security</span>
+        </Link>
+        <Link
           href="/"
           target="_blank"
           className="flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-slate-300 hover:text-white rounded-xl hover:bg-slate-800/60 transition"

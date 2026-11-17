@@ -103,7 +103,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const hasValidRating = product.rating > 0 && product.reviewCount > 0;
 
   return (
-    <div className="group relative bg-white rounded-2xl border border-slate-200/80 hover:border-[#0866E8]/40 hover:shadow-lg hover:shadow-[#09285C]/6 transition-all duration-300 flex flex-col overflow-hidden w-full">
+    <div className="group relative bg-white rounded-2xl border border-slate-200/80 hover:border-[#0866E8]/40 hover:shadow-lg hover:shadow-[#09285C]/6 transition-all duration-300 flex flex-col overflow-hidden w-full h-full">
       {/* Top Left Badges */}
       <div className="absolute top-2 left-2 z-10 flex flex-col gap-1 items-start pointer-events-none max-w-[70%]">
         {savingsPercent > 0 && (
@@ -189,7 +189,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       <div className="p-3 sm:p-4 flex-1 flex flex-col justify-between bg-[#F7FAFF] border-t border-slate-100">
         <div>
           {/* Category & Optional Rating */}
-          <div className="flex items-center justify-between gap-1 mb-1.5">
+          <div className="flex items-center justify-between gap-1 mb-1.5 h-6">
             <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full truncate bg-white text-[#09285C] border border-[#EAF4FF] shadow-2xs">
               {product.categoryName}
             </span>
@@ -201,25 +201,25 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             )}
           </div>
 
-          {/* Product Name */}
+          {/* Product Name (Uniform 2-line height) */}
           <Link
             href={`/products/${product.slug}`}
             className="block group-hover:text-[#0866E8] transition-colors"
           >
-            <h3 className="text-xs sm:text-sm font-bold text-[#09285C] line-clamp-2 leading-snug">
+            <h3 className="text-xs sm:text-sm font-bold text-[#09285C] line-clamp-2 leading-snug h-[2.5rem] sm:h-[2.6rem] overflow-hidden">
               {product.name}
             </h3>
           </Link>
 
           {/* Brand */}
-          <div className="text-[10px] sm:text-[11px] text-[#64748B] mt-0.5 sm:mt-1 font-medium truncate">
+          <div className="text-[10px] sm:text-[11px] text-[#64748B] mt-0.5 sm:mt-1 font-medium truncate h-4">
             {product.brandName}
           </div>
         </div>
 
         {/* Pricing & Add to Cart Area */}
         <div className="mt-2.5 pt-2.5 border-t border-slate-200/60 flex flex-col gap-2">
-          <div className="flex items-baseline justify-between gap-1">
+          <div className="flex items-center justify-between gap-1 h-6">
             <div className="flex items-baseline gap-1 sm:gap-1.5 flex-wrap">
               <span className="text-xs sm:text-sm md:text-base font-black text-[#09285C] tracking-tight">
                 {formatLKR(product.priceCents)}
@@ -254,21 +254,29 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             </div>
           )}
 
-          {/* Action Area */}
+          {/* Action Area (Uniform height across all card states) */}
           {hasVariants ? (
-            <Link
-              href={`/products/${product.slug}`}
-              className="w-full py-2 rounded-xl text-center text-xs font-bold bg-white text-[#09285C] hover:bg-[#09285C] hover:text-white border border-slate-200 transition-all flex items-center justify-center gap-1.5 touch-target"
-            >
-              <span>View Options</span>
-            </Link>
+            <div className="flex flex-col gap-1.5 w-full">
+              <Link
+                href={`/products/${product.slug}`}
+                className="w-full py-2 sm:py-1.5 rounded-xl text-center text-xs font-bold bg-white text-[#09285C] hover:bg-[#09285C] hover:text-white border border-slate-200 transition-all flex items-center justify-center gap-1.5 touch-target h-[34px]"
+              >
+                <span>View Options</span>
+              </Link>
+              {/* Spacer so height matches cards with bulk row */}
+              <div className="hidden sm:block h-[18px]" />
+            </div>
           ) : isOutOfStock ? (
-            <button
-              disabled
-              className="w-full py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-400 cursor-not-allowed text-center touch-target"
-            >
-              Out of Stock
-            </button>
+            <div className="flex flex-col gap-1.5 w-full">
+              <button
+                disabled
+                className="w-full py-2 sm:py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-400 cursor-not-allowed text-center touch-target h-[34px]"
+              >
+                Out of Stock
+              </button>
+              {/* Spacer so height matches cards with bulk row */}
+              <div className="hidden sm:block h-[18px]" />
+            </div>
           ) : (
             <div className="flex flex-col gap-1.5 w-full">
               {/* Responsive Cart Action: Full width touch button on mobile, with quantity stepper on desktop */}
@@ -285,7 +293,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                       e.preventDefault();
                       e.stopPropagation();
                     }}
-                    className={`w-full py-1.5 px-1 text-center text-xs font-black rounded-xl border transition-all ${
+                    className={`w-full py-1.5 px-1 text-center text-xs font-black rounded-xl border transition-all h-[34px] ${
                       stockError
                         ? 'border-rose-500 bg-rose-50 text-rose-700 ring-1 ring-rose-200'
                         : 'border-slate-200 bg-white text-[#09285C] focus:border-[#0866E8]'
@@ -300,7 +308,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                   type="button"
                   onClick={handleAddToCart}
                   disabled={!isCountValid}
-                  className={`w-full sm:flex-1 py-2 sm:py-1.5 px-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer touch-target ${
+                  className={`w-full sm:flex-1 py-2 sm:py-1.5 px-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer touch-target h-[34px] ${
                     !isCountValid
                       ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
                       : added
@@ -323,27 +331,29 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               </div>
 
               {/* Wholesale Quick Presets (Desktop only) */}
-              {liveStock >= 20 && (
-                <div className="hidden sm:flex items-center justify-end gap-1 pt-0.5">
-                  <span className="text-[9px] text-slate-400 font-semibold mr-auto">Bulk:</span>
-                  {[10, 50]
-                    .filter((q) => q <= liveStock)
-                    .map((preset) => (
-                      <button
-                        key={preset}
-                        type="button"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          handleQuantityChange(String(preset));
-                        }}
-                        className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-100 hover:bg-[#0866E8] hover:text-white text-slate-600 transition-colors cursor-pointer"
-                      >
-                        +{preset}
-                      </button>
-                    ))}
-                </div>
-              )}
+              <div className="hidden sm:flex items-center justify-end gap-1 pt-0.5 h-[18px]">
+                {liveStock >= 20 ? (
+                  <>
+                    <span className="text-[9px] text-slate-400 font-semibold mr-auto">Bulk:</span>
+                    {[10, 50]
+                      .filter((q) => q <= liveStock)
+                      .map((preset) => (
+                        <button
+                          key={preset}
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleQuantityChange(String(preset));
+                          }}
+                          className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-100 hover:bg-[#0866E8] hover:text-white text-slate-600 transition-colors cursor-pointer"
+                        >
+                          +{preset}
+                        </button>
+                      ))}
+                  </>
+                ) : null}
+              </div>
             </div>
           )}
         </div>

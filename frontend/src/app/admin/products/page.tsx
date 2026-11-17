@@ -38,6 +38,7 @@ import {
 } from '@/components/admin/catalog';
 import { AdminPageAccess } from '@/components/admin/AdminPageAccess';
 import { useUserStore } from '@/services/userStore';
+import { SensitiveActionConfirmationModal } from '@/components/admin/security/SensitiveActionConfirmationModal';
 
 interface ProductAnalyticsData {
   totalProducts: number;
@@ -89,7 +90,7 @@ export default function AdminProductsPage() {
   const [columns, setColumns] = useState<ColumnDefinition[]>(DEFAULT_COLUMNS);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
-  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [deleteConfirmProduct, setDeleteConfirmProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isMutating, setIsMutating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -174,18 +175,19 @@ export default function AdminProductsPage() {
     }
   };
 
-  // Delete product
-  const handleDelete = async (id: string) => {
+  // Delete product with GitHub-style typed confirmation
+  const handleDelete = async (id: string, confirmationPhrase: string) => {
     setIsMutating(true);
     setError(null);
     try {
-      await productService.deleteProductApi(id);
-      setDeleteConfirmId(null);
+      await productService.deleteProductApi(id, confirmationPhrase);
+      setDeleteConfirmProduct(null);
       await loadProducts(page, limit);
       productService.fetchProductAnalytics().then(setAnalytics).catch(() => {});
     } catch (err: any) {
       console.error('Failed to delete product:', err);
       setError(err?.message || 'Failed to delete product');
+      throw err;
     } finally {
       setIsMutating(false);
     }
@@ -743,9 +745,9 @@ export default function AdminProductsPage() {
                             {hasPermission('products.delete') && (
                               <button
                                 type="button"
-                                onClick={() => setDeleteConfirmId(p.id)}
+                                onClick={() => setDeleteConfirmProduct(p)}
                                 disabled={isMutating}
-                                className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                                className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
                                 title="Delete product"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
@@ -784,33 +786,23 @@ export default function AdminProductsPage() {
         selectedCount={selectedIds.size}
       />
 
-      {/* Delete Confirmation Modal */}
-      {deleteConfirmId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 max-w-sm w-full space-y-4 shadow-xl">
-            <h3 className="text-base font-bold text-slate-900">Confirm Product Deletion</h3>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Are you sure you want to deactivate/delete this product? This action will set the product status to inactive.
-            </p>
-            <div className="flex gap-2 justify-end pt-2">
-              <button
-                type="button"
-                onClick={() => setDeleteConfirmId(null)}
-                className="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={() => handleDelete(deleteConfirmId)}
-                className="px-4 py-2 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white transition-colors"
-              >
-                Delete Product
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* GitHub-Style Typed Delete Confirmation Modal for Any Authorized Admin */}
+      <SensitiveActionConfirmationModal
+        isOpen={Boolean(deleteConfirmProduct)}
+        onClose={() => setDeleteConfirmProduct(null)}
+        actionTitle={`Delete Product: "${deleteConfirmProduct?.name || 'Product'}"`}
+        actionDescription="Deactivating or soft-deleting this item from the active store catalog"
+        targetResourceType="Product"
+        targetResourceName={deleteConfirmProduct?.name}
+        expectedConfirmationPhrase={deleteConfirmProduct?.name || ''}
+        confirmButtonLabel="Confirm & Delete Product"
+        impactWarning="Deleting this product will remove it from search, category shelves, and customer ordering. Type the exact product name to proceed."
+        onConfirmed={async (phrase) => {
+          if (deleteConfirmProduct) {
+            await handleDelete(deleteConfirmProduct.id, phrase);
+          }
+        }}
+      />
     </div>
     </AdminPageAccess>
   );

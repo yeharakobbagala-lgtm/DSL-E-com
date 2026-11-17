@@ -34,6 +34,10 @@ describe('AuthService', () => {
         updateMany: vi.fn(),
         delete: vi.fn(),
       },
+      auditLog: {
+        create: vi.fn(),
+      },
+
       address: {
         findMany: vi.fn(),
         findFirst: vi.fn(),
@@ -484,5 +488,256 @@ describe('AuthService', () => {
       );
     });
   });
-});
 
+  describe('changePassword', () => {
+    const validCurrentPassword = 'OldPassword123!';
+    const validNewPassword = 'NewPassword123!';
+    let currentHash: string;
+
+    beforeEach(async () => {
+      currentHash = await bcrypt.hash(validCurrentPassword, 10);
+    });
+
+    it('successfully changes password for a customer, revokes sessions, clears cookies, and creates audit log', async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: 'user-1',
+        email: 'customer@example.com',
+        role: UserRole.CUSTOMER,
+        passwordHash: currentHash,
+        isActive: true,
+        lockedUntil: null,
+      });
+
+      mockPrisma.user.update.mockResolvedValue({ id: 'user-1' });
+      mockPrisma.refreshToken.updateMany.mockResolvedValue({ count: 3 });
+      mockPrisma.auditLog.create.mockResolvedValue({ id: 'audit-1' });
+
+      const result = await authService.changePassword(
+        'user-1',
+        {
+          currentPassword: validCurrentPassword,
+          newPassword: validNewPassword,
+          confirmNewPassword: validNewPassword,
+        },
+        mockResponse
+      );
+
+      expect(result.success).toBe(true);
+      expect(result.requireReauth).toBe(true);
+      expect(result.message).toContain('Password changed successfully');
+
+      // Verify password was hashed and updated
+      expect(mockPrisma.user.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'user-1' },
+          data: expect.objectContaining({
+            failedLoginAttempts: 0,
+            lockedUntil: null,
+          }),
+        })
+      );
+      const updatedHash = mockPrisma.user.update.mock.calls[0][0].data.passwordHash;
+      expect(updatedHash).not.toBe(currentHash);
+      const isNewMatch = await bcrypt.compare(validNewPassword, updatedHash);
+      expect(isNewMatch).toBe(true);
+
+      // Verify all refresh tokens are revoked across devices
+      expect(mockPrisma.refreshToken.updateMany).toHaveBeenCalledWith({
+        where: { userId: 'user-1' },
+        data: { isRevoked: true },
+      });
+
+      // Verify audit log creation
+      expect(mockPrisma.auditLog.create).toHaveBeenCalledWith({
+        data: {
+          action: 'PASSWORD_CHANGED',
+          entityType: 'user',
+          entityId: 'user-1',
+          description: expect.stringContaining('customer@example.com'),
+          userId: 'user-1',
+        },
+      });
+
+      // Verify no plaintext password or hash in audit log
+      const auditData = mockPrisma.auditLog.create.mock.calls[0][0].data;
+      expect(JSON.stringify(auditData)).not.toContain(validCurrentPassword);
+      expect(JSON.stringify(auditData)).not.toContain(validNewPassword);
+      expect(JSON.stringify(auditData)).not.toContain(updatedHash);
+
+      // Verify session cookies cleared
+      expect(mockResponse.cookie).toHaveBeenCalledWith(
+        'dsl_access_token',
+        '',
+        expect.objectContaining({ maxAge: 0 })
+      );
+      expect(mockResponse.cookie).toHaveBeenCalledWith(
+        'dsl_refresh_token',
+        '',
+        expect.objectContaining({ maxAge: 0 })
+      );
+    });
+
+    it('successfully changes password for an administrator', async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: 'admin-1',
+        email: 'admin@dslstationery.lk',
+        role: UserRole.ADMIN,
+        passwordHash: currentHash,
+        isActive: true,
+        lockedUntil: null,
+      });
+
+      mockPrisma.user.update.mockResolvedValue({ id: 'admin-1' });
+      mockPrisma.refreshToken.updateMany.mockResolvedValue({ count: 1 });
+      mockPrisma.auditLog.create.mockResolvedValue({ id: 'audit-2' });
+
+      const result = await authService.changePassword(
+        'admin-1',
+        {
+          currentPassword: validCurrentPassword,
+          newPassword: validNewPassword,
+          confirmNewPassword: validNewPassword,
+        },
+        mockResponse
+      );
+
+      expect(result.success).toBe(true);
+      expect(mockPrisma.auditLog.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          action: 'PASSWORD_CHANGED',
+          entityId: 'admin-1',
+          description: expect.stringContaining('ADMIN'),
+        }),
+      });
+    });
+
+    it('rejects unauthenticated request (empty userId)', async () => {
+      await expect(
+        authService.changePassword(
+          '',
+          {
+            currentPassword: validCurrentPassword,
+            newPassword: validNewPassword,
+            confirmNewPassword: validNewPassword,
+          },
+          mockResponse
+        )
+      ).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('rejects deactivated account', async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: 'user-1',
+        email: 'inactive@example.com',
+        role: UserRole.CUSTOMER,
+        passwordHash: currentHash,
+        isActive: false,
+      });
+
+      await expect(
+        authService.changePassword(
+          'user-1',
+          {
+            currentPassword: validCurrentPassword,
+            newPassword: validNewPassword,
+            confirmNewPassword: validNewPassword,
+          },
+          mockResponse
+        )
+      ).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('rejects temporarily locked account', async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: 'user-1',
+        email: 'locked@example.com',
+        role: UserRole.CUSTOMER,
+        passwordHash: currentHash,
+        isActive: true,
+        lockedUntil: new Date(Date.now() + 10 * 60 * 1000),
+      });
+
+      await expect(
+        authService.changePassword(
+          'user-1',
+          {
+            currentPassword: validCurrentPassword,
+            newPassword: validNewPassword,
+            confirmNewPassword: validNewPassword,
+          },
+          mockResponse
+        )
+      ).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('rejects incorrect current password with BadRequestException', async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: 'user-1',
+        email: 'customer@example.com',
+        role: UserRole.CUSTOMER,
+        passwordHash: currentHash,
+        isActive: true,
+        lockedUntil: null,
+      });
+
+      await expect(
+        authService.changePassword(
+          'user-1',
+          {
+            currentPassword: 'WrongPassword999!',
+            newPassword: validNewPassword,
+            confirmNewPassword: validNewPassword,
+          },
+          mockResponse
+        )
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('rejects reusing the current password', async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: 'user-1',
+        email: 'customer@example.com',
+        role: UserRole.CUSTOMER,
+        passwordHash: currentHash,
+        isActive: true,
+        lockedUntil: null,
+      });
+
+      await expect(
+        authService.changePassword(
+          'user-1',
+          {
+            currentPassword: validCurrentPassword,
+            newPassword: validCurrentPassword,
+            confirmNewPassword: validCurrentPassword,
+          },
+          mockResponse
+        )
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('rejects password confirmation mismatch', async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: 'user-1',
+        email: 'customer@example.com',
+        role: UserRole.CUSTOMER,
+        passwordHash: currentHash,
+        isActive: true,
+        lockedUntil: null,
+      });
+
+      await expect(
+        authService.changePassword(
+          'user-1',
+          {
+            currentPassword: validCurrentPassword,
+            newPassword: validNewPassword,
+            confirmNewPassword: 'DifferentPassword123!',
+          },
+          mockResponse
+        )
+      ).rejects.toThrow(BadRequestException);
+    });
+  });
+
+});

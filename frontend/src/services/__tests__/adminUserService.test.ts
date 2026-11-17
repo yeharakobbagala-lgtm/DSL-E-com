@@ -62,8 +62,17 @@ describe('adminUserService', () => {
     const patchSpy = vi.spyOn(apiClient, 'patch').mockResolvedValueOnce(mockRes as any);
 
     const result = await adminUserService.updateAdminStatus('u1', false);
-    expect(patchSpy).toHaveBeenCalledWith('/admin/users/u1/status', { isActive: false });
+    expect(patchSpy).toHaveBeenCalledWith('/admin/users/u1/status', { isActive: false }, undefined);
     expect(result.success).toBe(true);
+
+    // Verify confirmation phrase header
+    const confirmedPatchSpy = vi.spyOn(apiClient, 'patch').mockResolvedValueOnce(mockRes as any);
+    await adminUserService.updateAdminStatus('u1', false, 'DEACTIVATE ADMIN');
+    expect(confirmedPatchSpy).toHaveBeenCalledWith(
+      '/admin/users/u1/status',
+      { isActive: false },
+      { headers: { 'x-action-confirmation': 'DEACTIVATE ADMIN' } }
+    );
   });
 
   it('updateAdminRole calls PATCH /admin/users/:id/role', async () => {
@@ -71,8 +80,17 @@ describe('adminUserService', () => {
     const patchSpy = vi.spyOn(apiClient, 'patch').mockResolvedValueOnce(mockRes as any);
 
     const result = await adminUserService.updateAdminRole('u1', 'ADMIN');
-    expect(patchSpy).toHaveBeenCalledWith('/admin/users/u1/role', { role: 'ADMIN' });
+    expect(patchSpy).toHaveBeenCalledWith('/admin/users/u1/role', { role: 'ADMIN', roleId: undefined }, undefined);
     expect(result.success).toBe(true);
+
+    // Verify confirmation phrase header
+    const confirmedRolePatchSpy = vi.spyOn(apiClient, 'patch').mockResolvedValueOnce(mockRes as any);
+    await adminUserService.updateAdminRole('u1', 'ADMIN', 'role-123', 'CHANGE ROLE');
+    expect(confirmedRolePatchSpy).toHaveBeenCalledWith(
+      '/admin/users/u1/role',
+      { role: 'ADMIN', roleId: 'role-123' },
+      { headers: { 'x-action-confirmation': 'CHANGE ROLE' } }
+    );
   });
 
   it('verifyInvitation calls GET /auth/admin/invite/verify with URL-encoded token', async () => {

@@ -128,9 +128,18 @@ describe('storeSettingsService', () => {
       const putSpy = vi.spyOn(apiClient, 'put').mockResolvedValueOnce(mockResponse as any);
 
       const result = await storeSettingsService.updateBankTransfer(payload);
-      expect(putSpy).toHaveBeenCalledWith('/store-settings/admin/bank-transfer', payload);
+      expect(putSpy).toHaveBeenCalledWith('/store-settings/admin/bank-transfer', payload, undefined);
       expect(result.bankTransferEnabled).toBe(true);
       expect(result.bankTransfer.maskedAccountNumber).toBe('••••••••4455');
+
+      // Test with confirmation phrase header
+      const confirmedPutSpy = vi.spyOn(apiClient, 'put').mockResolvedValueOnce(mockResponse as any);
+      await storeSettingsService.updateBankTransfer(payload, 'CONFIRM FINANCIAL SETTINGS');
+      expect(confirmedPutSpy).toHaveBeenCalledWith(
+        '/store-settings/admin/bank-transfer',
+        payload,
+        { headers: { 'x-action-confirmation': 'CONFIRM FINANCIAL SETTINGS' } }
+      );
     });
 
     it('propagates API error when backend rejects incomplete configuration', async () => {

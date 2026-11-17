@@ -60,6 +60,9 @@ describe('PrismaService', () => {
 
     it('calls $connect during onModuleInit', async () => {
       const connectSpy = vi.spyOn(service, '$connect').mockResolvedValue(undefined);
+      vi.spyOn((service as any).pool, 'query').mockResolvedValue({
+        rows: [{ current_user: 'dsl_app', current_database: 'dsl_stationery' }],
+      });
       await service.onModuleInit();
       expect(connectSpy).toHaveBeenCalled();
     });

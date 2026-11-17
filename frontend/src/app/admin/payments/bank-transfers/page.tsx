@@ -45,7 +45,10 @@ function BankTransfersQueueContent() {
   const hasPermission = useUserStore((state) => state.hasPermission);
   const isManagerOrAdmin =
     currentUser?.role === 'ADMIN' || currentUser?.role === 'MANAGER';
-  const canVerifyBankDeposit = hasPermission('payments.verify_bank_deposit');
+  const canVerifyBankDeposit =
+    typeof hasPermission === 'function'
+      ? hasPermission('payments.verify_bank_deposit')
+      : isManagerOrAdmin;
   const [showStepUpModal, setShowStepUpModal] = useState(false);
 
   // URL state
@@ -110,16 +113,21 @@ function BankTransfersQueueContent() {
       const res = await paymentsService.getBankTransfers({
         page,
         limit,
-        status,
+        status: status === 'ALL' ? undefined : status,
         search: search.trim() || undefined,
-        dateFrom: dateFrom || undefined,
-        dateTo: dateTo || undefined,
+        startDate: dateFrom || undefined,
+        endDate: dateTo || undefined,
         sortBy,
         sortOrder,
       });
-      setSubmissions(res.data);
-      setTotalItems(res.meta?.totalItems ?? res.data.length);
-      setTotalPages(res.meta?.totalPages ?? 1);
+      const rawList: BankTransferQueueItem[] = Array.isArray(res.data)
+        ? res.data
+        : (res.data as any)?.items || (res as any)?.items || [];
+      const total = res.meta?.totalItems ?? (res.data as any)?.pagination?.total ?? (res as any)?.total ?? rawList.length;
+      const pages = res.meta?.totalPages ?? (res.data as any)?.pagination?.totalPages ?? 1;
+      setSubmissions(rawList);
+      setTotalItems(total);
+      setTotalPages(pages);
     } catch (err: any) {
       setError(err?.message || 'Failed to load Bank Transfer submissions');
     } finally {

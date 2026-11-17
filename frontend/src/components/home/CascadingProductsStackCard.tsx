@@ -163,39 +163,31 @@ export const CascadingProductsStackCard: React.FC = () => {
       const cardSlot = rootRef.current.closest('[data-stack-slot]') as HTMLElement | null;
       const container = rootRef.current.closest('.scroll-stack--contained') as HTMLElement | null;
 
-      if (container && cardSlot) {
-        if (!cardSlot.offsetTop) {
-          setScrollProgress(0);
-          return;
-        }
-
-        if (initialSlotTopRef.current === null && cardSlot.offsetTop > 0) {
-          initialSlotTopRef.current = cardSlot.offsetTop;
-        }
-        const baseSlotTop = initialSlotTopRef.current ?? cardSlot.offsetTop;
-        const contHeight = container.clientHeight || 600;
+      if (cardSlot) {
+        const isWindowed = !container;
+        const currentScroll = isWindowed ? window.scrollY : (container?.scrollTop ?? 0);
+        const contHeight = isWindowed ? window.innerHeight : (container?.clientHeight || 600);
         const stickyTopParsed = parseFloat(getComputedStyle(cardSlot).top);
         const pinTop = Number.isFinite(stickyTopParsed) ? stickyTopParsed : contHeight * 0.15 + 48;
+
+        let slotDocTop = cardSlot.offsetTop;
+        if (isWindowed) {
+          const rect = cardSlot.getBoundingClientRect();
+          slotDocTop = rect.top + window.scrollY;
+        }
+
+        if (initialSlotTopRef.current === null && slotDocTop > 0) {
+          initialSlotTopRef.current = slotDocTop;
+        }
+        const baseSlotTop = initialSlotTopRef.current ?? slotDocTop;
         const pinScroll = baseSlotTop - pinTop;
 
-        // Card 3 arrives into place as the third card with empty background (Stage 1).
-        // The cascading entrance (Stage 2) occurs as the user continues scrolling.
-        // Stage 3 holds the final diagonal arrangement.
-        const startScroll = pinScroll + 20;
-        const endScroll = pinScroll + 360; // 340px scroll runway: smooth, fluid cascade
+        const startScroll = pinScroll - 350;
+        const endScroll = pinScroll + 50;
 
         if (endScroll <= startScroll) return;
 
-        const currentScroll = container.scrollTop;
         const raw = (currentScroll - startScroll) / (endScroll - startScroll);
-        const clamped = Math.max(0, Math.min(1, raw));
-        setScrollProgress(clamped);
-      } else {
-        // Fallback for window scroll
-        const rect = rootRef.current.getBoundingClientRect();
-        const targetY = window.innerHeight * 0.15 + 48;
-        const distPastPin = targetY - rect.top;
-        const raw = distPastPin / 350;
         const clamped = Math.max(0, Math.min(1, raw));
         setScrollProgress(clamped);
       }

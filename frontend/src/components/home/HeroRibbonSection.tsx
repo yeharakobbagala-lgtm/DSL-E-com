@@ -63,10 +63,7 @@ export const HeroRibbonSection: React.FC = () => {
   return (
     <section
       aria-label="Homepage Hero Carousel"
-      className="relative w-full h-[535px] sm:h-[580px] md:h-[632px] lg:h-[calc(100vh_-_102px)] lg:max-h-[640px] xl:max-h-[680px] overflow-hidden select-none"
-      style={{
-        maxHeight: '640px',
-      }}
+      className="relative w-full h-[calc(100dvh_-_94px)] sm:h-[calc(100dvh_-_102px)] lg:h-[calc(100dvh_-_106px)] min-h-[520px] overflow-hidden select-none"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onTouchStart={onTouchStart}

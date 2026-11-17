@@ -1,8 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
+import { Reflector } from '@nestjs/core';
 import { NewsletterController } from './newsletter.controller';
 import { AdminNewsletterController } from './admin-newsletter.controller';
 import { NewsletterService } from './newsletter.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { NewsletterSubscriberStatus } from '../../generated/prisma';
 
 describe('NewsletterControllers (Phase 15.6)', () => {
@@ -53,7 +55,11 @@ describe('NewsletterControllers (Phase 15.6)', () => {
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [NewsletterController, AdminNewsletterController],
-      providers: [{ provide: NewsletterService, useValue: service }],
+      providers: [
+        { provide: NewsletterService, useValue: service },
+        { provide: PrismaService, useValue: {} },
+        Reflector,
+      ],
     }).compile();
 
     publicController = module.get<NewsletterController>(NewsletterController);

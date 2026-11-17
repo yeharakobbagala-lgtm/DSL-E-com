@@ -147,6 +147,21 @@ describe('Authoritative RBAC System Scenarios (Integration & Security)', () => {
           ],
         },
       },
+    }).catch(async () => {
+      await prisma.user.updateMany({
+        where: {
+          email: {
+            in: [
+              'test.scenarios.super@dsl.lk',
+              'test.scenarios.ordermgr@dsl.lk',
+              'test.scenarios.quarantined@dsl.lk',
+              'test.scenarios.deactivated@dsl.lk',
+              'test.scenarios.dynamic@dsl.lk',
+            ],
+          },
+        },
+        data: { isActive: false, roleId: null },
+      });
     });
     await prisma.role.deleteMany({
       where: { slug: 'test_custom_scenarios_role' },
@@ -340,7 +355,12 @@ describe('Authoritative RBAC System Scenarios (Integration & Security)', () => {
       expect(await permissionsGuard.canActivate(ctx)).toBe(true);
 
       // Clean up dynamic user
-      await prisma.user.delete({ where: { id: dynamicUser.id } });
+      await prisma.user.delete({ where: { id: dynamicUser.id } }).catch(async () => {
+        await prisma.user.update({
+          where: { id: dynamicUser.id },
+          data: { isActive: false, roleId: null },
+        });
+      });
     });
   });
 

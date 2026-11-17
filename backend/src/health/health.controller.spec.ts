@@ -39,10 +39,10 @@ describe('HealthController', () => {
     expect(result.database.counts.categories).toBe(15);
   });
 
-  it('throws ServiceUnavailableException when database ping fails', async () => {
+  it('throws ServiceUnavailableException when database ping fails with generic masked error', async () => {
     (mockPrisma.isHealthy as any).mockResolvedValue({
       connected: false,
-      error: 'Connection refused',
+      error: 'Connection refused at 10.0.1.25:5432',
     });
 
     await expect(controller.checkHealth()).rejects.toThrow(ServiceUnavailableException);
@@ -54,16 +54,18 @@ describe('HealthController', () => {
       const res = (err as ServiceUnavailableException).getResponse() as any;
       expect(res.status).toBe('degraded');
       expect(res.database.status).toBe('disconnected');
-      expect(res.database.error).toBe('Connection refused');
+      expect(res.database.error).toBe('Database connectivity check failed');
+      expect(res.database.error).not.toContain('Connection refused');
+      expect(res.database.error).not.toContain('10.0.1.25');
     }
   });
 
-  it('throws ServiceUnavailableException when table counting fails', async () => {
+  it('throws ServiceUnavailableException when table counting fails with generic masked error', async () => {
     (mockPrisma.isHealthy as any).mockResolvedValue({
       connected: true,
       latencyMs: 5,
     });
-    (mockPrisma.product.count as any).mockRejectedValue(new Error('Table lock timeout'));
+    (mockPrisma.product.count as any).mockRejectedValue(new Error('Table lock timeout on Product'));
 
     await expect(controller.checkHealth()).rejects.toThrow(ServiceUnavailableException);
 
@@ -74,7 +76,34 @@ describe('HealthController', () => {
       const res = (err as ServiceUnavailableException).getResponse() as any;
       expect(res.status).toBe('degraded');
       expect(res.database.status).toBe('disconnected');
-      expect(res.database.error).toBe('Table lock timeout');
+      expect(res.database.error).toBe('Database connectivity check failed');
+      expect(res.database.error).not.toContain('Table lock timeout');
+      expect(res.database.error).not.toContain('Product');
+    }
+  });
+
+  it('never leaks raw database error strings, credentials, or internal topology to clients', async () => {
+    (mockPrisma.isHealthy as any).mockResolvedValue({
+      connected: false,
+      error: 'FATAL: password authentication failed for user "dsl_app" dbname "dsl_stationery" host 192.168.1.100 port 5432',
+    });
+
+    try {
+      await controller.checkHealth();
+      expect.unreachable('Should have thrown ServiceUnavailableException');
+    } catch (err) {
+      expect(err).toBeInstanceOf(ServiceUnavailableException);
+      const res = (err as ServiceUnavailableException).getResponse() as any;
+      expect(res.database.error).toBe('Database connectivity check failed');
+
+      // Strict assertions verifying sensitive tokens are absent
+      const stringifiedResponse = JSON.stringify(res);
+      expect(stringifiedResponse).not.toContain('dsl_app');
+      expect(stringifiedResponse).not.toContain('dsl_stationery');
+      expect(stringifiedResponse).not.toContain('192.168.1.100');
+      expect(stringifiedResponse).not.toContain('5432');
+      expect(stringifiedResponse).not.toContain('password');
+      expect(stringifiedResponse).not.toContain('FATAL');
     }
   });
 });

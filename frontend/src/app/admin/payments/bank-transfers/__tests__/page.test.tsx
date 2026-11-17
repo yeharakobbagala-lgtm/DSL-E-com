@@ -17,6 +17,7 @@ vi.mock('@/services/userStore', () => ({
   useUserStore: (selector: any) =>
     selector({
       currentUser: { id: 'admin-1', role: 'ADMIN', name: 'Super Admin' },
+      hasPermission: (perm: string) => true,
     }),
 }));
 
@@ -164,15 +165,26 @@ describe('BankTransfersQueuePage (Stage 3.3)', () => {
     fireEvent.click(screen.getByText('Verify & Confirm Order'));
 
     await waitFor(() => {
-      expect(screen.getByText('Confirm Approval')).toBeDefined();
+      expect(screen.getByText('Approve Bank Transfer')).toBeDefined();
     });
 
     fireEvent.click(screen.getByText('Confirm Approval'));
 
     await waitFor(() => {
+      expect(screen.getByText('Approve Bank Deposit Slip')).toBeDefined();
+    });
+
+    const confirmInput = screen.getByPlaceholderText('Type "APPROVE BANK DEPOSIT" to confirm');
+    fireEvent.change(confirmInput, { target: { value: 'APPROVE BANK DEPOSIT' } });
+
+    const confirmBtn = screen.getByRole('button', { name: 'Confirm & Approve Deposit' });
+    fireEvent.click(confirmBtn);
+
+    await waitFor(() => {
       expect(paymentsService.approveBankTransfer).toHaveBeenCalledWith(
         'sub-1',
-        expect.any(Object)
+        expect.any(Object),
+        'APPROVE BANK DEPOSIT'
       );
     });
   });

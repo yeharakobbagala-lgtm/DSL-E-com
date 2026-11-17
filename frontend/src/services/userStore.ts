@@ -42,6 +42,13 @@ interface UserState {
   // Admin auth
   loginAdmin: (email: string, password?: string) => Promise<boolean>;
   logoutAdmin: () => Promise<void>;
+
+  // Authenticated password change
+  changePassword: (payload: {
+    currentPassword: string;
+    newPassword: string;
+    confirmNewPassword: string;
+  }) => Promise<{ success: boolean; message: string; requireReauth?: boolean }>;
 }
 
 export const useUserStore = create<UserState>()(
@@ -349,6 +356,35 @@ export const useUserStore = create<UserState>()(
           await apiClient.post('/auth/admin/logout').catch(() => apiClient.post('/auth/logout'));
         } catch {}
         set({ isAdminLoggedIn: false, adminEmail: null, roleSlug: null, permissions: [] });
+      },
+
+      changePassword: async (payload) => {
+        set({ isLoading: true });
+        try {
+          const res = await apiClient.post<{
+            success: boolean;
+            message: string;
+            requireReauth?: boolean;
+          }>('/auth/change-password', payload);
+
+          if (res?.requireReauth) {
+            set({
+              currentUser: null,
+              isAdminLoggedIn: false,
+              adminEmail: null,
+              roleSlug: null,
+              permissions: [],
+              isLoading: false,
+            });
+          } else {
+            set({ isLoading: false });
+          }
+
+          return res;
+        } catch (err) {
+          set({ isLoading: false });
+          throw err;
+        }
       },
 
       toggleWishlist: (productId: string) => {

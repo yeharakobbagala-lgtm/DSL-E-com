@@ -10,9 +10,13 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   private pool: Pool;
 
   constructor(@Inject(ConfigService) configService: ConfigService) {
-    const connectionString = configService.get<string>('DATABASE_URL');
+    const isE2E = process.env.APP_ENV === 'e2e';
+    const connectionString = isE2E
+      ? configService.get<string>('E2E_DATABASE_URL')
+      : configService.get<string>('DATABASE_URL');
+
     if (!connectionString) {
-      throw new Error('DATABASE_URL environment variable is not defined.');
+      throw new Error(`${isE2E ? 'E2E_DATABASE_URL' : 'DATABASE_URL'} environment variable is not defined.`);
     }
 
     const pool = new Pool({ connectionString });
@@ -29,7 +33,18 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   async onModuleInit() {
     try {
       await this.$connect();
-      this.logger.log('Connected to PostgreSQL via Prisma 7 Driver Adapter');
+      const res = await this.pool.query('SELECT current_user, current_database();');
+      const { current_user, current_database } = res.rows[0];
+      const isE2E = process.env.APP_ENV === 'e2e';
+      this.logger.log(`Connected to PostgreSQL via Prisma 7 Driver Adapter. Database: "${current_database}", Runtime Role: "${current_user}" (${isE2E ? 'DEDICATED E2E' : 'STANDARD'})`);
+
+      // Critical runtime safety check: never run application with postgres superuser
+      if (current_user === 'postgres') {
+        throw new Error('CRITICAL SECURITY VIOLATION: Application runtime is connected as "postgres" superuser. Runtime must connect as least-privilege role "dsl_app".');
+      }
+      if (isE2E && current_database !== 'dsl_stationery_e2e') {
+        throw new Error(`CRITICAL ISOLATION VIOLATION: APP_ENV=e2e must connect to "dsl_stationery_e2e", but current database is "${current_database}".`);
+      }
     } catch (error) {
       this.logger.error('Failed to connect to PostgreSQL during onModuleInit', error);
       throw error;

@@ -42,7 +42,17 @@ describe('AuditController — RBAC & Authorization Tests', () => {
   });
 
   it('permits ADMIN user to access audit logs endpoints', () => {
-    const adminUser = { id: 'admin-1', role: UserRole.ADMIN };
+    const adminUser = {
+      id: 'admin-1',
+      role: UserRole.ADMIN,
+      roleId: 'role-admin',
+      assignedRole: {
+        id: 'role-admin',
+        slug: 'super_admin',
+        isActive: true,
+        permissions: ['audit_logs.view'],
+      },
+    };
 
     const ctxLogs = createMockContext(AuditController.prototype.getAuditLogs, adminUser);
     expect(rolesGuard.canActivate(ctxLogs)).toBe(true);

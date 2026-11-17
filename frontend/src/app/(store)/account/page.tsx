@@ -9,6 +9,7 @@ import { orderService } from '@/services/orderService';
 import { Order } from '@/types/order';
 import { AccountNav } from '@/components/common/AccountNav';
 import { formatLKR } from '@/lib/currency';
+import { ChangePasswordForm } from '@/components/common/ChangePasswordForm';
 
 export default function AccountOverviewPage() {
   const router = useRouter();
@@ -151,6 +152,9 @@ export default function AccountOverviewPage() {
                 </div>
               )}
             </div>
+
+            {/* Change Password Section */}
+            <ChangePasswordForm variant="customer" onSuccessRedirect="/login" />
           </div>
         </div>
       </div>

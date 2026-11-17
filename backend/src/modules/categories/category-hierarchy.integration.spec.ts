@@ -311,6 +311,7 @@ describe('Category & Subcategory Hierarchy Integration Tests (Stage 1)', () => {
       method: 'DELETE',
       headers: {
         Authorization: `Bearer ${adminToken}`,
+        'x-action-confirmation': 'Fine Writing Instruments',
       },
     });
 
@@ -324,6 +325,7 @@ describe('Category & Subcategory Hierarchy Integration Tests (Stage 1)', () => {
       method: 'DELETE',
       headers: {
         Authorization: `Bearer ${adminToken}`,
+        'x-action-confirmation': 'Fountain Pens',
       },
     });
 
@@ -338,6 +340,7 @@ describe('Category & Subcategory Hierarchy Integration Tests (Stage 1)', () => {
       method: 'DELETE',
       headers: {
         Authorization: `Bearer ${adminToken}`,
+        'x-action-confirmation': 'Rollerball Pens',
       },
     });
 

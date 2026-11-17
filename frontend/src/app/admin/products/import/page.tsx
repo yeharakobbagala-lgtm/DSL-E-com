@@ -35,6 +35,7 @@ import {
 } from '@/types/product';
 import { formatLKR } from '@/lib/currency';
 import { AdminPageAccess } from '@/components/admin/AdminPageAccess';
+import { SensitiveActionConfirmationModal } from '@/components/admin/security/SensitiveActionConfirmationModal';
 
 export default function AdminProductImportPage() {
   const [activeMainTab, setActiveMainTab] = useState<'upload' | 'history'>('upload');
@@ -43,6 +44,7 @@ export default function AdminProductImportPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [previewResult, setPreviewResult] = useState<ImportPreviewResult | null>(null);
+  const [executionIdempotencyKey, setExecutionIdempotencyKey] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'all' | 'invalid' | 'valid' | 'duplicate' | 'existing'>('all');
@@ -125,6 +127,7 @@ export default function AdminProductImportPage() {
     setSelectedFile(file);
     setPreviewResult(null);
     setExecutionResult(null);
+    setExecutionIdempotencyKey(null);
   };
 
   // Upload and parse file
@@ -137,6 +140,7 @@ export default function AdminProductImportPage() {
     try {
       const result = await productService.uploadImportPreview(selectedFile);
       setPreviewResult(result);
+      setExecutionIdempotencyKey(`import-${result.previewId || 'preview'}-${Date.now()}`);
     } catch (err: any) {
       console.error('Import validation failed:', err);
       setError(err?.message || 'Failed to parse and validate import file.');
@@ -191,12 +195,20 @@ export default function AdminProductImportPage() {
     }
   };
 
-  // Execute import
-  const handleConfirmExecute = async () => {
-    if (!previewResult || !isConfirmedCheckbox) return;
+  // Execute import with typed confirmation
+  const handleConfirmExecute = async (confirmationPhrase: string) => {
+    if (!previewResult) return;
 
     setIsExecuting(true);
     setError(null);
+
+    // Reuse existing key on retries; generate only once per preview context
+    const idempotencyKey =
+      executionIdempotencyKey ||
+      `import-${previewResult.previewId || 'preview'}-${Date.now()}`;
+    if (!executionIdempotencyKey) {
+      setExecutionIdempotencyKey(idempotencyKey);
+    }
 
     try {
       const payload: ExecuteImportPayload = {
@@ -204,9 +216,10 @@ export default function AdminProductImportPage() {
         previewChecksum: previewResult.previewChecksum || 'checksum-local',
         stockMode: 'SET_STOCK',
         allowUpdates: true,
+        idempotencyKey,
       };
 
-      const result = await productService.executeImport(payload);
+      const result = await productService.executeImport(payload, confirmationPhrase);
       setExecutionResult(result);
       setIsExecutionModalOpen(false);
       const created = result.createdCount ?? result.successRows ?? 0;
@@ -216,6 +229,7 @@ export default function AdminProductImportPage() {
     } catch (err: any) {
       console.error('Execution failed:', err);
       setError(err?.message || 'Import execution failed.');
+      throw err;
     } finally {
       setIsExecuting(false);
     }
@@ -410,6 +424,7 @@ export default function AdminProductImportPage() {
                     onClick={() => {
                       setSelectedFile(null);
                       setPreviewResult(null);
+                      setExecutionIdempotencyKey(null);
                     }}
                     disabled={isUploading}
                     className="inline-flex items-center justify-center gap-1.5 text-xs text-slate-500 hover:text-slate-700 py-1.5 rounded-lg hover:bg-slate-100 transition-colors"
@@ -990,98 +1005,22 @@ export default function AdminProductImportPage() {
         </div>
       )}
 
-      {/* Administrator Approval & Execution Modal */}
-      {isExecutionModalOpen && previewResult && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 space-y-5">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-emerald-50 text-emerald-700">
-                  <ShieldCheck className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-slate-900 text-base">Administrator Import Authorization</h3>
-                  <p className="text-xs text-slate-500">Confirm execution of validated batch records</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsExecutionModalOpen(false)}
-                disabled={isExecuting}
-                className="text-slate-400 hover:text-slate-600 p-1"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Execution Breakdown Summary */}
-            <div className="space-y-3 text-xs">
-              <div className="grid grid-cols-2 gap-2 p-3 bg-slate-50 rounded-xl">
-                <div className="p-2 bg-white rounded-lg border border-slate-200">
-                  <span className="text-slate-400 block text-[10px] font-bold uppercase">Products to Create</span>
-                  <span className="text-lg font-black text-emerald-700">{previewResult.summary.validRows}</span>
-                </div>
-                <div className="p-2 bg-white rounded-lg border border-slate-200">
-                  <span className="text-slate-400 block text-[10px] font-bold uppercase">Products to Update</span>
-                  <span className="text-lg font-black text-blue-700">{previewResult.summary.existingRows}</span>
-                </div>
-                <div className="p-2 bg-white rounded-lg border border-slate-200">
-                  <span className="text-slate-400 block text-[10px] font-bold uppercase">Invalid Rows (Skipped)</span>
-                  <span className="text-lg font-black text-rose-700">{previewResult.summary.invalidRows}</span>
-                </div>
-                <div className="p-2 bg-white rounded-lg border border-slate-200">
-                  <span className="text-slate-400 block text-[10px] font-bold uppercase">File Dupes (Skipped)</span>
-                  <span className="text-lg font-black text-amber-700">{previewResult.summary.duplicateRows}</span>
-                </div>
-              </div>
-
-              <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-[11px] leading-relaxed">
-                <strong>Data Safety Notice:</strong> Existing products marked for update will update their catalog fields. Stock quantities and prices will only change where explicitly provided. Protected items are preserved by database invariants.
-              </div>
-
-              <label className="flex items-start gap-2.5 p-3 rounded-xl border border-slate-200 bg-slate-50/50 cursor-pointer hover:bg-slate-100 transition-colors">
-                <input
-                  type="checkbox"
-                  checked={isConfirmedCheckbox}
-                  onChange={(e) => setIsConfirmedCheckbox(e.target.checked)}
-                  className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 mt-0.5"
-                />
-                <span className="font-semibold text-slate-800 text-xs">
-                  I have verified the above batch preview summary and authorize execution into the production catalog.
-                </span>
-              </label>
-            </div>
-
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
-              <button
-                type="button"
-                onClick={() => setIsExecutionModalOpen(false)}
-                disabled={isExecuting}
-                className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 rounded-lg hover:bg-slate-100 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirmExecute}
-                disabled={!isConfirmedCheckbox || isExecuting}
-                className="inline-flex items-center gap-2 px-5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-lg shadow-sm transition-all disabled:opacity-40"
-              >
-                {isExecuting ? (
-                  <>
-                    <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    <span>Executing Batch...</span>
-                  </>
-                ) : (
-                  <>
-                    <Check className="w-4 h-4" />
-                    <span>Authorize &amp; Execute</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
+      {/* Administrator Approval & GitHub-Style Typed Execution Modal */}
+      {previewResult && (
+        <SensitiveActionConfirmationModal
+          isOpen={isExecutionModalOpen}
+          onClose={() => setIsExecutionModalOpen(false)}
+          actionTitle="Authorize & Execute Product Import Batch"
+          actionDescription={`Executing batch import: ${previewResult.summary.validRows} to create, ${previewResult.summary.existingRows} to update`}
+          targetResourceType="ProductImportBatch"
+          targetResourceName={`Batch Preview (${previewResult.summary.totalRows} Total Rows)`}
+          expectedConfirmationPhrase="CONFIRM PRODUCT IMPORT"
+          confirmButtonLabel="Confirm & Execute Import"
+          impactWarning="This operation directly modifies the active catalog, updating existing products and creating new SKUs in PostgreSQL. Type 'CONFIRM PRODUCT IMPORT' to execute."
+          onConfirmed={async (phrase) => {
+            await handleConfirmExecute(phrase);
+          }}
+        />
       )}
     </div>
     </AdminPageAccess>
