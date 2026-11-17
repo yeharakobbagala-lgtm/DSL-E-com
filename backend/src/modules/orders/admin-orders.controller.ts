@@ -45,6 +45,8 @@ import {
   AdminRejectRefundDto,
   adminFailRefundSchema,
   AdminFailRefundDto,
+  adminMarkCodPaidSchema,
+  AdminMarkCodPaidDto,
   adminAddNoteSchema,
   AdminAddNoteDto,
   adminReconciliationQuerySchema,
@@ -326,9 +328,24 @@ export class AdminOrdersController {
     return createApiResponse(logs, 'Order audit history retrieved successfully');
   }
 
+  @Patch(':id/mark-cod-paid')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Mark a COD order payment as received (cash collected by driver)' })
+  async markCodPaymentReceived(
+    @Param('id') id: string,
+    @Body(createZodPipe(adminMarkCodPaidSchema)) dto: AdminMarkCodPaidDto,
+    @Req() req: Request
+  ) {
+    const user = (req as any).user;
+    if (!hasUserPermission(user, 'orders.fulfill')) {
+      throw new ForbiddenException('Access denied: missing required permissions (orders.fulfill).');
+    }
+    const updated = await this.adminOrdersService.markCodPaymentReceived(id, dto, user);
+    return createApiResponse(updated, 'COD payment marked as received successfully');
+  }
+
   @Post(':id/notes')
-  @RequirePermissions('orders.add_notes')
-  @HttpCode(HttpStatus.CREATED)
+  @RequirePermissions('orders.add_notes')  @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Add internal staff note to order' })
   async addAdminNote(
     @Param('id') id: string,

@@ -259,8 +259,16 @@ class ProductService {
     outOfStock: number;
     lowStock: number;
     healthyStock: number;
+    totalStockValueCents?: string;
     byBrand: Array<{ id: string; name: string; count: number }>;
-    byCategory: Array<{ id: string; name: string; count: number }>;
+    byCategory: Array<{
+      id: string;
+      name: string;
+      count: number;
+      inStock?: number;
+      lowStock?: number;
+      outOfStock?: number;
+    }>;
   }> {
     const res = await apiClient.get<BackendApiResponse<any>>('products/admin/analytics');
     return res.data;

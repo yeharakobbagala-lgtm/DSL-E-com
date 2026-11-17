@@ -37,6 +37,8 @@ import {
 import { AdminPageAccess } from '@/components/admin/AdminPageAccess';
 import { useUserStore } from '@/services/userStore';
 import { SensitiveActionConfirmationModal } from '@/components/admin/security/SensitiveActionConfirmationModal';
+import { CategoryStructureChart } from '@/components/admin/analytics/CategoryStructureChart';
+import { CategoryLeadersCard } from '@/components/admin/analytics/CategoryLeadersCard';
 
 interface CategoryFormData {
   id?: string;
@@ -400,7 +402,7 @@ export default function AdminCategoriesPage() {
       label: 'Subcategories',
       value: analytics?.subcategories ?? categories.reduce((sum, c) => sum + (c.children?.length ?? 0), 0),
       icon: <CornerDownRight className="w-4 h-4" />,
-      color: 'emerald',
+      color: 'blue',
       active: hierarchyFilter === 'subs',
       onClick: () => setHierarchyFilter('subs'),
     },
@@ -500,17 +502,106 @@ export default function AdminCategoriesPage() {
       )}
 
       {successMsg && (
-        <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-xl flex items-center gap-3 text-emerald-800 text-xs">
-          <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+        <div className="bg-blue-50 border border-blue-200 p-4 rounded-xl flex items-center gap-3 text-[#08275E] text-xs">
+          <Check className="w-4 h-4 text-[#0066CC] shrink-0" />
           <div className="flex-1 font-medium">{successMsg}</div>
-          <button onClick={() => setSuccessMsg(null)} className="text-emerald-500 hover:text-emerald-700 font-bold">
+          <button onClick={() => setSuccessMsg(null)} className="text-[#0066CC] hover:text-[#08275E] font-bold">
             Dismiss
           </button>
         </div>
       )}
 
-      {/* KPI Cards */}
-      <CatalogKpiCards cards={kpiCards} isLoading={isLoading && !analytics} />
+      {/* Categories Analytics Suite: Radar Structure & Leaders */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-7">
+          <CategoryStructureChart
+            data={analytics?.topCategories || []}
+            rootCount={analytics?.parentCategories ?? rootCategories.length}
+            subCount={analytics?.subcategories ?? categories.reduce((sum, c) => sum + (c.children?.length ?? 0), 0)}
+            activeCount={analytics?.totalCategories ?? categories.length}
+            inactiveCount={0}
+          />
+        </div>
+        <div className="lg:col-span-5">
+          <CategoryLeadersCard
+            categories={analytics?.topCategories || []}
+            totalProducts={
+              analytics?.topCategories?.reduce((acc, c) => acc + c.count, 0) || 1
+            }
+          />
+        </div>
+      </div>
+
+      {/* Quick Filter Navigation Tabs */}
+      <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100">
+        <button
+          type="button"
+          onClick={handleClearAllFilters}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-2xs ${
+            hierarchyFilter === 'all' && productFilter === 'all'
+              ? 'bg-[#08275E] text-white shadow-xs'
+              : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+          }`}
+        >
+          All Categories ({analytics?.totalCategories ?? categories.length})
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setHierarchyFilter('roots');
+            setProductFilter('all');
+          }}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-2xs ${
+            hierarchyFilter === 'roots'
+              ? 'bg-[#08275E] text-white'
+              : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+          }`}
+        >
+          Root Categories ({analytics?.parentCategories ?? rootCategories.length})
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setHierarchyFilter('subs');
+            setProductFilter('all');
+          }}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-2xs ${
+            hierarchyFilter === 'subs'
+              ? 'bg-[#08275E] text-white'
+              : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+          }`}
+        >
+          Subcategories ({analytics?.subcategories ?? 0})
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setHierarchyFilter('all');
+            setProductFilter('with_products');
+          }}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-2xs ${
+            productFilter === 'with_products'
+              ? 'bg-blue-600 text-white'
+              : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+          }`}
+        >
+          With Products ({analytics?.categoriesWithProducts ?? '-'})
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setHierarchyFilter('all');
+            setProductFilter('empty');
+          }}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-2xs ${
+            productFilter === 'empty'
+              ? 'bg-amber-600 text-white'
+              : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+          }`}
+        >
+          Empty Categories ({analytics?.emptyCategories ?? '-'})
+        </button>
+      </div>
 
       {/* Filter and Search Toolbar */}
       <CatalogFilterToolbar

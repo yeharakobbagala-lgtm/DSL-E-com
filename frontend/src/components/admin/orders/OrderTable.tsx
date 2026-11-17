@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import {
   Eye,
@@ -11,11 +11,14 @@ import {
   CreditCard,
   Banknote,
   RotateCw,
+  CheckCircle2,
+  Loader2,
 } from 'lucide-react';
 import { Order } from '@/types/order';
 import { OrderStatusBadge } from './OrderStatusBadge';
 import { PaymentStatusBadge } from './PaymentStatusBadge';
 import { formatLKR } from '@/lib/currency';
+import { orderService } from '@/services/orderService';
 
 interface OrderTableProps {
   orders: Order[];
@@ -28,6 +31,7 @@ interface OrderTableProps {
   totalOrders: number;
   onPageChange: (newPage: number) => void;
   onLimitChange?: (newLimit: number) => void;
+  onOrderUpdated?: () => void;
 }
 
 export const OrderTable: React.FC<OrderTableProps> = ({
@@ -41,7 +45,24 @@ export const OrderTable: React.FC<OrderTableProps> = ({
   totalOrders,
   onPageChange,
   onLimitChange,
+  onOrderUpdated,
 }) => {
+  const [markingPaidId, setMarkingPaidId] = useState<string | null>(null);
+  const [markPaidError, setMarkPaidError] = useState<string | null>(null);
+
+  const handleMarkCodPaid = async (order: Order) => {
+    if (!confirm(`Confirm cash received for order ${order.orderNumber}?\n\nThis will mark the payment as PAID (Rs. ${(order.totalCents / 100).toLocaleString()}).`)) return;
+    setMarkingPaidId(order.id);
+    setMarkPaidError(null);
+    const result = await orderService.markCodPaid(order.id, 'COD cash collected confirmed by admin');
+    setMarkingPaidId(null);
+    if (result.success) {
+      onOrderUpdated?.();
+    } else {
+      setMarkPaidError(`Failed to mark ${order.orderNumber} as paid: ${result.error}`);
+    }
+  };
+
   const formatPaymentMethod = (method: string) => {
     switch (method) {
       case 'CASH_ON_DELIVERY':
@@ -84,6 +105,14 @@ export const OrderTable: React.FC<OrderTableProps> = ({
 
   return (
     <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs">
+      {/* Mark-paid error banner */}
+      {markPaidError && (
+        <div className="flex items-center gap-2 px-4 py-2.5 bg-rose-50 border-b border-rose-200 text-xs text-rose-700 font-medium">
+          <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+          <span>{markPaidError}</span>
+          <button onClick={() => setMarkPaidError(null)} className="ml-auto text-rose-500 hover:text-rose-700 font-bold">✕</button>
+        </div>
+      )}
       {/* Table responsive container */}
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs">
@@ -228,13 +257,33 @@ export const OrderTable: React.FC<OrderTableProps> = ({
 
                     {/* Actions */}
                     <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                      <Link
-                        href={`/admin/orders/${order.id}`}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#08275E] hover:bg-[#103b8c] text-white font-bold text-xs shadow-xs transition-all hover:scale-[1.02]"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                        <span>View Order</span>
-                      </Link>
+                      <div className="flex items-center justify-end gap-1.5">
+                        {/* Mark Cash Received — for COD orders when delivered or shipped and not yet paid */}
+                        {(order.paymentMethod?.toUpperCase() === 'CASH_ON_DELIVERY') &&
+                          (order.orderStatus === 'DELIVERED' || order.orderStatus === 'SHIPPED') &&
+                          order.paymentStatus !== 'PAID' && (
+                          <button
+                            onClick={() => handleMarkCodPaid(order)}
+                            disabled={markingPaidId === order.id}
+                            title="Mark cash collected from driver"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white font-bold text-xs shadow-xs transition-all hover:scale-[1.02] cursor-pointer"
+                          >
+                            {markingPaidId === order.id ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                            )}
+                            <span>{markingPaidId === order.id ? 'Saving…' : 'Cash Received'}</span>
+                          </button>
+                        )}
+                        <Link
+                          href={`/admin/orders/${order.id}`}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#08275E] hover:bg-[#103b8c] text-white font-bold text-xs shadow-xs transition-all hover:scale-[1.02]"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>View Order</span>
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 );

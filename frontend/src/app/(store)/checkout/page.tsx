@@ -21,6 +21,10 @@ import {
   FileText,
   Copy,
   Check,
+  UserCheck,
+  Sparkles,
+  X,
+  Bookmark,
 } from 'lucide-react';
 import { useCartStore } from '@/services/cartStore';
 import { useUserStore } from '@/services/userStore';
@@ -36,7 +40,6 @@ import { formatLKR } from '@/lib/currency';
 import { loadPayHereScript } from '@/lib/payhere';
 import ReservationCountdown from '@/components/checkout/ReservationCountdown';
 import DeliveryLocationPicker, { DISTRICT_TO_PROVINCE_MAP } from '@/components/checkout/DeliveryLocationPicker';
-import { CheckoutGateway } from '@/components/checkout/CheckoutGateway';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -46,6 +49,11 @@ export default function CheckoutPage() {
 
   // Stepper state: 'gateway' | 'details'
   const [checkoutStep, setCheckoutStep] = useState<'gateway' | 'details'>('gateway');
+
+  // Guest Prompt Modal & Save Details Options
+  const [showGuestModal, setShowGuestModal] = useState(false);
+  const [saveDetailsForFuture, setSaveDetailsForFuture] = useState(true);
+  const [hasRestoredSavedGuest, setHasRestoredSavedGuest] = useState(false);
 
   // Cart & User Stores
   const items = useCartStore((state) => state.items);
@@ -263,6 +271,34 @@ export default function CheckoutPage() {
         email: prev.email || currentUser.email || '',
         phone: prev.phone || currentUser.phone || '',
       }));
+    } else if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('dsl_saved_guest_details');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && typeof parsed === 'object') {
+            setFormData((prev) => ({
+              ...prev,
+              fullName: parsed.fullName || prev.fullName,
+              phone: parsed.phone || prev.phone,
+              email: parsed.email || prev.email,
+              addressLine1: parsed.addressLine1 || prev.addressLine1,
+              addressLine2: parsed.addressLine2 || prev.addressLine2,
+              city: parsed.city || prev.city,
+              district: parsed.district || prev.district,
+              postalCode: parsed.postalCode || prev.postalCode,
+              province: parsed.province || prev.province,
+            }));
+            setHasRestoredSavedGuest(true);
+          }
+        }
+
+        const modalSeen = sessionStorage.getItem('dsl_guest_checkout_modal_seen');
+        if (!modalSeen) {
+          const t = setTimeout(() => setShowGuestModal(true), 350);
+          return () => clearTimeout(t);
+        }
+      } catch {}
     }
   }, [currentUser]);
 
@@ -555,6 +591,29 @@ export default function CheckoutPage() {
         sessionStorage.setItem('last_order_email', effectiveEmail);
       }
 
+      if (!currentUser && typeof window !== 'undefined') {
+        try {
+          if (saveDetailsForFuture) {
+            localStorage.setItem(
+              'dsl_saved_guest_details',
+              JSON.stringify({
+                fullName: formData.fullName,
+                phone: formData.phone,
+                email: formData.email,
+                addressLine1: formData.addressLine1,
+                addressLine2: formData.addressLine2,
+                city: formData.city,
+                district: formData.district,
+                postalCode: formData.postalCode,
+                province: formData.province,
+              })
+            );
+          } else {
+            localStorage.removeItem('dsl_saved_guest_details');
+          }
+        } catch {}
+      }
+
       // 3. Branching: PayHere Online Gateway vs Offline Payments
       if (selectedPaymentMethod === 'CARD_PAYHERE') {
         if (!prePayResult.payHerePayload) {
@@ -692,20 +751,7 @@ export default function CheckoutPage() {
     );
   }
 
-  // STEP 1: CHECKOUT GATEWAY (Phase B Gateway Screen)
-  if (checkoutStep === 'gateway') {
-    return (
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
-        <CheckoutGateway
-          selectedItemCount={itemsToCheckout.length}
-          onContinueAsGuest={() => setCheckoutStep('details')}
-          onAuthenticatedContinue={() => setCheckoutStep('details')}
-        />
-      </div>
-    );
-  }
-
-  // STEP 2: DELIVERY DETAILS & PAYMENT
+  // STEP 2: DELIVERY DETAILS & PAYMENT (Direct checkout flow without intermediate gateway)
   const clientSubtotalCents = itemsToCheckout.reduce(
     (sum, item) => sum + item.product.priceCents * item.quantity,
     0
@@ -719,18 +765,96 @@ export default function CheckoutPage() {
   const displayTotalCents = authoritativeTotals?.totalCents ?? clientTotalCents;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8">
-      {/* Header and Step Back */}
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8 relative">
+      {/* Guest Welcome & Benefits Pop-up Modal (First visit prompt for unauthenticated shoppers) */}
+      {showGuestModal && !currentUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs transition-opacity animate-fade-in">
+          <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden p-6 sm:p-7">
+            {/* Close button */}
+            <button
+              type="button"
+              onClick={() => {
+                setShowGuestModal(false);
+                if (typeof window !== 'undefined') {
+                  sessionStorage.setItem('dsl_guest_checkout_modal_seen', 'true');
+                }
+              }}
+              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors cursor-pointer"
+              aria-label="Close modal"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Header Badge */}
+            <div className="flex items-center gap-3 mb-3">
+              <span className="inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-[#08275E]/10 text-[#08275E] shrink-0">
+                <Sparkles className="w-6 h-6 text-[#0066CC]" />
+              </span>
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider text-[#0066CC] bg-blue-50 px-2 py-0.5 rounded-full">
+                  DSL Customer Experience
+                </span>
+                <h3 className="text-lg font-black text-[#08275E] leading-tight mt-0.5">Welcome to DSL Stationery</h3>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-600 leading-relaxed mb-4">
+              Get the most out of your purchase! Sign in to track orders live via SMS and email, enjoy 1-click checkout with saved addresses, and receive member-exclusive offers.
+            </p>
+
+            {/* Benefits List */}
+            <div className="space-y-2.5 bg-slate-50 p-3.5 rounded-2xl border border-slate-100 mb-5 text-xs">
+              <div className="flex items-center gap-2.5 text-slate-700">
+                <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 text-xs font-bold">✓</span>
+                <span className="font-medium">Live SMS &amp; email delivery tracking updates</span>
+              </div>
+              <div className="flex items-center gap-2.5 text-slate-700">
+                <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center shrink-0 text-xs font-bold">✓</span>
+                <span className="font-medium">Saved delivery addresses for fast future re-orders</span>
+              </div>
+              <div className="flex items-center gap-2.5 text-slate-700">
+                <span className="w-5 h-5 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center shrink-0 text-xs font-bold">✓</span>
+                <span className="font-medium">Exclusive school supplies, stationery deals &amp; vouchers</span>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col gap-2.5">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowGuestModal(false);
+                  if (typeof window !== 'undefined') {
+                    sessionStorage.setItem('dsl_guest_checkout_modal_seen', 'true');
+                  }
+                  router.push('/login?redirect=/checkout');
+                }}
+                className="w-full py-3 px-4 bg-[#08275E] hover:bg-[#061e47] text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <span>Sign In or Register</span>
+                <ArrowRight className="w-4 h-4 text-[#FFD21C]" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setShowGuestModal(false);
+                  if (typeof window !== 'undefined') {
+                    sessionStorage.setItem('dsl_guest_checkout_modal_seen', 'true');
+                  }
+                }}
+                className="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition-all text-center cursor-pointer"
+              >
+                Continue as Guest
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Header and Status */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-4">
         <div>
-          <button
-            type="button"
-            onClick={() => setCheckoutStep('gateway')}
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0866E8] hover:underline mb-2"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Change Checkout Mode (Customer / Guest)</span>
-          </button>
           <h1 className="text-2xl sm:text-3xl font-black text-[#09285C]">Checkout &amp; Delivery</h1>
           <p className="text-xs text-slate-500 mt-1">
             {currentUser ? (
@@ -739,7 +863,7 @@ export default function CheckoutPage() {
               </span>
             ) : (
               <span className="text-amber-800 font-medium">
-                Checking out as Guest &bull; Fast, no account required
+                Checking out as Guest &bull; Fast, no password or account required
               </span>
             )}
           </p>
@@ -850,6 +974,64 @@ export default function CheckoutPage() {
         {/* Left 7 Columns: Delivery & Payment Details Form */}
         <div className="lg:col-span-7 space-y-6">
           <form onSubmit={handlePlaceOrder} className="space-y-6">
+            {/* Guest Sign-in Suggestion Card */}
+            {!currentUser && (
+              <div className="p-4 rounded-3xl bg-blue-50/60 border border-blue-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-[#0066CC] animate-pulse" />
+                    <span className="text-xs font-bold text-[#08275E]">Checking out as Guest</span>
+                  </div>
+                  <p className="text-[11px] text-slate-600">
+                    Have an account or want to track your orders? Sign in to unlock saved addresses and real-time SMS tracking.
+                  </p>
+                </div>
+                <Link
+                  href="/login?redirect=/checkout"
+                  className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-[#08275E] hover:bg-[#061e47] rounded-xl transition-all shrink-0 shadow-xs"
+                >
+                  <span>Sign In</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-[#FFD21C]" />
+                </Link>
+              </div>
+            )}
+
+            {/* Restored Saved Guest Details Badge */}
+            {hasRestoredSavedGuest && !currentUser && (
+              <div className="p-3 bg-emerald-50/90 rounded-2xl border border-emerald-200 text-xs text-emerald-900 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>
+                    <strong>Pre-filled from your saved details</strong> on this device.
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (typeof window !== 'undefined') {
+                      localStorage.removeItem('dsl_saved_guest_details');
+                    }
+                    setFormData({
+                      fullName: '',
+                      phone: '',
+                      email: '',
+                      addressLine1: '',
+                      addressLine2: '',
+                      city: '',
+                      district: 'Colombo',
+                      postalCode: '',
+                      province: 'Western',
+                      deliveryNotes: '',
+                    });
+                    setHasRestoredSavedGuest(false);
+                  }}
+                  className="text-[11px] font-bold text-rose-600 hover:underline cursor-pointer"
+                >
+                  Clear Saved
+                </button>
+              </div>
+            )}
+
             {/* Authenticated Customer Saved Addresses Picker */}
             {currentUser && addresses.length > 0 && (
               <div className="bg-white rounded-3xl border border-[#C6E7FF]/60 p-6 space-y-4 shadow-sm">
@@ -941,6 +1123,28 @@ export default function CheckoutPage() {
                 onChange={setFormData}
                 errors={errors}
               />
+            )}
+
+            {/* Save details for future orders checkbox */}
+            {(!currentUser || useCustomAddress) && (
+              <div className="p-4 rounded-2xl bg-blue-50/70 border border-blue-200/80 flex items-start gap-3 transition-all hover:bg-blue-50">
+                <input
+                  type="checkbox"
+                  id="saveDetailsForFuture"
+                  checked={saveDetailsForFuture}
+                  onChange={(e) => setSaveDetailsForFuture(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded border-slate-300 text-[#08275E] focus:ring-[#08275E] accent-[#08275E] cursor-pointer"
+                />
+                <label htmlFor="saveDetailsForFuture" className="cursor-pointer select-none">
+                  <span className="block font-bold text-xs text-[#08275E] flex items-center gap-1.5">
+                    <Bookmark className="w-3.5 h-3.5 text-[#0066CC]" />
+                    <span>Save my details for faster checkout on future orders</span>
+                  </span>
+                  <span className="block text-[11px] text-slate-600 mt-0.5">
+                    We will remember your name, phone, email, and delivery address on this device so your next stationery orders are fast and effortless.
+                  </span>
+                </label>
+              </div>
             )}
 
             {/* Payment Method Selector */}

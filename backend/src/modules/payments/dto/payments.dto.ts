@@ -44,15 +44,17 @@ export const paymentsDashboardQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
   search: z.string().trim().optional(), // order number, customer name, email, reference number
-  paymentMethod: z.nativeEnum(PaymentMethod).optional(),
-  paymentStatus: z.nativeEnum(PaymentStatus).optional(),
-  orderStatus: z.nativeEnum(OrderStatus).optional(),
-  bankVerificationStatus: z.nativeEnum(BankDepositStatus).optional(),
+  paymentMethod: z.preprocess((val) => (val === 'ALL' || val === '' ? undefined : val), z.nativeEnum(PaymentMethod).optional()),
+  paymentStatus: z.preprocess((val) => (val === 'ALL' || val === '' ? undefined : val), z.nativeEnum(PaymentStatus).optional()),
+  orderStatus: z.preprocess((val) => (val === 'ALL' || val === '' ? undefined : val), z.nativeEnum(OrderStatus).optional()),
+  bankVerificationStatus: z.preprocess((val) => (val === 'ALL' || val === '' ? undefined : val), z.nativeEnum(BankDepositStatus).optional()),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
+  dateFrom: z.string().optional(),
+  dateTo: z.string().optional(),
   minAmountCents: z.coerce.number().int().min(0).optional(),
   maxAmountCents: z.coerce.number().int().min(0).optional(),
-  sortBy: z.enum(['createdAt', 'updatedAt', 'totalCents']).default('createdAt'),
+  sortBy: z.preprocess((val) => (val === 'totalAmountCents' ? 'totalCents' : val === 'paidAt' ? 'updatedAt' : val), z.enum(['createdAt', 'updatedAt', 'totalCents', 'totalAmountCents', 'paidAt']).default('createdAt')),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
 });
 

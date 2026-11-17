@@ -149,9 +149,9 @@ function AdminPaymentsDashboardContent() {
         sortBy,
         sortOrder,
       });
-      setTransactions(res.data);
-      setTotalItems(res.meta?.totalItems ?? res.data.length);
-      setTotalPages(res.meta?.totalPages ?? 1);
+      setTransactions(Array.isArray(res?.data) ? res.data : []);
+      setTotalItems(res?.meta?.totalItems ?? (Array.isArray(res?.data) ? res.data.length : 0));
+      setTotalPages(res?.meta?.totalPages ?? 1);
     } catch (err: any) {
       setError(err?.message || 'Failed to load payments transactions');
     } finally {
@@ -476,6 +476,22 @@ function AdminPaymentsDashboardContent() {
           </div>
         </div>
       </div>
+
+      {/* Error alert banner */}
+      {error && (
+        <div className="flex items-center justify-between p-4 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-700 font-medium">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+            <span>{error}</span>
+          </div>
+          <button
+            onClick={() => loadTransactions()}
+            className="px-3 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold text-xs transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      )}
 
       {/* Transactions Table */}
       <div className="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-xs">

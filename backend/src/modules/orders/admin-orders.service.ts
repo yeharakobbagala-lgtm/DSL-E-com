@@ -48,8 +48,8 @@ import { NotificationsService } from '../notifications/notifications.service';
 export const PERMITTED_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   PENDING: [OrderStatus.CONFIRMED, OrderStatus.CANCELLED],
   CONFIRMED: [OrderStatus.PROCESSING, OrderStatus.CANCELLED],
-  PROCESSING: [OrderStatus.PACKED, OrderStatus.CANCELLED],
-  PACKED: [OrderStatus.SHIPPED, OrderStatus.CANCELLED],
+  PROCESSING: [OrderStatus.PACKED, OrderStatus.SHIPPED, OrderStatus.CANCELLED],
+  PACKED: [OrderStatus.SHIPPED, OrderStatus.PROCESSING, OrderStatus.CANCELLED],
   SHIPPED: [OrderStatus.DELIVERED, OrderStatus.CANCELLED],
   DELIVERED: [],
   CANCELLED: [],
@@ -459,6 +459,108 @@ export class AdminOrdersService {
           newStatus: dto.status,
           trackingNumber: dto.trackingNumber || order.trackingNumber,
         },
+        actor: { id: actor?.id, name: actor?.name },
+      });
+    }
+
+    return updated;
+  }
+
+  /**
+   * Marks a COD order's payment as received (PAID) after the driver collects cash.
+   * Only valid for CASH_ON_DELIVERY orders with paymentStatus = PENDING.
+   * Requires the order to be in DELIVERED status or a later allowed state.
+   */
+  async markCodPaymentReceived(
+    id: string,
+    dto: { notes?: string },
+    actor?: { id?: string; name?: string; role?: UserRole }
+  ) {
+    const order = await this.prisma.order.findUnique({
+      where: { id },
+      include: { items: true, addressSnapshot: true },
+    });
+
+    if (!order) {
+      throw new NotFoundException(`Order "${id}" not found`);
+    }
+
+    if (order.paymentMethod !== 'CASH_ON_DELIVERY') {
+      throw new BadRequestException(
+        `Only Cash on Delivery orders can be manually marked as paid. Order ${order.orderNumber} uses ${order.paymentMethod}.`
+      );
+    }
+
+    if (order.paymentStatus === 'PAID') {
+      throw new BadRequestException(
+        `Order ${order.orderNumber} is already marked as PAID.`
+      );
+    }
+
+    if (order.orderStatus === OrderStatus.CANCELLED) {
+      throw new BadRequestException(
+        `Cancelled order ${order.orderNumber} cannot be marked as paid.`
+      );
+    }
+
+    const previousStatus = order.orderStatus;
+    const shouldUpdateStatus = order.orderStatus !== OrderStatus.DELIVERED;
+
+    const updated = await this.prisma.$transaction(async (tx) => {
+      await tx.orderAuditLog.create({
+        data: {
+          orderId: order.id,
+          adminId: actor?.id || null,
+          adminName: actor?.name || 'Staff Administrator',
+          action: 'PAYMENT_STATUS_CHANGE',
+          fieldChanged: 'paymentStatus',
+          previousValue: order.paymentStatus,
+          newValue: PaymentStatus.PAID,
+          reason: dto.notes || 'COD cash collected and confirmed by admin',
+        },
+      });
+
+      if (shouldUpdateStatus) {
+        await tx.orderAuditLog.create({
+          data: {
+            orderId: order.id,
+            adminId: actor?.id || null,
+            adminName: actor?.name || 'Staff Administrator',
+            action: 'STATUS_CHANGE',
+            fieldChanged: 'orderStatus',
+            previousValue: previousStatus,
+            newValue: OrderStatus.DELIVERED,
+            reason: 'Order fulfilled upon COD cash collection confirmation',
+          },
+        });
+      }
+
+      return tx.order.update({
+        where: { id },
+        data: {
+          paymentStatus: PaymentStatus.PAID,
+          orderStatus: OrderStatus.DELIVERED,
+        },
+        include: {
+          items: true,
+          addressSnapshot: true,
+          auditLogs: { orderBy: { createdAt: 'desc' } },
+        },
+      });
+    });
+
+    this.logger.log(
+      `COD payment confirmed for order ${order.orderNumber} by ${actor?.name || 'admin'}`
+    );
+
+    // Real-Time WebSocket Broadcast
+    if (this.ordersGateway) {
+      this.ordersGateway.broadcastOrderEvent('order.payment.confirmed', {
+        orderId: order.id,
+        orderNumber: order.orderNumber,
+        event: 'order.payment.confirmed',
+        timestamp: new Date().toISOString(),
+        data: { paymentMethod: 'CASH_ON_DELIVERY', paymentStatus: 'PAID' },
         actor: { id: actor?.id, name: actor?.name },
       });
     }

@@ -726,11 +726,13 @@ export class PaymentsService {
       };
     }
 
-    if (startDate || endDate) {
+    const effectiveStartDate = startDate || (query as any).dateFrom;
+    const effectiveEndDate = endDate || (query as any).dateTo;
+    if (effectiveStartDate || effectiveEndDate) {
       where.createdAt = {};
-      if (startDate) where.createdAt.gte = new Date(startDate);
-      if (endDate) {
-        const end = new Date(endDate);
+      if (effectiveStartDate) where.createdAt.gte = new Date(effectiveStartDate);
+      if (effectiveEndDate) {
+        const end = new Date(effectiveEndDate);
         end.setHours(23, 59, 59, 999);
         where.createdAt.lte = end;
       }
@@ -761,12 +763,14 @@ export class PaymentsService {
       ];
     }
 
+    const effectiveSortBy = sortBy === 'totalAmountCents' ? 'totalCents' : (sortBy === 'paidAt' ? 'updatedAt' : sortBy);
+
     const [orders, total] = await Promise.all([
       this.prisma.order.findMany({
         where,
         skip,
         take: limit,
-        orderBy: { [sortBy]: sortOrder },
+        orderBy: { [effectiveSortBy]: sortOrder },
         include: {
           bankDepositSubmissions: {
             orderBy: { createdAt: 'desc' },

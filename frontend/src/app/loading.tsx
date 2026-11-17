@@ -1,41 +1,90 @@
+'use client';
+
 import React from 'react';
-import { Sparkles } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 export default function GlobalLoading() {
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#FFFDF0] text-[#292525] select-none">
-      {/* Playful Floating Badge */}
-      <div className="relative mb-6">
-        <div className="w-20 h-20 rounded-full bg-white border-2 border-[#C6E7FF] shadow-md flex items-center justify-center animate-bounce">
+    <div className="fixed inset-0 z-[99999] w-screen h-screen min-h-screen overflow-hidden bg-slate-900 text-white select-none pointer-events-none flex flex-col justify-between items-center">
+      {/* Background Video / Poster matching Welcome Page */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          poster="/hero-stationery-hd.jpg"
+          className="w-full h-full object-cover object-center scale-[1.005] will-change-transform"
+        >
+          <source src="/hero-video-4k.mp4" type="video/mp4" />
+          <source src="/hero-video-hd.mp4" type="video/mp4" />
+          <source src="/hero-video.mp4" type="video/mp4" />
           <img
-            src="/dsl-logo-clean.png"
-            alt="DSL Stationery"
-            className="h-10 w-auto object-contain"
+            src="/hero-stationery-hd.jpg"
+            alt="DSL Stationery Workspace"
+            className="w-full h-full object-cover object-center"
+          />
+        </video>
+        <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/10 to-black/35 pointer-events-none" />
+      </div>
+
+      {/* Top Animated Progress Loading Line */}
+      <div className="absolute top-0 left-0 right-0 h-1 bg-white/20 z-50 overflow-hidden">
+        <div className="h-full w-full bg-gradient-to-r from-[#38BDF8] via-[#FFD21C] to-[#4ADE80] animate-pulse" />
+      </div>
+
+      {/* Top Spacer */}
+      <div className="relative z-10 h-12 w-full" />
+
+      {/* CENTER OFFICIAL LOGO LOCKUP WITH MIST & LOADING ICON */}
+      <div className="relative z-10 max-w-5xl mx-auto px-6 text-center my-auto flex flex-col items-center justify-center space-y-5">
+        <div className="relative flex items-center justify-center py-2 px-2 transition-transform duration-300">
+          {/* Soft Organic Mist Cloud directly hugging the logo without any rectangle */}
+          <div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[105%] max-w-[500px] h-[130px] pointer-events-none rounded-full"
+            style={{
+              background:
+                'radial-gradient(ellipse 65% 55% at 50% 50%, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.9) 35%, rgba(255, 255, 255, 0.5) 60%, rgba(255, 255, 255, 0) 85%)',
+              filter: 'blur(20px)',
+            }}
+            aria-hidden="true"
+          />
+
+          {/* Very soft outer feather mist */}
+          <div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[115%] max-w-[560px] h-[160px] pointer-events-none rounded-full"
+            style={{
+              background:
+                'radial-gradient(ellipse 60% 50% at 50% 50%, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.3) 45%, rgba(255, 255, 255, 0) 80%)',
+              filter: 'blur(30px)',
+            }}
+            aria-hidden="true"
+          />
+
+          {/* DSL Official Logo with contoured mist glow following letter contours */}
+          <img
+            src="/images/dsl-logo-header.png"
+            alt="DSL Enterprises (Pvt) Ltd"
+            className="relative z-10 w-auto h-16 sm:h-20 md:h-24 lg:h-28 max-w-[88vw] object-contain select-none"
+            style={{
+              filter:
+                'drop-shadow(0 0 6px #ffffff) drop-shadow(0 0 14px rgba(255, 255, 255, 0.95)) drop-shadow(0 0 24px rgba(255, 255, 255, 0.75))',
+            }}
+            draggable={false}
           />
         </div>
-        <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-[#FFD84D] text-[#594300] flex items-center justify-center shadow-xs animate-spin-slow">
-          <Sparkles className="w-3.5 h-3.5 fill-[#594300]" />
+
+        {/* Loading Icon Pill */}
+        <div className="relative z-10 inline-flex items-center gap-2.5 px-4 sm:px-5 py-2 rounded-full bg-white/85 hover:bg-white/95 backdrop-blur-md border border-white/90 shadow-lg shadow-blue-950/15 text-[#102A5E] select-none animate-pulse">
+          <Loader2 className="w-4 h-4 sm:w-4.5 sm:h-4.5 animate-spin text-[#006DEB]" />
+          <span className="text-xs sm:text-sm font-black text-[#102A5E] tracking-wide">
+            Loading...
+          </span>
         </div>
       </div>
 
-      {/* Brand Title */}
-      <div className="text-center space-y-2">
-        <span className="font-heylowitch text-3xl sm:text-4xl text-[#0066CC] block tracking-wide">
-          DSL Stationery
-        </span>
-        <p className="text-xs font-bold uppercase tracking-widest text-[#292525]/60">
-          Little Essentials &bull; Big Ideas
-        </p>
-      </div>
-
-      {/* Pastel Progress Bar */}
-      <div className="mt-8 w-48 h-2 bg-[#C6E7FF]/40 rounded-full overflow-hidden p-0.5 border border-[#C6E7FF]/60">
-        <div className="h-full bg-linear-to-r from-[#0066CC] via-[#FFD84D] to-[#B9D5FF] rounded-full animate-loading-pulse" />
-      </div>
-
-      <span className="mt-3 text-[11px] font-medium text-[#292525]/50 animate-pulse">
-        Opening your stationery world...
-      </span>
+      {/* Bottom Spacer */}
+      <div className="relative z-10 h-12 w-full" />
     </div>
   );
 }

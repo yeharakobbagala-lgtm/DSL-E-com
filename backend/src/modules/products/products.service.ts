@@ -182,7 +182,7 @@ export class ProductsService {
    * Retrieves accurate catalog analytics directly from PostgreSQL database.
    */
   async getAdminAnalytics() {
-    const [counts, brandDistribution, categoryDistribution] = await Promise.all([
+    const [counts, brandDistribution, categoryDistribution, stockValueRaw] = await Promise.all([
       this.prisma.$queryRaw<Array<{
         total: number;
         active: number;
@@ -208,14 +208,25 @@ export class ProductsService {
         ORDER BY count DESC
         LIMIT 10
       `,
-      this.prisma.$queryRaw<Array<{ id: string; name: string; count: number }>>`
-        SELECT c.id, c.name, COUNT(p.id)::int AS count
+      this.prisma.$queryRaw<Array<{ id: string; name: string; count: number; inStock: number; lowStock: number; outOfStock: number }>>`
+        SELECT 
+          c.id, 
+          c.name, 
+          COUNT(p.id)::int AS count,
+          COUNT(p.id) FILTER (WHERE p."stockQuantity" > p."lowStockThreshold")::int AS "inStock",
+          COUNT(p.id) FILTER (WHERE p."stockQuantity" > 0 AND p."stockQuantity" <= p."lowStockThreshold")::int AS "lowStock",
+          COUNT(p.id) FILTER (WHERE p."stockQuantity" = 0)::int AS "outOfStock"
         FROM "Category" c
         LEFT JOIN "Product" p ON p."categoryId" = c.id
         WHERE c."parentId" IS NULL
         GROUP BY c.id, c.name
         ORDER BY count DESC
-        LIMIT 10
+        LIMIT 15
+      `,
+      this.prisma.$queryRaw<Array<{ totalStockValueCents: string }>>`
+        SELECT
+          COALESCE(SUM("stockQuantity"::bigint * "priceCents"::bigint), 0)::text AS "totalStockValueCents"
+        FROM "Product"
       `,
     ]);
 
@@ -228,6 +239,10 @@ export class ProductsService {
       healthy: 0,
     };
 
+    const totalStockValueCents = stockValueRaw[0]?.totalStockValueCents
+      ? BigInt(stockValueRaw[0].totalStockValueCents).toString()
+      : '0';
+
     return {
       totalProducts: Number(stat.total),
       activeProducts: Number(stat.active),
@@ -235,8 +250,16 @@ export class ProductsService {
       outOfStock: Number(stat.outOfStock),
       lowStock: Number(stat.lowStock),
       healthyStock: Number(stat.healthy),
+      totalStockValueCents,
       byBrand: brandDistribution.map((b) => ({ id: b.id, name: b.name, count: Number(b.count) })),
-      byCategory: categoryDistribution.map((c) => ({ id: c.id, name: c.name, count: Number(c.count) })),
+      byCategory: categoryDistribution.map((c) => ({
+        id: c.id,
+        name: c.name,
+        count: Number(c.count),
+        inStock: Number(c.inStock || 0),
+        lowStock: Number(c.lowStock || 0),
+        outOfStock: Number(c.outOfStock || 0),
+      })),
     };
   }
 

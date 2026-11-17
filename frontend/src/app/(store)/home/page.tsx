@@ -498,90 +498,86 @@ export default function HomeStorefrontPage() {
           {/* 10. NEWSLETTER SUBSCRIPTION (CHECKERED GINGHAM PATTERN)   */}
           {/* ========================================================= */}
           <section
-            className="relative w-full py-10 sm:py-16 md:py-20 px-3 sm:px-6 lg:px-8 xl:px-12 bg-cover bg-center overflow-hidden"
+            className="relative w-full py-4 sm:py-6 md:py-8 px-3 sm:px-6 lg:px-8 bg-cover bg-center overflow-hidden"
             style={{
               backgroundImage: "url('/images/newsletter-checkered-bg.jpg')",
               backgroundSize: 'cover',
               backgroundPosition: 'center',
             }}
           >
-            <div className="relative z-10 max-w-6xl mx-auto rounded-[28px] sm:rounded-[36px] md:rounded-[44px] bg-white/75 sm:bg-white/80 backdrop-blur-md border-2 border-white/90 p-6 sm:p-10 md:p-14 shadow-[0_20px_50px_rgba(9,40,92,0.1)] overflow-hidden">
+            <div className="relative z-10 max-w-4xl mx-auto rounded-[20px] sm:rounded-[26px] md:rounded-[30px] bg-white/80 sm:bg-white/85 backdrop-blur-md border-2 border-white/95 py-4 sm:py-6 md:py-7 px-4 sm:px-8 md:px-10 shadow-[0_12px_36px_rgba(9,40,92,0.08)] overflow-hidden">
               {/* Corner Ambient Golden-Yellow Glows */}
               <div
-                className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-amber-300/35 blur-3xl pointer-events-none"
+                className="absolute -top-10 -right-10 w-36 h-36 rounded-full bg-amber-300/30 blur-2xl pointer-events-none"
                 aria-hidden="true"
               />
               <div
-                className="absolute -bottom-12 -left-12 w-48 h-48 rounded-full bg-amber-300/35 blur-3xl pointer-events-none"
+                className="absolute -bottom-10 -left-10 w-36 h-36 rounded-full bg-amber-300/30 blur-2xl pointer-events-none"
                 aria-hidden="true"
               />
 
               {/* Floating Blue Square Shape Background Elements (Left Cluster) */}
               <div
-                className="absolute top-6 left-6 sm:left-10 w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-[#087BFF]/15 border border-[#087BFF]/25 rotate-12 pointer-events-none"
+                className="absolute top-3 left-4 sm:left-6 w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#087BFF]/15 border border-[#087BFF]/25 rotate-12 pointer-events-none"
                 aria-hidden="true"
               />
               <div
-                className="absolute top-14 left-12 sm:left-16 w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#006DEB]/20 border border-[#006DEB]/25 -rotate-6 pointer-events-none"
-                aria-hidden="true"
-              />
-              <div
-                className="absolute bottom-8 left-8 sm:left-12 w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-blue-300/25 border border-blue-400/20 rotate-45 pointer-events-none"
+                className="absolute top-9 left-8 sm:left-12 w-11 h-11 sm:w-14 sm:h-14 rounded-xl bg-[#006DEB]/20 border border-[#006DEB]/25 -rotate-6 pointer-events-none"
                 aria-hidden="true"
               />
 
               {/* Floating Blue Square Shape Background Elements (Right Cluster) */}
               <div
-                className="absolute bottom-6 right-8 sm:right-14 w-28 h-28 sm:w-36 sm:h-36 rounded-3xl bg-[#087BFF]/15 border border-[#087BFF]/25 -rotate-12 pointer-events-none"
+                className="absolute bottom-3 right-5 sm:right-8 w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-[#087BFF]/15 border border-[#087BFF]/25 -rotate-12 pointer-events-none"
                 aria-hidden="true"
               />
               <div
-                className="absolute bottom-14 right-20 sm:right-28 w-18 h-18 sm:w-22 sm:h-22 rounded-2xl bg-[#006DEB]/20 border border-[#006DEB]/25 rotate-12 pointer-events-none"
+                className="absolute bottom-8 right-12 sm:right-18 w-13 h-13 sm:w-16 sm:h-16 rounded-xl bg-[#006DEB]/20 border border-[#006DEB]/25 rotate-12 pointer-events-none"
                 aria-hidden="true"
               />
 
               {/* Floating Little Blue Stars */}
               <span
-                className="absolute top-10 left-1/4 text-blue-400/50 text-xl pointer-events-none select-none"
+                className="absolute top-5 left-1/4 text-blue-400/45 text-base pointer-events-none select-none"
                 aria-hidden="true"
               >
                 ★
               </span>
               <span
-                className="absolute bottom-10 right-1/4 text-blue-400/50 text-lg pointer-events-none select-none"
+                className="absolute bottom-5 right-1/4 text-blue-400/45 text-sm pointer-events-none select-none"
                 aria-hidden="true"
               >
                 ★
               </span>
               <span
-                className="absolute top-16 right-1/6 text-blue-300/60 text-sm pointer-events-none select-none"
+                className="absolute top-8 right-1/6 text-blue-300/55 text-xs pointer-events-none select-none"
                 aria-hidden="true"
               >
                 ✦
               </span>
               <span
-                className="absolute bottom-16 left-1/6 text-blue-300/60 text-sm pointer-events-none select-none"
+                className="absolute bottom-8 left-1/6 text-blue-300/55 text-xs pointer-events-none select-none"
                 aria-hidden="true"
               >
                 ✦
               </span>
 
               {/* Content */}
-              <div className="relative z-10 max-w-4xl mx-auto text-center space-y-3 mb-6 sm:mb-8">
-                <span className="text-[11px] sm:text-xs font-black text-[#006DEB] uppercase tracking-wider bg-white/95 py-1 px-4 sm:px-5 rounded-full inline-block border-2 border-[#006DEB] shadow-2xs">
+              <div className="relative z-10 max-w-2xl mx-auto text-center space-y-2 mb-3.5 sm:mb-4">
+                <span className="text-[10px] sm:text-[11px] font-black text-[#006DEB] uppercase tracking-wider bg-white/95 py-0.5 px-3.5 rounded-full inline-block border-2 border-[#006DEB] shadow-2xs">
                   STAY INFORMED
                 </span>
 
-                <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-[32px] xl:text-[34px] font-black text-[#09285C] tracking-tight leading-tight">
+                <h2 className="text-lg sm:text-xl md:text-2xl lg:text-[26px] font-black text-[#09285C] tracking-tight leading-tight">
                   Subscribe for Distribution Updates &amp; Term{' '}
                   <span className="relative inline-block whitespace-nowrap">
                     Offers
                     {/* Yellow 3-sparkle burst next to Offers */}
                     <span
-                      className="absolute -top-3 sm:-top-3.5 -right-5 sm:-right-6 text-[#FFB800] select-none pointer-events-none"
+                      className="absolute -top-2.5 -right-4 text-[#FFB800] select-none pointer-events-none"
                       aria-hidden="true"
                     >
-                      <svg className="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24" fill="none">
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none">
                         <path d="M14 9L21 4" stroke="#FFB800" strokeWidth="3" strokeLinecap="round" />
                         <path d="M11 7L12 1" stroke="#FFB800" strokeWidth="3" strokeLinecap="round" />
                         <path d="M15 12L22 12" stroke="#FFB800" strokeWidth="3" strokeLinecap="round" />
@@ -589,7 +585,7 @@ export default function HomeStorefrontPage() {
                     </span>
                     {/* Yellow playful wavy underline beneath Offers */}
                     <svg
-                      className="absolute -bottom-1 sm:-bottom-1.5 left-0 w-full h-2.5 sm:h-3 text-[#FFB800]"
+                      className="absolute -bottom-1 left-0 w-full h-2 text-[#FFB800]"
                       viewBox="0 0 100 12"
                       fill="none"
                       preserveAspectRatio="none"
@@ -605,7 +601,7 @@ export default function HomeStorefrontPage() {
                   </span>
                 </h2>
 
-                <p className="text-xs sm:text-sm text-[#09285C]/75 leading-relaxed font-medium max-w-xl mx-auto">
+                <p className="text-xs sm:text-[13px] text-[#09285C]/75 leading-relaxed font-medium max-w-lg mx-auto">
                   Receive verified syllabus lists, seasonal stock allocations, and distributor discount codes straight to your inbox.
                 </p>
               </div>

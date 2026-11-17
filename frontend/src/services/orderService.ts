@@ -29,16 +29,16 @@ export const PERMITTED_ORDER_TRANSITIONS: Record<string, string[]> = {
   // Uppercase (authoritative backend)
   PENDING: ['CONFIRMED', 'CANCELLED'],
   CONFIRMED: ['PROCESSING', 'CANCELLED'],
-  PROCESSING: ['PACKED', 'CANCELLED'],
-  PACKED: ['SHIPPED', 'CANCELLED'],
+  PROCESSING: ['PACKED', 'SHIPPED', 'CANCELLED'],
+  PACKED: ['SHIPPED', 'PROCESSING', 'CANCELLED'],
   SHIPPED: ['DELIVERED', 'CANCELLED'],
   DELIVERED: [],
   CANCELLED: [],
   // Lowercase (legacy/mock compatibility)
   pending: ['confirmed', 'cancelled'],
   confirmed: ['processing', 'cancelled'],
-  processing: ['packed', 'cancelled'],
-  packed: ['shipped', 'cancelled'],
+  processing: ['packed', 'shipped', 'cancelled'],
+  packed: ['shipped', 'processing', 'cancelled'],
   shipped: ['delivered', 'cancelled'],
   delivered: [],
   cancelled: [],
@@ -511,6 +511,36 @@ class OrderService {
     const success = this.updateOrderStatus(id, dto.status);
     const updated = this.getById(id);
     return { success, data: updated, error: success ? undefined : 'Transition not permitted' };
+  }
+
+  /**
+   * Marks a COD order payment as PAID (cash collected by driver).
+   * Calls PATCH /api/v1/admin/orders/:id/mark-cod-paid
+   * Requires orders.fulfill permission.
+   */
+  public async markCodPaid(
+    orderId: string,
+    notes?: string
+  ): Promise<{ success: boolean; data?: Order; error?: string }> {
+    try {
+      const res = await apiClient.patch<BackendApiResponse<any>>(
+        `/admin/orders/${orderId}/mark-cod-paid`,
+        { notes: notes || 'COD cash collected and confirmed by admin' }
+      );
+      if (res?.data) {
+        const updated = this.normalizeOrder(res.data);
+        const idx = this.orders.findIndex((o) => o.id === orderId || o.orderNumber === orderId);
+        if (idx >= 0) {
+          this.orders[idx] = updated;
+          this.persistAndNotify();
+        }
+        return { success: true, data: updated };
+      }
+      return { success: false, error: 'No data returned from server' };
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || 'Failed to mark COD payment as received';
+      return { success: false, error: msg };
+    }
   }
 
   /**

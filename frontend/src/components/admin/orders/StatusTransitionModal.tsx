@@ -18,6 +18,7 @@ interface StatusTransitionModalProps {
   orderNumber: string;
   currentStatus: OrderStatus;
   initialTracking?: string | null;
+  initialSelectedStatus?: OrderStatus | null;
   isOpen: boolean;
   onClose: () => void;
   onSuccess: (newStatus: OrderStatus, tracking?: string | null) => void;
@@ -28,6 +29,7 @@ export const StatusTransitionModal: React.FC<StatusTransitionModalProps> = ({
   orderNumber,
   currentStatus,
   initialTracking,
+  initialSelectedStatus,
   isOpen,
   onClose,
   onSuccess,
@@ -37,11 +39,29 @@ export const StatusTransitionModal: React.FC<StatusTransitionModalProps> = ({
     (s) => s.toUpperCase() !== 'CANCELLED' // Cancellations have dedicated CancelOrderModal with refund rules
   );
 
-  const [selectedStatus, setSelectedStatus] = useState<string>(allowed[0] || '');
+  const defaultStatus =
+    initialSelectedStatus && allowed.includes(initialSelectedStatus.toUpperCase())
+      ? initialSelectedStatus.toUpperCase()
+      : allowed[0] || '';
+
+  const [selectedStatus, setSelectedStatus] = useState<string>(defaultStatus);
   const [trackingNumber, setTrackingNumber] = useState<string>(initialTracking || '');
   const [reason, setReason] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Sync state whenever modal opens or initial target status changes
+  React.useEffect(() => {
+    if (isOpen) {
+      const preferred =
+        initialSelectedStatus && allowed.includes(initialSelectedStatus.toUpperCase())
+          ? initialSelectedStatus.toUpperCase()
+          : allowed[0] || '';
+      setSelectedStatus(preferred);
+      setTrackingNumber(initialTracking || '');
+      setError(null);
+    }
+  }, [isOpen, initialSelectedStatus, currentStatus]);
 
   if (!isOpen) return null;
 
@@ -50,11 +70,6 @@ export const StatusTransitionModal: React.FC<StatusTransitionModalProps> = ({
     if (!selectedStatus) {
       setError('Please select a target status.');
       return;
-    }
-
-    if (selectedStatus.toUpperCase() === 'SHIPPED' && !trackingNumber.trim()) {
-      setError('Tracking number is recommended when marking an order as Shipped.');
-      // allow proceed if they confirm or fill
     }
 
     setIsSubmitting(true);

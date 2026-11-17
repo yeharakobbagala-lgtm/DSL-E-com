@@ -60,14 +60,6 @@ vi.mock('@/components/checkout/ReservationCountdown', () => ({
   default: () => <div data-testid="countdown">10:00</div>,
 }));
 
-vi.mock('@/components/checkout/CheckoutGateway', () => ({
-  CheckoutGateway: ({ onContinueAsGuest }: any) => (
-    <button data-testid="gateway-continue" onClick={onContinueAsGuest}>
-      Continue to Details
-    </button>
-  ),
-}));
-
 // Mock checkoutService
 vi.mock('@/services/checkoutService', () => ({
   checkoutService: {
@@ -120,11 +112,6 @@ describe('CheckoutPage — Bank Transfer Payment Method', () => {
     render(<CheckoutPage />);
 
     await waitFor(() => {
-      expect(screen.getByTestId('gateway-continue')).toBeDefined();
-    });
-    fireEvent.click(screen.getByTestId('gateway-continue'));
-
-    await waitFor(() => {
       expect(screen.getByText('Bank Transfer')).toBeDefined();
     });
 
@@ -141,11 +128,6 @@ describe('CheckoutPage — Bank Transfer Payment Method', () => {
     render(<CheckoutPage />);
 
     await waitFor(() => {
-      expect(screen.getByTestId('gateway-continue')).toBeDefined();
-    });
-    fireEvent.click(screen.getByTestId('gateway-continue'));
-
-    await waitFor(() => {
       expect(screen.getByText('Cash on Delivery (COD)')).toBeDefined();
     });
 
@@ -156,11 +138,6 @@ describe('CheckoutPage — Bank Transfer Payment Method', () => {
     vi.mocked(checkoutService.fetchCheckoutSettings).mockResolvedValueOnce(completeBankSettings);
 
     render(<CheckoutPage />);
-
-    await waitFor(() => {
-      expect(screen.getByTestId('gateway-continue')).toBeDefined();
-    });
-    fireEvent.click(screen.getByTestId('gateway-continue'));
 
     await waitFor(() => {
       expect(screen.getByText('Bank Transfer')).toBeDefined();

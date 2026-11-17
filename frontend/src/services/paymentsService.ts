@@ -201,10 +201,72 @@ export const paymentsService = {
    * Fetch paginated payment transactions across all payment methods.
    */
   async getTransactions(params?: PaymentsDashboardQueryParams): Promise<BackendPaginatedResponse<PaymentTransactionItem>> {
-    return apiClient.get<BackendPaginatedResponse<PaymentTransactionItem>>(
+    const cleanParams: Record<string, any> = {};
+    if (params) {
+      Object.entries(params).forEach(([k, v]) => {
+        if (v !== 'ALL' && v !== '' && v !== undefined && v !== null) {
+          if (k === 'dateFrom') cleanParams.startDate = v;
+          else if (k === 'dateTo') cleanParams.endDate = v;
+          else cleanParams[k] = v;
+        }
+      });
+    }
+
+    const res = await apiClient.get<any>(
       '/admin/payments/transactions',
-      { params: params as Record<string, any> }
+      { params: cleanParams }
     );
+
+    // If already wrapped in paginated format with data array (e.g. from tests)
+    if (res && Array.isArray(res.data)) {
+      return res;
+    }
+
+    const rawData = res?.data || res;
+    const items = Array.isArray(rawData?.items) ? rawData.items : (Array.isArray(rawData) ? rawData : []);
+    const pagination = rawData?.pagination || {};
+
+    const normalizedData: PaymentTransactionItem[] = items.map((it: any) => ({
+      id: it.id,
+      orderNumber: it.orderNumber,
+      orderStatus: it.orderStatus,
+      paymentStatus: it.paymentStatus,
+      paymentMethod: it.paymentMethod,
+      totalAmountCents: it.totalCents ?? it.totalAmountCents ?? 0,
+      currency: it.currency || 'LKR',
+      customerName: it.customerName || 'Customer',
+      customerEmail: it.customerEmail || '',
+      customerPhone: it.customerPhone || null,
+      createdAt: it.createdAt,
+      paidAt: it.paidAt || (it.paymentStatus === 'PAID' ? it.updatedAt : null),
+      bankTransferDetails: it.bankSubmissionId ? {
+        submissionId: it.bankSubmissionId,
+        status: it.bankVerificationStatus || 'PENDING',
+        referenceNumber: it.transactionReference || null,
+        depositDate: it.depositDate || null,
+        rejectionReason: it.rejectionReason || null,
+        reviewedAt: it.reviewedAt || null,
+      } : it.bankTransferDetails || null,
+      latestPaymentAttempt: it.transactionReference ? {
+        id: it.id,
+        status: it.paymentStatus,
+        gatewayRef: it.transactionReference,
+        createdAt: it.createdAt,
+      } : it.latestPaymentAttempt || null,
+    }));
+
+    return {
+      success: true,
+      data: normalizedData,
+      meta: {
+        totalItems: pagination.total ?? normalizedData.length,
+        totalPages: pagination.totalPages ?? 1,
+        page: pagination.page ?? 1,
+        limit: pagination.limit ?? 20,
+        hasNextPage: (pagination.page ?? 1) < (pagination.totalPages ?? 1),
+        hasPreviousPage: (pagination.page ?? 1) > 1,
+      },
+    };
   },
 
   /**
@@ -276,7 +338,17 @@ export const paymentsService = {
    * Download CSV export of payment transactions with spreadsheet formula protection.
    */
   async downloadCsvExport(params?: PaymentsDashboardQueryParams): Promise<void> {
-    const url = apiClient.buildUrl('/admin/payments/export/csv', params as any);
+    const cleanParams: Record<string, any> = {};
+    if (params) {
+      Object.entries(params).forEach(([k, v]) => {
+        if (v !== 'ALL' && v !== '' && v !== undefined && v !== null) {
+          if (k === 'dateFrom') cleanParams.startDate = v;
+          else if (k === 'dateTo') cleanParams.endDate = v;
+          else cleanParams[k] = v;
+        }
+      });
+    }
+    const url = apiClient.buildUrl('/admin/payments/export/csv', cleanParams);
     const token = typeof window !== 'undefined' ? localStorage.getItem('dsl_admin_token') : null;
 
     const response = await fetch(url, {

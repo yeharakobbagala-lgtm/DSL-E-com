@@ -57,38 +57,48 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
 
   const navGroups = [
     {
-      title: 'Core Store Management',
+      title: 'Overview',
       items: [
+        { href: '/admin/dashboard', label: 'Executive Dashboard', icon: LayoutDashboard, permission: 'dashboard.view' },
         { href: '/admin/super-admin', label: 'Super Admin Center', icon: ShieldAlert, superAdminOnly: true, permission: 'admins.view' },
-        { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard, permission: 'dashboard.view' },
+      ],
+    },
+    {
+      title: 'Products, Stock & Catalog',
+      items: [
         { href: '/admin/products', label: 'Products Catalogue', icon: Package, permission: 'products.view' },
-        { href: '/admin/categories', label: 'Categories', icon: Layers, permission: 'categories.view' },
-        { href: '/admin/brands', label: 'Brands', icon: Award, permission: 'brands.view' },
-        { href: '/admin/inventory', label: 'Inventory & Stock', icon: Boxes, permission: 'inventory.view' },
+        { href: '/admin/categories', label: 'Categories Hierarchy', icon: Layers, permission: 'categories.view' },
+        { href: '/admin/inventory', label: 'Inventory & Stock Control', icon: Boxes, permission: 'inventory.view' },
+        { href: '/admin/brands', label: 'Brands & Manufacturers', icon: Award, permission: 'brands.view' },
+        { href: '/admin/school-packs', label: 'School Packs & Bundles', icon: GraduationCap, permission: 'school_packs.view' },
+        { href: '/admin/find-my-stationery', label: 'Find My Stationery AI', icon: Sparkles, permission: 'recommendations.view' },
+      ],
+    },
+    {
+      title: 'Orders, Payments & Customers',
+      items: [
         { href: '/admin/orders', label: 'Customer Orders', icon: ShoppingCart, permission: 'orders.view' },
+        { href: '/admin/customers', label: 'Customers Directory', icon: Users, permission: 'customers.view' },
         { href: '/admin/payments', label: 'Payments Dashboard', icon: CreditCard, permission: 'orders.view' },
         { href: '/admin/payments/bank-transfers', label: 'Bank Transfers Queue', icon: FileCheck, permission: 'orders.view' },
         { href: '/admin/reconciliation', label: 'Financial Reconciliation', icon: Scale, permission: 'orders.view' },
-        { href: '/admin/customers', label: 'Customers', icon: Users, permission: 'customers.view' },
-        { href: '/admin/admins', label: 'Admin Accounts', icon: ShieldCheck, permission: 'admins.view' },
-        { href: '/admin/roles', label: 'Roles & Permissions', icon: KeyRound, permission: 'roles.view' },
+        { href: '/admin/reports', label: 'Sales & Revenue Reports', icon: BarChart3, permission: 'reports.view' },
       ],
     },
     {
-      title: 'Smart Features & Bundles',
-      items: [
-        { href: '/admin/school-packs', label: 'School Packs', icon: GraduationCap, permission: 'school_packs.view' },
-        { href: '/admin/find-my-stationery', label: 'Find My Stationery', icon: Sparkles, permission: 'recommendations.view' },
-      ],
-    },
-    {
-      title: 'Marketing & Configuration',
+      title: 'Marketing & Promotions',
       items: [
         { href: '/admin/promotions', label: 'Promotions & Vouchers', icon: Tag, permission: 'promotions.view' },
-        { href: '/admin/banners', label: 'Banners & Blue Line Ads', icon: Image, permission: 'banners.view' },
-        { href: '/admin/newsletter', label: 'Newsletter & Consent', icon: Mail, permission: 'newsletter.view' },
-        { href: '/admin/reports', label: 'Sales Reports', icon: BarChart3, permission: 'reports.view' },
-        { href: '/admin/audit-logs', label: 'Audit Logs', icon: History, permission: 'audit_logs.view' },
+        { href: '/admin/banners', label: 'Banners & Promotions', icon: Image, permission: 'banners.view' },
+        { href: '/admin/newsletter', label: 'Newsletter Subscribers', icon: Mail, permission: 'newsletter.view' },
+      ],
+    },
+    {
+      title: 'Admin & System Controls',
+      items: [
+        { href: '/admin/admins', label: 'Admin Accounts', icon: ShieldCheck, permission: 'admins.view' },
+        { href: '/admin/roles', label: 'Roles & Permissions', icon: KeyRound, permission: 'roles.view' },
+        { href: '/admin/audit-logs', label: 'System Audit Logs', icon: History, permission: 'audit_logs.view' },
         { href: '/admin/settings', label: 'Store Settings', icon: Settings, permission: 'settings.view' },
       ],
     },
@@ -157,9 +167,12 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
         <div className="p-4 space-y-6">
           {filteredGroups.map((group) => (
             <div key={group.title} className="space-y-1">
-              <span className="px-3 text-[10px] font-bold text-sky-300/80 uppercase tracking-wider block mb-1.5">
-                {group.title}
-              </span>
+              <div className="flex items-center gap-2 px-3 pt-1 pb-1.5">
+                <span className="text-[10px] font-black text-sky-400 uppercase tracking-widest">
+                  {group.title}
+                </span>
+                <span className="h-px bg-slate-800/80 flex-1" />
+              </div>
               {group.items.map((item) => {
                 const Icon = item.icon;
                 const isActive =
@@ -191,11 +204,10 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
         <Link
           href="/admin/profile"
           onClick={onCloseMobile}
-          className={`flex items-center gap-2.5 px-3 py-2 text-xs font-bold rounded-xl transition ${
-            pathname === '/admin/profile'
+          className={`flex items-center gap-2.5 px-3 py-2 text-xs font-bold rounded-xl transition ${pathname === '/admin/profile'
               ? 'bg-[#0066CC] text-white shadow-sm ring-1 ring-sky-400/30'
               : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
-          }`}
+            }`}
         >
           <KeyRound className="w-4 h-4 text-sky-400" />
           <span>My Profile & Security</span>

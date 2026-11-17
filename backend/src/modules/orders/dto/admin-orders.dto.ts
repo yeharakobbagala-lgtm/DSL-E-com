@@ -165,4 +165,9 @@ export const adminReconciliationQuerySchema = z.object({
 
 export type AdminReconciliationQueryDto = z.infer<typeof adminReconciliationQuerySchema>;
 
+export const adminMarkCodPaidSchema = z.object({
+  notes: z.string().trim().optional(),
+});
+export type AdminMarkCodPaidDto = z.infer<typeof adminMarkCodPaidSchema>;
+
 

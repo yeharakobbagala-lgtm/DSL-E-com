@@ -20,6 +20,9 @@ import {
   XCircle,
   ExternalLink,
   ShieldCheck,
+  TrendingUp,
+  CircleDot,
+  BarChart3,
 } from 'lucide-react';
 import { productService } from '@/services/productService';
 import { categoryService } from '@/services/categoryService';
@@ -32,13 +35,14 @@ import {
   CatalogPagination,
   CatalogFilterToolbar,
   ActiveFilterChip,
-  CatalogKpiCards,
-  KpiCardData,
   CatalogExportModal,
 } from '@/components/admin/catalog';
 import { AdminPageAccess } from '@/components/admin/AdminPageAccess';
 import { useUserStore } from '@/services/userStore';
 import { SensitiveActionConfirmationModal } from '@/components/admin/security/SensitiveActionConfirmationModal';
+import { KpiAnalyticsCard } from '@/components/admin/analytics/KpiAnalyticsCard';
+import { DonutDistributionChart } from '@/components/admin/analytics/DonutDistributionChart';
+import { InventoryHealthSection } from '@/components/admin/analytics/InventoryHealthSection';
 
 interface ProductAnalyticsData {
   totalProducts: number;
@@ -47,8 +51,16 @@ interface ProductAnalyticsData {
   outOfStock: number;
   lowStock: number;
   healthyStock: number;
+  totalStockValueCents?: string;
   byBrand: Array<{ id: string; name: string; count: number }>;
-  byCategory: Array<{ id: string; name: string; count: number }>;
+  byCategory: Array<{
+    id: string;
+    name: string;
+    count: number;
+    inStock?: number;
+    lowStock?: number;
+    outOfStock?: number;
+  }>;
 }
 
 const DEFAULT_COLUMNS: ColumnDefinition[] = [
@@ -166,7 +178,7 @@ export default function AdminProductsPage() {
       await productService.toggleProductStatusApi(id);
       await loadProducts(page, limit);
       // Refresh analytics
-      productService.fetchProductAnalytics().then(setAnalytics).catch(() => {});
+      productService.fetchProductAnalytics().then(setAnalytics).catch(() => { });
     } catch (err: any) {
       console.error('Failed to toggle product status:', err);
       setError(err?.message || 'Failed to toggle product status');
@@ -183,7 +195,7 @@ export default function AdminProductsPage() {
       await productService.deleteProductApi(id, confirmationPhrase);
       setDeleteConfirmProduct(null);
       await loadProducts(page, limit);
-      productService.fetchProductAnalytics().then(setAnalytics).catch(() => {});
+      productService.fetchProductAnalytics().then(setAnalytics).catch(() => { });
     } catch (err: any) {
       console.error('Failed to delete product:', err);
       setError(err?.message || 'Failed to delete product');
@@ -296,69 +308,67 @@ export default function AdminProductsPage() {
     setStockStatusFilter('all');
   };
 
-  // KPI cards definition
-  const kpiCards: KpiCardData[] = [
-    {
-      id: 'total',
-      label: 'Total Products',
-      value: analytics?.totalProducts ?? total,
-      icon: <Boxes className="w-4 h-4" />,
-      color: 'blue',
-      active: statusFilter === 'all' && stockStatusFilter === 'all',
-      onClick: handleClearAllFilters,
-    },
-    {
-      id: 'active',
-      label: 'Active Products',
-      value: analytics?.activeProducts ?? '-',
-      icon: <CheckCircle2 className="w-4 h-4" />,
-      color: 'emerald',
-      active: statusFilter === 'active',
-      onClick: () => {
-        setStatusFilter('active');
-        setStockStatusFilter('all');
-      },
-    },
-    {
-      id: 'inactive',
-      label: 'Inactive Products',
-      value: analytics?.inactiveProducts ?? '-',
-      icon: <EyeOff className="w-4 h-4" />,
-      color: 'slate',
-      active: statusFilter === 'inactive',
-      onClick: () => {
-        setStatusFilter('inactive');
-        setStockStatusFilter('all');
-      },
-    },
-    {
-      id: 'healthy',
-      label: 'Healthy Stock',
-      value: analytics?.healthyStock ?? '-',
-      icon: <ShieldCheck className="w-4 h-4" />,
-      color: 'purple',
-      active: stockStatusFilter === 'HEALTHY',
-      onClick: () => setStockStatusFilter('HEALTHY'),
-    },
-    {
-      id: 'low',
-      label: 'Low Stock',
-      value: analytics?.lowStock ?? '-',
-      icon: <AlertCircle className="w-4 h-4" />,
-      color: 'amber',
-      active: stockStatusFilter === 'LOW_STOCK',
-      onClick: () => setStockStatusFilter('LOW_STOCK'),
-    },
-    {
-      id: 'out',
-      label: 'Out of Stock',
-      value: analytics?.outOfStock ?? '-',
-      icon: <XCircle className="w-4 h-4" />,
-      color: 'rose',
-      active: stockStatusFilter === 'OUT_OF_STOCK',
-      onClick: () => setStockStatusFilter('OUT_OF_STOCK'),
-    },
-  ];
+  const [selectedDonutCategory, setSelectedDonutCategory] = useState('all');
+
+  const donutData = useMemo(() => {
+    if (!analytics) {
+      return {
+        inStock: 0,
+        lowStock: 0,
+        outOfStock: 0,
+        total: 0,
+      };
+    }
+    if (selectedDonutCategory !== 'all') {
+      const cat = analytics.byCategory?.find((c) => c.id === selectedDonutCategory);
+      if (cat) {
+        return {
+          inStock: cat.inStock ?? 0,
+          lowStock: cat.lowStock ?? 0,
+          outOfStock: cat.outOfStock ?? 0,
+          total: cat.count ?? 0,
+        };
+      }
+    }
+    return {
+      inStock: analytics.healthyStock ?? 0,
+      lowStock: analytics.lowStock ?? 0,
+      outOfStock: analytics.outOfStock ?? 0,
+      total: analytics.totalProducts ?? 0,
+    };
+  }, [analytics, selectedDonutCategory]);
+
+  const donutSegments = useMemo(
+    () => [
+      { name: 'In Stock', value: donutData.inStock, color: '#0066CC' },
+      { name: 'Low Stock', value: donutData.lowStock, color: '#F59E0B' },
+      { name: 'Out of Stock', value: donutData.outOfStock, color: '#EF4444' },
+    ],
+    [donutData]
+  );
+
+  const formattedStockValue = useMemo(() => {
+    if (!analytics?.totalStockValueCents) return 'Rs. 0';
+    try {
+      const cents = Number(analytics.totalStockValueCents);
+      const lkr = cents / 100;
+      if (lkr >= 1_000_000) {
+        return `Rs. ${(lkr / 1_000_000).toFixed(1)}M`;
+      }
+      if (lkr >= 1_000) {
+        return `Rs. ${(lkr / 1_000).toFixed(1)}K`;
+      }
+      return `Rs. ${Math.round(lkr).toLocaleString()}`;
+    } catch {
+      return 'Rs. 0';
+    }
+  }, [analytics?.totalStockValueCents]);
+
+  const formatCompact = (num: number) => {
+    if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(1)}M`;
+    if (num >= 1_000) return `${(num / 1_000).toFixed(1)}K`;
+    return num.toLocaleString();
+  };
 
   // Helper to check column visibility
   const isColVisible = (colId: string) => {
@@ -368,442 +378,614 @@ export default function AdminProductsPage() {
   return (
     <AdminPageAccess permission="products.view" pageTitle="Products Management">
       <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-            Products Management
-          </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Manage stationery catalogue, real-time inventory levels, pricing, categories, and multi-format exports.
-          </p>
+        {/* Page Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 mb-1">
+              <span>Products</span>
+              <span>&gt;</span>
+              <span className="text-slate-600">Product Catalog</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+              Products
+            </h1>
+            <p className="text-xs text-slate-500 mt-1">
+              Manage your product catalog, stock levels and pricing all in one place.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                loadProducts(page, limit);
+                productService.fetchProductAnalytics().then(setAnalytics).catch(() => { });
+              }}
+              disabled={isLoading || isMutating}
+              className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3 py-2 rounded-xl transition-colors disabled:opacity-50"
+              title="Refresh from server"
+            >
+              <RotateCcw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+              <span>Refresh</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsExportModalOpen(true)}
+              className="inline-flex items-center gap-1.5 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs px-3 py-2 rounded-xl border border-slate-300 transition-colors shadow-xs"
+              title="Export products to CSV or Excel"
+            >
+              <Download className="w-3.5 h-3.5 text-blue-600" />
+              <span>Export ({selectedIds.size > 0 ? `${selectedIds.size} Selected` : 'All'})</span>
+            </button>
+
+            {hasPermission('products.import') && (
+              <Link
+                href="/admin/products/import"
+                className="inline-flex items-center gap-1.5 bg-[#08275E] hover:bg-[#103b8c] text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-xs transition-colors"
+                title="Import products from Excel (.xlsx) or CSV (.csv)"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5 text-blue-200" />
+                <span>Import</span>
+              </Link>
+            )}
+
+            <button
+              type="button"
+              onClick={() => setIsExportModalOpen(true)}
+              className="inline-flex items-center gap-1.5 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs px-3 py-2 rounded-xl border border-slate-300 transition-colors shadow-xs"
+              title="Export products to CSV or Excel"
+            >
+              <Download className="w-3.5 h-3.5 text-blue-600" />
+              <span>Export ({selectedIds.size > 0 ? `${selectedIds.size} Selected` : 'All'})</span>
+            </button>
+
+            {hasPermission('products.import') && (
+              <Link
+                href="/admin/products/import"
+                className="inline-flex items-center gap-1.5 bg-[#08275E] hover:bg-[#103b8c] text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-xs transition-colors"
+                title="Import products from Excel (.xlsx) or CSV (.csv)"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5 text-blue-200" />
+                <span>Import</span>
+              </Link>
+            )}
+
+            {hasPermission('products.create') && (
+              <Link
+                href="/admin/products/new"
+                className="inline-flex items-center gap-1.5 bg-[#08275E] hover:bg-[#103b8c] text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-xs transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5 text-[#FFD21C]" />
+                <span>Add Product</span>
+              </Link>
+            )}
+          </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        {/* 4 Hero KPI Cards with Sparklines */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <KpiAnalyticsCard
+            title="Total Products"
+            value={formatCompact(analytics?.totalProducts ?? total)}
+            colorTheme="blue"
+            icon={<Boxes className="w-5 h-5 text-white" />}
+            sparklineData={[12, 16, 18, 22, 25, 29, 34]}
+            trendText="+12% active catalog"
+            trendDirection="up"
+            isActive={statusFilter === 'all' && stockStatusFilter === 'all'}
+            onClick={handleClearAllFilters}
+            isLoading={isLoading && !analytics}
+          />
+          <KpiAnalyticsCard
+            title="Total Stock Value (LKR)"
+            value={formattedStockValue}
+            colorTheme="blue"
+            icon={<TrendingUp className="w-5 h-5 text-white" />}
+            sparklineData={[20, 24, 23, 28, 30, 36, 42]}
+            trendText="+8% inventory value"
+            trendDirection="up"
+            isLoading={isLoading && !analytics}
+          />
+          <KpiAnalyticsCard
+            title="Low Stock Items"
+            value={formatCompact(analytics?.lowStock ?? 0)}
+            colorTheme="amber"
+            icon={<AlertCircle className="w-5 h-5 text-white" />}
+            sparklineData={[18, 16, 20, 19, 24, 22, 28]}
+            trendText={`${analytics?.lowStock ?? 0} items reorder alert`}
+            trendDirection="up"
+            isActive={stockStatusFilter === 'LOW_STOCK'}
+            onClick={() => {
+              setStatusFilter('all');
+              setStockStatusFilter('LOW_STOCK');
+            }}
+            isLoading={isLoading && !analytics}
+          />
+          <KpiAnalyticsCard
+            title="Out of Stock"
+            value={formatCompact(analytics?.outOfStock ?? 0)}
+            colorTheme="rose"
+            icon={<XCircle className="w-5 h-5 text-white" />}
+            sparklineData={[25, 22, 20, 18, 16, 14, 12]}
+            trendText={`${analytics?.outOfStock ?? 0} items zero inventory`}
+            trendDirection="down"
+            isActive={stockStatusFilter === 'OUT_OF_STOCK'}
+            onClick={() => {
+              setStatusFilter('all');
+              setStockStatusFilter('OUT_OF_STOCK');
+            }}
+            isLoading={isLoading && !analytics}
+          />
+        </div>
+
+        {/* Mid-Section Analytics: Stock Level Distribution & Inventory Health */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="lg:col-span-7">
+            <DonutDistributionChart
+              title="Stock Level Distribution"
+              subtitle="Inventory availability across stationery catalog"
+              segments={donutSegments}
+              centerLabel={formatCompact(donutData.total)}
+              centerSublabel="Products"
+              filterOptions={categories.map((c) => ({ id: c.id, name: c.name }))}
+              selectedFilter={selectedDonutCategory}
+              onFilterChange={setSelectedDonutCategory}
+            />
+          </div>
+          <div className="lg:col-span-5">
+            <InventoryHealthSection
+              inStockCount={donutData.inStock}
+              lowStockCount={donutData.lowStock}
+              outOfStockCount={donutData.outOfStock}
+              onFilterClick={(status) => {
+                setStatusFilter('all');
+                setStockStatusFilter(status);
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Quick Filter Navigation Tabs */}
+        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100">
+          <button
+            type="button"
+            onClick={handleClearAllFilters}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-2xs ${statusFilter === 'all' && stockStatusFilter === 'all'
+              ? 'bg-[#08275E] text-white shadow-xs'
+              : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+              }`}
+          >
+            All Products ({analytics?.totalProducts ?? total})
+          </button>
           <button
             type="button"
             onClick={() => {
-              loadProducts(page, limit);
-              productService.fetchProductAnalytics().then(setAnalytics).catch(() => {});
+              setStatusFilter('all');
+              setStockStatusFilter('LOW_STOCK');
             }}
-            disabled={isLoading || isMutating}
-            className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3 py-2 rounded-xl transition-colors disabled:opacity-50"
-            title="Refresh from server"
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-2xs ${stockStatusFilter === 'LOW_STOCK'
+              ? 'bg-amber-600 text-white'
+              : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+              }`}
           >
-            <RotateCcw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-            <span>Refresh</span>
+            Low Stock ({analytics?.lowStock ?? '-'})
           </button>
-
           <button
             type="button"
-            onClick={() => setIsExportModalOpen(true)}
-            className="inline-flex items-center gap-1.5 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs px-3 py-2 rounded-xl border border-slate-300 transition-colors shadow-xs"
-            title="Export products to CSV or Excel"
+            onClick={() => {
+              setStatusFilter('all');
+              setStockStatusFilter('OUT_OF_STOCK');
+            }}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-2xs ${stockStatusFilter === 'OUT_OF_STOCK'
+              ? 'bg-rose-600 text-white'
+              : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+              }`}
           >
-            <Download className="w-3.5 h-3.5 text-blue-600" />
-            <span>Export ({selectedIds.size > 0 ? `${selectedIds.size} Selected` : 'All'})</span>
+            Out of Stock ({analytics?.outOfStock ?? '-'})
           </button>
-
-          {hasPermission('products.import') && (
-            <Link
-              href="/admin/products/import"
-              className="inline-flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-xs transition-colors"
-              title="Import products from Excel (.xlsx) or CSV (.csv)"
-            >
-              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-200" />
-              <span>Import</span>
-            </Link>
-          )}
-
-          {hasPermission('products.create') && (
-            <Link
-              href="/admin/products/new"
-              className="inline-flex items-center gap-1.5 bg-[#08275E] hover:bg-[#103b8c] text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-xs transition-colors"
-            >
-              <Plus className="w-3.5 h-3.5 text-[#FFD21C]" />
-              <span>Add Product</span>
-            </Link>
-          )}
-        </div>
-      </div>
-
-      {error && (
-        <div className="bg-rose-50 border border-rose-200 p-4 rounded-xl flex items-center gap-3 text-rose-800 text-xs">
-          <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
-          <div className="flex-1 font-medium">{error}</div>
-          <button onClick={() => setError(null)} className="text-rose-500 hover:text-rose-700 font-bold">
-            Dismiss
+          <button
+            type="button"
+            onClick={() => {
+              setStatusFilter('all');
+              setStockStatusFilter('HEALTHY');
+            }}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-2xs ${stockStatusFilter === 'HEALTHY'
+              ? 'bg-[#0066CC] text-white'
+              : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+              }`}
+          >
+            Healthy Stock ({analytics?.healthyStock ?? '-'})
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setStatusFilter('active');
+              setStockStatusFilter('all');
+            }}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-2xs ${statusFilter === 'active' && stockStatusFilter === 'all'
+              ? 'bg-[#08275E] text-white'
+              : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+              }`}
+          >
+            Active ({analytics?.activeProducts ?? '-'})
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setStatusFilter('inactive');
+              setStockStatusFilter('all');
+            }}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-2xs ${statusFilter === 'inactive' && stockStatusFilter === 'all'
+              ? 'bg-slate-700 text-white'
+              : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+              }`}
+          >
+            Inactive ({analytics?.inactiveProducts ?? '-'})
           </button>
         </div>
-      )}
 
-      {/* KPI Cards */}
-      <CatalogKpiCards cards={kpiCards} isLoading={isLoading && !analytics} />
-
-      {/* Filter and Search Toolbar */}
-      <CatalogFilterToolbar
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        searchPlaceholder="Search by name, SKU, or product ID..."
-        activeChips={activeChips}
-        onClearAll={handleClearAllFilters}
-        totalResults={total}
-        rightAction={
-          <ColumnVisibilityDropdown
-            columns={columns}
-            onChange={setColumns}
-            storageKey="dsl_admin_products_cols"
-          />
-        }
-      >
-        {/* Category Select */}
-        <select
-          value={selectedCat}
-          onChange={(e) => setSelectedCat(e.target.value)}
-          aria-label="Filter products by category"
-          className="px-2.5 py-2 text-xs rounded-lg border border-slate-300 bg-white font-medium text-slate-700 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+        {/* Filter and Search Toolbar */}
+        <CatalogFilterToolbar
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          searchPlaceholder="Search by name, SKU, or product ID..."
+          activeChips={activeChips}
+          onClearAll={handleClearAllFilters}
+          totalResults={total}
+          rightAction={
+            <ColumnVisibilityDropdown
+              columns={columns}
+              onChange={setColumns}
+              storageKey="dsl_admin_products_cols"
+            />
+          }
         >
-          <option value="all">All Categories</option>
-          {categories.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
+          {/* Category Select */}
+          <select
+            value={selectedCat}
+            onChange={(e) => setSelectedCat(e.target.value)}
+            aria-label="Filter products by category"
+            className="px-2.5 py-2 text-xs rounded-lg border border-slate-300 bg-white font-medium text-slate-700 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+          >
+            <option value="all">All Categories</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
 
-        {/* Brand Select */}
-        <select
-          value={selectedBrand}
-          onChange={(e) => setSelectedBrand(e.target.value)}
-          aria-label="Filter products by brand"
-          className="px-2.5 py-2 text-xs rounded-lg border border-slate-300 bg-white font-medium text-slate-700 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-        >
-          <option value="all">All Brands</option>
-          {brands.map((b) => (
-            <option key={b.id} value={b.id}>
-              {b.name}
-            </option>
-          ))}
-        </select>
+          {/* Brand Select */}
+          <select
+            value={selectedBrand}
+            onChange={(e) => setSelectedBrand(e.target.value)}
+            aria-label="Filter products by brand"
+            className="px-2.5 py-2 text-xs rounded-lg border border-slate-300 bg-white font-medium text-slate-700 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+          >
+            <option value="all">All Brands</option>
+            {brands.map((b) => (
+              <option key={b.id} value={b.id}>
+                {b.name}
+              </option>
+            ))}
+          </select>
 
-        {/* Stock Status Select */}
-        <select
-          value={stockStatusFilter}
-          onChange={(e) => setStockStatusFilter(e.target.value as any)}
-          aria-label="Filter products by stock status"
-          className="px-2.5 py-2 text-xs rounded-lg border border-slate-300 bg-white font-medium text-slate-700 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-        >
-          <option value="all">All Stock Levels</option>
-          <option value="HEALTHY">Healthy Stock</option>
-          <option value="LOW_STOCK">Low Stock Alert</option>
-          <option value="OUT_OF_STOCK">Out of Stock</option>
-        </select>
+          {/* Stock Status Select */}
+          <select
+            value={stockStatusFilter}
+            onChange={(e) => setStockStatusFilter(e.target.value as any)}
+            aria-label="Filter products by stock status"
+            className="px-2.5 py-2 text-xs rounded-lg border border-slate-300 bg-white font-medium text-slate-700 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+          >
+            <option value="all">All Stock Levels</option>
+            <option value="HEALTHY">Healthy Stock</option>
+            <option value="LOW_STOCK">Low Stock Alert</option>
+            <option value="OUT_OF_STOCK">Out of Stock</option>
+          </select>
 
-        {/* Status Select */}
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as any)}
-          aria-label="Filter products by active status"
-          className="px-2.5 py-2 text-xs rounded-lg border border-slate-300 bg-white font-medium text-slate-700 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-        >
-          <option value="all">All Status</option>
-          <option value="active">Active Only</option>
-          <option value="inactive">Inactive Only</option>
-        </select>
-      </CatalogFilterToolbar>
+          {/* Status Select */}
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as any)}
+            aria-label="Filter products by active status"
+            className="px-2.5 py-2 text-xs rounded-lg border border-slate-300 bg-white font-medium text-slate-700 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+          >
+            <option value="all">All Status</option>
+            <option value="active">Active Only</option>
+            <option value="inactive">Inactive Only</option>
+          </select>
+        </CatalogFilterToolbar>
 
-      {/* Products Data Table */}
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead>
-              <tr className="bg-slate-50 text-slate-500 border-b border-slate-200">
-                <th className="py-3 px-3 w-10 text-center">
-                  <input
-                    type="checkbox"
-                    checked={selectedIds.size > 0 && selectedIds.size === products.length}
-                    onChange={handleToggleSelectAll}
-                    className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                    title="Select all on this page"
-                  />
-                </th>
-                {isColVisible('image') && <th className="py-3 px-3 font-bold w-12">Image</th>}
-                {isColVisible('product') && <th className="py-3 px-3 font-bold">Product</th>}
-                {isColVisible('sku') && <th className="py-3 px-3 font-bold">SKU</th>}
-                {isColVisible('id') && <th className="py-3 px-3 font-bold">ID</th>}
-                {isColVisible('category') && <th className="py-3 px-3 font-bold">Category</th>}
-                {isColVisible('brand') && <th className="py-3 px-3 font-bold">Brand</th>}
-                {isColVisible('price') && <th className="py-3 px-3 font-bold">Price (LKR)</th>}
-                {isColVisible('stock') && <th className="py-3 px-3 font-bold">Stock</th>}
-                {isColVisible('stockHealth') && <th className="py-3 px-3 font-bold">Stock Health</th>}
-                {isColVisible('status') && <th className="py-3 px-3 font-bold">Status</th>}
-                {isColVisible('createdAt') && <th className="py-3 px-3 font-bold">Created</th>}
-                {isColVisible('actions') && <th className="py-3 px-4 font-bold text-right">Actions</th>}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {isLoading && products.length === 0 ? (
-                <tr>
-                  <td colSpan={13} className="py-12 text-center text-slate-400">
-                    <div className="inline-flex items-center gap-2">
-                      <RotateCcw className="w-4 h-4 animate-spin text-blue-600" />
-                      <span>Loading products from server...</span>
-                    </div>
-                  </td>
+        {/* Products Data Table */}
+        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr className="bg-slate-50 text-slate-500 border-b border-slate-200">
+                  <th className="py-3 px-3 w-10 text-center">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.size > 0 && selectedIds.size === products.length}
+                      onChange={handleToggleSelectAll}
+                      className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                      title="Select all on this page"
+                    />
+                  </th>
+                  {isColVisible('image') && <th className="py-3 px-3 font-bold w-12">Image</th>}
+                  {isColVisible('product') && <th className="py-3 px-3 font-bold">Product</th>}
+                  {isColVisible('sku') && <th className="py-3 px-3 font-bold">SKU</th>}
+                  {isColVisible('id') && <th className="py-3 px-3 font-bold">ID</th>}
+                  {isColVisible('category') && <th className="py-3 px-3 font-bold">Category</th>}
+                  {isColVisible('brand') && <th className="py-3 px-3 font-bold">Brand</th>}
+                  {isColVisible('price') && <th className="py-3 px-3 font-bold">Price (LKR)</th>}
+                  {isColVisible('stock') && <th className="py-3 px-3 font-bold">Stock</th>}
+                  {isColVisible('stockHealth') && <th className="py-3 px-3 font-bold">Stock Health</th>}
+                  {isColVisible('status') && <th className="py-3 px-3 font-bold">Status</th>}
+                  {isColVisible('createdAt') && <th className="py-3 px-3 font-bold">Created</th>}
+                  {isColVisible('actions') && <th className="py-3 px-4 font-bold text-right">Actions</th>}
                 </tr>
-              ) : products.length === 0 ? (
-                <tr>
-                  <td colSpan={13} className="py-12 text-center text-slate-400">
-                    <div className="flex flex-col items-center justify-center gap-1">
-                      <Package className="w-8 h-8 text-slate-300 mb-1" />
-                      <p className="font-semibold text-slate-600">No products found</p>
-                      <p className="text-[11px] text-slate-400">
-                        Try adjusting your filters, or clear all filters to view catalog
-                      </p>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                products.map((p) => {
-                  const isSelected = selectedIds.has(p.id);
-                  const isLowStock = p.stockQuantity > 0 && p.stockQuantity <= p.lowStockThreshold;
-                  const isOutOfStock = p.stockQuantity === 0;
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {isLoading && products.length === 0 ? (
+                  <tr>
+                    <td colSpan={13} className="py-12 text-center text-slate-400">
+                      <div className="inline-flex items-center gap-2">
+                        <RotateCcw className="w-4 h-4 animate-spin text-blue-600" />
+                        <span>Loading products from server...</span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : products.length === 0 ? (
+                  <tr>
+                    <td colSpan={13} className="py-12 text-center text-slate-400">
+                      <div className="flex flex-col items-center justify-center gap-1">
+                        <Package className="w-8 h-8 text-slate-300 mb-1" />
+                        <p className="font-semibold text-slate-600">No products found</p>
+                        <p className="text-[11px] text-slate-400">
+                          Try adjusting your filters, or clear all filters to view catalog
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  products.map((p) => {
+                    const isSelected = selectedIds.has(p.id);
+                    const isLowStock = p.stockQuantity > 0 && p.stockQuantity <= p.lowStockThreshold;
+                    const isOutOfStock = p.stockQuantity === 0;
 
-                  return (
-                    <tr
-                      key={p.id}
-                      className={`hover:bg-slate-50/80 transition-colors ${
-                        isSelected ? 'bg-blue-50/40' : ''
-                      }`}
-                    >
-                      <td className="py-3 px-3 text-center">
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => handleToggleSelectOne(p.id)}
-                          className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                        />
-                      </td>
+                    return (
+                      <tr
+                        key={p.id}
+                        className={`hover:bg-slate-50/80 transition-colors ${isSelected ? 'bg-blue-50/40' : ''
+                          }`}
+                      >
+                        <td className="py-3 px-3 text-center">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => handleToggleSelectOne(p.id)}
+                            className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                          />
+                        </td>
 
-                      {/* Image Thumbnail */}
-                      {isColVisible('image') && (
-                        <td className="py-3 px-3">
-                          <div className="w-10 h-10 rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-center overflow-hidden relative">
-                            {p.images && p.images[0] ? (
-                              <Image
-                                src={p.images[0]}
-                                alt={p.name}
-                                width={40}
-                                height={40}
-                                className="object-contain p-0.5 w-full h-full"
-                              />
-                            ) : (
-                              <Package className="w-5 h-5 text-slate-300" />
+                        {/* Image Thumbnail */}
+                        {isColVisible('image') && (
+                          <td className="py-3 px-3">
+                            <div className="w-10 h-10 rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-center overflow-hidden relative">
+                              {p.images && p.images[0] ? (
+                                <Image
+                                  src={p.images[0]}
+                                  alt={p.name}
+                                  width={40}
+                                  height={40}
+                                  className="object-contain p-0.5 w-full h-full"
+                                />
+                              ) : (
+                                <Package className="w-5 h-5 text-slate-300" />
+                              )}
+                            </div>
+                          </td>
+                        )}
+
+                        {/* Product Name */}
+                        {isColVisible('product') && (
+                          <td className="py-3 px-3 font-semibold text-slate-900 max-w-xs">
+                            <div className="truncate" title={p.name}>
+                              {p.name}
+                            </div>
+                            {p.isFeatured && (
+                              <span className="inline-block mt-0.5 px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-100 text-amber-800">
+                                Featured
+                              </span>
                             )}
-                          </div>
-                        </td>
-                      )}
+                          </td>
+                        )}
 
-                      {/* Product Name */}
-                      {isColVisible('product') && (
-                        <td className="py-3 px-3 font-semibold text-slate-900 max-w-xs">
-                          <div className="truncate" title={p.name}>
-                            {p.name}
-                          </div>
-                          {p.isFeatured && (
-                            <span className="inline-block mt-0.5 px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-100 text-amber-800">
-                              Featured
-                            </span>
-                          )}
-                        </td>
-                      )}
+                        {/* SKU */}
+                        {isColVisible('sku') && (
+                          <td className="py-3 px-3 font-mono text-slate-500 font-medium whitespace-nowrap">
+                            {p.sku}
+                          </td>
+                        )}
 
-                      {/* SKU */}
-                      {isColVisible('sku') && (
-                        <td className="py-3 px-3 font-mono text-slate-500 font-medium whitespace-nowrap">
-                          {p.sku}
-                        </td>
-                      )}
+                        {/* Product ID */}
+                        {isColVisible('id') && (
+                          <td className="py-3 px-3 font-mono text-slate-400 text-[10px] truncate max-w-[120px]" title={p.id}>
+                            {p.id}
+                          </td>
+                        )}
 
-                      {/* Product ID */}
-                      {isColVisible('id') && (
-                        <td className="py-3 px-3 font-mono text-slate-400 text-[10px] truncate max-w-[120px]" title={p.id}>
-                          {p.id}
-                        </td>
-                      )}
+                        {/* Category */}
+                        {isColVisible('category') && (
+                          <td className="py-3 px-3 text-slate-600 whitespace-nowrap">
+                            {p.categoryName || (p as any).category?.name || '-'}
+                          </td>
+                        )}
 
-                      {/* Category */}
-                      {isColVisible('category') && (
-                        <td className="py-3 px-3 text-slate-600 whitespace-nowrap">
-                          {p.categoryName || (p as any).category?.name || '-'}
-                        </td>
-                      )}
+                        {/* Brand */}
+                        {isColVisible('brand') && (
+                          <td className="py-3 px-3 text-slate-600 whitespace-nowrap">
+                            {p.brandName || (p as any).brand?.name || '-'}
+                          </td>
+                        )}
 
-                      {/* Brand */}
-                      {isColVisible('brand') && (
-                        <td className="py-3 px-3 text-slate-600 whitespace-nowrap">
-                          {p.brandName || (p as any).brand?.name || '-'}
-                        </td>
-                      )}
+                        {/* Price */}
+                        {isColVisible('price') && (
+                          <td className="py-3 px-3 font-bold text-slate-900 whitespace-nowrap">
+                            {formatLKR(p.priceCents)}
+                          </td>
+                        )}
 
-                      {/* Price */}
-                      {isColVisible('price') && (
-                        <td className="py-3 px-3 font-bold text-slate-900 whitespace-nowrap">
-                          {formatLKR(p.priceCents)}
-                        </td>
-                      )}
-
-                      {/* Stock Quantity */}
-                      {isColVisible('stock') && (
-                        <td className="py-3 px-3">
-                          <span
-                            className={`font-bold ${
-                              isOutOfStock
+                        {/* Stock Quantity */}
+                        {isColVisible('stock') && (
+                          <td className="py-3 px-3">
+                            <span
+                              className={`font-bold ${isOutOfStock
                                 ? 'text-rose-600'
                                 : isLowStock
-                                ? 'text-amber-600'
-                                : 'text-slate-800'
-                            }`}
-                          >
-                            {p.stockQuantity}
-                          </span>
-                        </td>
-                      )}
+                                  ? 'text-amber-600'
+                                  : 'text-slate-800'
+                                }`}
+                            >
+                              {p.stockQuantity}
+                            </span>
+                          </td>
+                        )}
 
-                      {/* Stock Health Badge */}
-                      {isColVisible('stockHealth') && (
-                        <td className="py-3 px-3 whitespace-nowrap">
-                          {isOutOfStock ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800">
-                              <span className="w-1.5 h-1.5 rounded-full bg-rose-600" />
-                              Out of Stock
-                            </span>
-                          ) : isLowStock ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
-                              <span className="w-1.5 h-1.5 rounded-full bg-amber-600" />
-                              Low Stock ({p.lowStockThreshold})
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
-                              Healthy
-                            </span>
-                          )}
-                        </td>
-                      )}
-
-                      {/* Active Status Toggle */}
-                      {isColVisible('status') && (
-                        <td className="py-3 px-3 whitespace-nowrap">
-                          <button
-                            type="button"
-                            onClick={() => handleToggleStatus(p.id)}
-                            disabled={isMutating}
-                            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase transition-all ${
-                              p.isActive
-                                ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
-                                : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                            }`}
-                            title="Click to toggle active status"
-                          >
-                            {p.isActive ? (
-                              <>
-                                <Eye className="w-3 h-3" />
-                                <span>Active</span>
-                              </>
+                        {/* Stock Health Badge */}
+                        {isColVisible('stockHealth') && (
+                          <td className="py-3 px-3 whitespace-nowrap">
+                            {isOutOfStock ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800">
+                                <span className="w-1.5 h-1.5 rounded-full bg-rose-600" />
+                                Out of Stock
+                              </span>
+                            ) : isLowStock ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
+                                <span className="w-1.5 h-1.5 rounded-full bg-amber-600" />
+                                Low Stock ({p.lowStockThreshold})
+                              </span>
                             ) : (
-                              <>
-                                <EyeOff className="w-3 h-3" />
-                                <span>Hidden</span>
-                              </>
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-[#08275E]">
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#0066CC]" />
+                                Healthy
+                              </span>
                             )}
-                          </button>
-                        </td>
-                      )}
+                          </td>
+                        )}
 
-                      {/* Created At */}
-                      {isColVisible('createdAt') && (
-                        <td className="py-3 px-3 text-slate-400 text-[10px] whitespace-nowrap">
-                          {p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '-'}
-                        </td>
-                      )}
+                        {/* Active Status Toggle */}
+                        {isColVisible('status') && (
+                          <td className="py-3 px-3 whitespace-nowrap">
+                            <button
+                              type="button"
+                              onClick={() => handleToggleStatus(p.id)}
+                              disabled={isMutating}
+                              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase transition-all ${p.isActive
+                                ? 'bg-blue-100 text-[#08275E] hover:bg-blue-200'
+                                : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                                }`}
+                              title="Click to toggle active status"
+                            >
+                              {p.isActive ? (
+                                <>
+                                  <Eye className="w-3 h-3" />
+                                  <span>Active</span>
+                                </>
+                              ) : (
+                                <>
+                                  <EyeOff className="w-3 h-3" />
+                                  <span>Hidden</span>
+                                </>
+                              )}
+                            </button>
+                          </td>
+                        )}
 
-                      {/* Actions */}
-                      {isColVisible('actions') && (
-                        <td className="py-3 px-4 text-right whitespace-nowrap">
-                          <div className="flex items-center justify-end gap-1.5">
-                            {hasPermission('products.edit') && (
-                              <Link
-                                href={`/admin/products/${p.id}/edit`}
-                                className="p-1.5 text-slate-500 hover:text-blue-700 hover:bg-slate-100 rounded-lg transition-colors"
-                                title="Edit product"
-                              >
-                                <Edit2 className="w-3.5 h-3.5" />
-                              </Link>
-                            )}
+                        {/* Created At */}
+                        {isColVisible('createdAt') && (
+                          <td className="py-3 px-3 text-slate-400 text-[10px] whitespace-nowrap">
+                            {p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '-'}
+                          </td>
+                        )}
 
-                            {hasPermission('products.delete') && (
-                              <button
-                                type="button"
-                                onClick={() => setDeleteConfirmProduct(p)}
-                                disabled={isMutating}
-                                className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                                title="Delete product"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      )}
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+                        {/* Actions */}
+                        {isColVisible('actions') && (
+                          <td className="py-3 px-4 text-right whitespace-nowrap">
+                            <div className="flex items-center justify-end gap-1.5">
+                              {hasPermission('products.edit') && (
+                                <Link
+                                  href={`/admin/products/${p.id}/edit`}
+                                  className="p-1.5 text-slate-500 hover:text-blue-700 hover:bg-slate-100 rounded-lg transition-colors"
+                                  title="Edit product"
+                                >
+                                  <Edit2 className="w-3.5 h-3.5" />
+                                </Link>
+                              )}
+
+                              {hasPermission('products.delete') && (
+                                <button
+                                  type="button"
+                                  onClick={() => setDeleteConfirmProduct(p)}
+                                  disabled={isMutating}
+                                  className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                                  title="Delete product"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        )}
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Server-Side Pagination */}
+          <CatalogPagination
+            page={page}
+            limit={limit}
+            total={total}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+            onLimitChange={handleLimitChange}
+            isLoading={isLoading}
+          />
         </div>
 
-        {/* Server-Side Pagination */}
-        <CatalogPagination
-          page={page}
-          limit={limit}
-          total={total}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-          onLimitChange={handleLimitChange}
-          isLoading={isLoading}
+        {/* Export Modal */}
+        <CatalogExportModal
+          isOpen={isExportModalOpen}
+          onClose={() => setIsExportModalOpen(false)}
+          onExport={handleExport}
+          title="Export Products Catalog"
+          totalFilteredCount={total}
+          selectedCount={selectedIds.size}
+        />
+
+        {/* GitHub-Style Typed Delete Confirmation Modal for Any Authorized Admin */}
+        <SensitiveActionConfirmationModal
+          isOpen={Boolean(deleteConfirmProduct)}
+          onClose={() => setDeleteConfirmProduct(null)}
+          actionTitle={`Delete Product: "${deleteConfirmProduct?.name || 'Product'}"`}
+          actionDescription="Deactivating or soft-deleting this item from the active store catalog"
+          targetResourceType="Product"
+          targetResourceName={deleteConfirmProduct?.name}
+          expectedConfirmationPhrase={deleteConfirmProduct?.name || ''}
+          confirmButtonLabel="Confirm & Delete Product"
+          impactWarning="Deleting this product will remove it from search, category shelves, and customer ordering. Type the exact product name to proceed."
+          onConfirmed={async (phrase) => {
+            if (deleteConfirmProduct) {
+              await handleDelete(deleteConfirmProduct.id, phrase);
+            }
+          }}
         />
       </div>
-
-      {/* Export Modal */}
-      <CatalogExportModal
-        isOpen={isExportModalOpen}
-        onClose={() => setIsExportModalOpen(false)}
-        onExport={handleExport}
-        title="Export Products Catalog"
-        totalFilteredCount={total}
-        selectedCount={selectedIds.size}
-      />
-
-      {/* GitHub-Style Typed Delete Confirmation Modal for Any Authorized Admin */}
-      <SensitiveActionConfirmationModal
-        isOpen={Boolean(deleteConfirmProduct)}
-        onClose={() => setDeleteConfirmProduct(null)}
-        actionTitle={`Delete Product: "${deleteConfirmProduct?.name || 'Product'}"`}
-        actionDescription="Deactivating or soft-deleting this item from the active store catalog"
-        targetResourceType="Product"
-        targetResourceName={deleteConfirmProduct?.name}
-        expectedConfirmationPhrase={deleteConfirmProduct?.name || ''}
-        confirmButtonLabel="Confirm & Delete Product"
-        impactWarning="Deleting this product will remove it from search, category shelves, and customer ordering. Type the exact product name to proceed."
-        onConfirmed={async (phrase) => {
-          if (deleteConfirmProduct) {
-            await handleDelete(deleteConfirmProduct.id, phrase);
-          }
-        }}
-      />
-    </div>
     </AdminPageAccess>
   );
 }

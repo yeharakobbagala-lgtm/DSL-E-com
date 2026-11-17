@@ -5,9 +5,11 @@ import {
   Clock,
   CheckCircle,
   PackageCheck,
+  Package,
   Truck,
   CheckCheck,
   XCircle,
+  ArrowRight,
 } from 'lucide-react';
 import { OrderStatus } from '@/types/order';
 
@@ -15,12 +17,16 @@ interface OrderTimelineProps {
   currentStatus: OrderStatus;
   createdAt: string;
   updatedAt?: string;
+  onSelectStage?: (stageKey: OrderStatus) => void;
+  allowedTransitions?: string[];
 }
 
 export const OrderTimeline: React.FC<OrderTimelineProps> = ({
   currentStatus,
   createdAt,
   updatedAt,
+  onSelectStage,
+  allowedTransitions = [],
 }) => {
   const norm = (currentStatus || 'PENDING').toUpperCase();
   const isCancelled = norm === 'CANCELLED';
@@ -28,12 +34,13 @@ export const OrderTimeline: React.FC<OrderTimelineProps> = ({
   const stages = [
     { key: 'PENDING', label: 'Order Placed', icon: Clock },
     { key: 'CONFIRMED', label: 'Confirmed', icon: CheckCircle },
-    { key: 'PROCESSING', label: 'Processing & Packing', icon: PackageCheck },
+    { key: 'PROCESSING', label: 'Processing', icon: PackageCheck },
+    { key: 'PACKED', label: 'Packed & Ready', icon: Package },
     { key: 'SHIPPED', label: 'Dispatched / In Transit', icon: Truck },
     { key: 'DELIVERED', label: 'Delivered', icon: CheckCheck },
   ];
 
-  const stageOrder = ['PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED'];
+  const stageOrder = ['PENDING', 'CONFIRMED', 'PROCESSING', 'PACKED', 'SHIPPED', 'DELIVERED'];
   const currentIndex = stageOrder.indexOf(norm);
 
   if (isCancelled) {
@@ -59,7 +66,7 @@ export const OrderTimeline: React.FC<OrderTimelineProps> = ({
       <div className="flex items-center justify-between pb-3 border-b border-slate-100">
         <div>
           <h3 className="text-sm font-bold text-slate-900">Fulfillment Lifecycle Progress</h3>
-          <p className="text-[11px] text-slate-400">Chronological state pipeline</p>
+          <p className="text-[11px] text-slate-400">Click any available next stage to advance status</p>
         </div>
         <span className="text-[11px] font-bold text-slate-500">
           Created: {new Date(createdAt).toLocaleDateString()}
@@ -76,23 +83,42 @@ export const OrderTimeline: React.FC<OrderTimelineProps> = ({
           }}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
           {stages.map((stage, idx) => {
             const Icon = stage.icon;
             const isCompleted = currentIndex >= idx;
             const isCurrent = currentIndex === idx;
+            const isAllowedNext = allowedTransitions.includes(stage.key);
 
             return (
-              <div
+              <button
+                type="button"
                 key={stage.key}
-                className="flex md:flex-col items-center md:items-center gap-3 md:gap-2 text-left md:text-center z-10"
+                disabled={!isAllowedNext}
+                onClick={() => isAllowedNext && onSelectStage && onSelectStage(stage.key as OrderStatus)}
+                className={`flex md:flex-col items-center md:items-center gap-3 md:gap-2 text-left md:text-center z-10 p-2 rounded-2xl transition-all ${
+                  isAllowedNext
+                    ? 'hover:bg-blue-50/80 cursor-pointer group ring-1 ring-blue-300 ring-dashed'
+                    : 'cursor-default'
+                }`}
+                title={
+                  isAllowedNext
+                    ? `Click to advance order to ${stage.label}`
+                    : isCurrent
+                    ? 'Current status'
+                    : isCompleted
+                    ? 'Completed'
+                    : 'Pending'
+                }
               >
                 <div
                   className={`w-9 h-9 rounded-2xl flex items-center justify-center shrink-0 transition-all ${
                     isCurrent
                       ? 'bg-[#08275E] text-white ring-4 ring-[#08275E]/20 scale-110 shadow-sm'
                       : isCompleted
-                      ? 'bg-emerald-600 text-white'
+                      ? 'bg-[#08275E] text-white shadow-xs'
+                      : isAllowedNext
+                      ? 'bg-blue-100 text-[#0066CC] group-hover:bg-[#0066CC] group-hover:text-white group-hover:scale-105'
                       : 'bg-slate-100 text-slate-400'
                   }`}
                 >
@@ -100,21 +126,29 @@ export const OrderTimeline: React.FC<OrderTimelineProps> = ({
                 </div>
                 <div>
                   <div
-                    className={`text-xs font-bold ${
+                    className={`text-xs font-bold transition-colors ${
                       isCurrent
                         ? 'text-[#08275E]'
                         : isCompleted
                         ? 'text-slate-800'
+                        : isAllowedNext
+                        ? 'text-[#0066CC] group-hover:underline'
                         : 'text-slate-400'
                     }`}
                   >
                     {stage.label}
                   </div>
                   <div className="text-[10px] text-slate-400">
-                    {isCurrent ? 'Current stage' : isCompleted ? 'Completed' : 'Pending'}
+                    {isCurrent
+                      ? 'Current stage'
+                      : isCompleted
+                      ? 'Completed'
+                      : isAllowedNext
+                      ? 'Click to advance'
+                      : 'Pending'}
                   </div>
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>

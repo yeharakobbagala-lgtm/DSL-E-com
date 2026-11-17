@@ -58,11 +58,37 @@ function AdminOrderDetailContent() {
   const [isEditDeliveryOpen, setIsEditDeliveryOpen] = useState(false);
   const [isEditItemsOpen, setIsEditItemsOpen] = useState(false);
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+  const [targetStatusForModal, setTargetStatusForModal] = useState<OrderStatus | null>(null);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [isMarkingPaid, setIsMarkingPaid] = useState(false);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  const handleMarkCodPaid = async () => {
+    if (!order) return;
+    if (
+      !confirm(
+        `Confirm cash collection for order #${order.orderNumber}?\n\nThis will mark the payment as PAID (Rs. ${(
+          order.totalCents / 100
+        ).toLocaleString()}) and record it in the financial logs.`
+      )
+    )
+      return;
+    setIsMarkingPaid(true);
+    const result = await orderService.markCodPaid(
+      order.id,
+      'COD cash collected and confirmed by admin'
+    );
+    setIsMarkingPaid(false);
+    if (result.success) {
+      showToast('Payment marked as PAID successfully');
+      loadOrder();
+    } else {
+      alert(`Failed to mark as paid: ${result.error}`);
+    }
   };
 
   const loadOrder = useCallback(async () => {
@@ -164,7 +190,7 @@ function AdminOrderDetailContent() {
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed top-6 right-6 z-50 p-4 bg-slate-900 text-white rounded-2xl shadow-xl flex items-center gap-2.5 text-xs font-bold animate-slide-in">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+          <CheckCircle2 className="w-4 h-4 text-[#0066CC] shrink-0" />
           <span>{toastMessage}</span>
         </div>
       )}
@@ -208,9 +234,27 @@ function AdminOrderDetailContent() {
 
         {/* Global Action CTAs */}
         <div className="flex flex-wrap items-center gap-2.5">
+          {/* Mark COD Paid Button */}
+          {(order.paymentMethod === 'CASH_ON_DELIVERY' || order.paymentMethod === 'cash_on_delivery') &&
+            order.paymentStatus !== 'PAID' &&
+            order.orderStatus !== 'CANCELLED' &&
+            hasPermission('orders.fulfill') && (
+            <button
+              onClick={handleMarkCodPaid}
+              disabled={isMarkingPaid}
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#08275E] hover:bg-[#103b8c] disabled:opacity-60 text-white font-bold text-xs shadow-md transition-all hover:scale-[1.02] cursor-pointer"
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              <span>{isMarkingPaid ? 'Recording Payment...' : 'Mark Cash Received (PAID)'}</span>
+            </button>
+          )}
+
           {canTransition && hasPermission('orders.fulfill') && (
             <button
-              onClick={() => setIsStatusModalOpen(true)}
+              onClick={() => {
+                setTargetStatusForModal(null);
+                setIsStatusModalOpen(true);
+              }}
               className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#08275E] hover:bg-[#103b8c] text-white font-bold text-xs shadow-xs transition-all hover:scale-[1.02] cursor-pointer"
             >
               <ArrowRightCircle className="w-4 h-4" />
@@ -235,6 +279,13 @@ function AdminOrderDetailContent() {
         currentStatus={order.orderStatus}
         createdAt={order.createdAt}
         updatedAt={order.updatedAt}
+        allowedTransitions={allowedTransitions}
+        onSelectStage={(stageKey) => {
+          if (allowedTransitions.includes(stageKey)) {
+            setTargetStatusForModal(stageKey);
+            setIsStatusModalOpen(true);
+          }
+        }}
       />
 
       {/* Grid: Customer & Delivery Info */}
@@ -562,6 +613,32 @@ function AdminOrderDetailContent() {
                 </span>
               </div>
             )}
+
+            {/* COD Cash Received CTA */}
+            {(order.paymentMethod === 'CASH_ON_DELIVERY' || order.paymentMethod === 'cash_on_delivery') &&
+              order.paymentStatus !== 'PAID' &&
+              order.orderStatus !== 'CANCELLED' && (
+                <div className="mt-4 p-3.5 bg-emerald-50 rounded-2xl border border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <span className="text-xs font-bold text-emerald-950 block">
+                      Cash on Delivery Collection
+                    </span>
+                    <span className="text-[11px] text-emerald-700">
+                      Payment is pending until driver collects cash
+                    </span>
+                  </div>
+                  {hasPermission('orders.fulfill') && (
+                    <button
+                      onClick={handleMarkCodPaid}
+                      disabled={isMarkingPaid}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer shrink-0 transition"
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span>{isMarkingPaid ? 'Saving...' : 'Mark Cash Received'}</span>
+                    </button>
+                  )}
+                </div>
+              )}
           </div>
         </div>
       </div>
@@ -639,8 +716,12 @@ function AdminOrderDetailContent() {
         orderNumber={order.orderNumber}
         currentStatus={order.orderStatus}
         initialTracking={order.trackingNumber}
+        initialSelectedStatus={targetStatusForModal}
         isOpen={isStatusModalOpen}
-        onClose={() => setIsStatusModalOpen(false)}
+        onClose={() => {
+          setIsStatusModalOpen(false);
+          setTargetStatusForModal(null);
+        }}
         onSuccess={(newStatus, trk) => {
           setOrder((prev) =>
             prev
