@@ -169,43 +169,63 @@ export default function AccountAddressesPage() {
             </form>
           )}
 
-          {/* Address Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {addresses.map((addr) => (
-              <div key={addr.id} className="bg-white rounded-3xl border border-slate-200 p-6 flex flex-col justify-between shadow-xs space-y-4">
-                <div className="space-y-1.5 text-xs">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-slate-900 text-sm flex items-center gap-1.5">
-                      <MapPin className="w-4 h-4 text-[#08275E]" />
-                      {addr.fullName}
-                    </span>
-                    {addr.isDefault && (
-                      <span className="text-[10px] font-bold bg-[#08275E] text-white px-2 py-0.5 rounded-full uppercase">
-                        Default
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-slate-600 leading-relaxed pt-2">
-                    {addr.addressLine1}
-                    {addr.addressLine2 && <>, {addr.addressLine2}</>}
-                    <br />
-                    {addr.city}, {addr.district}
-                  </p>
-                  <p className="text-slate-500 font-medium">Phone: {addr.phone}</p>
-                </div>
-
-                <div className="pt-3 border-t border-slate-100 flex justify-end">
-                  <button
-                    onClick={() => removeAddress(addr.id)}
-                    className="text-xs text-rose-500 hover:text-rose-700 flex items-center gap-1 font-semibold"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    <span>Delete</span>
-                  </button>
-                </div>
+          {/* Address Cards or Empty State */}
+          {addresses.length === 0 && !isAdding ? (
+            <div className="bg-white rounded-3xl border border-slate-100 p-12 text-center shadow-xs space-y-3">
+              <div className="w-14 h-14 rounded-full bg-blue-50 text-[#0866E8] flex items-center justify-center mx-auto border border-blue-100">
+                <MapPin className="w-7 h-7" />
               </div>
-            ))}
-          </div>
+              <h3 className="font-bold text-slate-900 text-sm">No saved addresses yet</h3>
+              <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                Save your home or office address for fast, 1-click checkout on your stationery orders.
+              </p>
+              <button
+                type="button"
+                onClick={() => setIsAdding(true)}
+                className="mt-2 inline-flex items-center gap-1.5 bg-[#0866E8] hover:bg-[#09285C] text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-colors shadow-xs"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Add Your First Address</span>
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {addresses.map((addr) => (
+                <div key={addr.id} className="bg-white rounded-3xl border border-slate-200 p-6 flex flex-col justify-between shadow-xs space-y-4">
+                  <div className="space-y-1.5 text-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-slate-900 text-sm flex items-center gap-1.5">
+                        <MapPin className="w-4 h-4 text-[#08275E]" />
+                        {addr.fullName}
+                      </span>
+                      {addr.isDefault && (
+                        <span className="text-[10px] font-bold bg-[#08275E] text-white px-2 py-0.5 rounded-full uppercase">
+                          Default
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-slate-600 leading-relaxed pt-2">
+                      {addr.addressLine1}
+                      {addr.addressLine2 && <>, {addr.addressLine2}</>}
+                      <br />
+                      {addr.city}, {addr.district}
+                    </p>
+                    <p className="text-slate-500 font-medium">Phone: {addr.phone}</p>
+                  </div>
+
+                  <div className="pt-3 border-t border-slate-100 flex justify-end">
+                    <button
+                      onClick={() => removeAddress(addr.id)}
+                      className="text-xs text-rose-500 hover:text-rose-700 flex items-center gap-1 font-semibold"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Delete</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -71,7 +71,7 @@ function ProductDetailContent() {
 
   const addItem = useCartStore((state) => state.addItem);
   const setDrawerOpen = useCartStore((state) => state.setDrawerOpen);
-  const isInWishlist = useWishlistStore((state) => state.isInWishlist);
+  const inWishlist = useWishlistStore((state) => (product?.id ? state.savedProductIds.includes(product.id) : false));
   const toggleWishlist = useWishlistStore((state) => state.toggleWishlist);
 
   const loadProduct = useCallback(async () => {
@@ -151,7 +151,6 @@ function ProductDetailContent() {
   const currentStock = selectedVariant ? (selectedVariant.availableStock ?? selectedVariant.stockQuantity) : (product.availableStock ?? product.stockQuantity);
   const isOutOfStock = currentStock <= 0;
   const isLowStock = currentStock > 0 && currentStock <= 5;
-  const inWishlist = isInWishlist(product.id);
 
   const savingsPercent = comparePrice && comparePrice > currentPrice
     ? calculateSavingsPercent(comparePrice, currentPrice)
@@ -402,7 +401,10 @@ function ProductDetailContent() {
                   type="button"
                   onClick={async () => {
                     if (!product) return;
-                    await toggleWishlist(product);
+                    const res = await toggleWishlist(product);
+                    if (res?.requiresAuth) {
+                      router.push('/login');
+                    }
                   }}
                   className={`p-3.5 rounded-2xl border transition-all touch-target cursor-pointer flex items-center justify-center ${
                     inWishlist

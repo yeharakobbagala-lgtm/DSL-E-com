@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Heart, ShoppingBag, Check, Star, Bookmark, AlertCircle, Plus } from 'lucide-react';
 import { Product } from '@/types/product';
 import { formatLKR, calculateSavingsPercent } from '@/lib/currency';
@@ -32,16 +33,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     return () => unsub();
   }, [product.id]);
 
+  const router = useRouter();
   const addItem = useCartStore((state) => state.addItem);
   const cartItems = useCartStore((state) => state.items);
-  const isInWishlist = useWishlistStore((state) => state.isInWishlist);
+  const inWishlist = useWishlistStore((state) => state.savedProductIds.includes(product.id));
   const toggleWishlist = useWishlistStore((state) => state.toggleWishlist);
 
   const existingCartItem = cartItems.find((item) => item.product.id === product.id);
   const alreadyInCart = existingCartItem ? existingCartItem.quantity : 0;
   const maxCanAdd = Math.max(0, liveStock - alreadyInCart);
-
-  const inWishlist = isInWishlist(product.id);
   const isOutOfStock = liveStock <= 0;
   const hasVariants = Boolean(product.variants && product.variants.length > 1);
 
@@ -96,7 +96,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const handleToggleWishlist = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    await toggleWishlist(product);
+    const res = await toggleWishlist(product);
+    if (res?.requiresAuth) {
+      router.push('/login');
+    }
   };
 
   // Only show rating if real reviews exist

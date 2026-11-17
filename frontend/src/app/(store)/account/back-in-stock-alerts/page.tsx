@@ -38,9 +38,10 @@ export default function AccountBackInStockAlertsPage() {
     setIsLoading(true);
     try {
       const data = await backInStockService.getMyAlerts();
-      setAlerts(data);
+      setAlerts(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Failed to load back-in-stock alerts:', err);
+      setAlerts([]);
     } finally {
       setIsLoading(false);
     }
@@ -96,10 +97,11 @@ export default function AccountBackInStockAlertsPage() {
     );
   }
 
-  const activeAlerts = alerts.filter(
+  const alertList = Array.isArray(alerts) ? alerts : [];
+  const activeAlerts = alertList.filter(
     (a) => a.status === 'PENDING' || a.status === 'PROCESSING'
   );
-  const historyAlerts = alerts.filter(
+  const historyAlerts = alertList.filter(
     (a) => a.status === 'SENT' || a.status === 'CANCELLED'
   );
 
@@ -127,11 +129,10 @@ export default function AccountBackInStockAlertsPage() {
             <div className="flex items-center gap-2 border-b border-[#C6E7FF]/60 pb-3">
               <button
                 onClick={() => setActiveTab('active')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                  activeTab === 'active'
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${activeTab === 'active'
                     ? 'bg-[#0066CC] text-white shadow-xs'
                     : 'bg-white text-[#292525]/70 hover:bg-[#F0F7FF] hover:text-[#0066CC] border border-slate-200'
-                }`}
+                  }`}
               >
                 <BellRing className="w-3.5 h-3.5" />
                 <span>Active Subscriptions ({activeAlerts.length})</span>
@@ -139,11 +140,10 @@ export default function AccountBackInStockAlertsPage() {
 
               <button
                 onClick={() => setActiveTab('history')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                  activeTab === 'history'
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${activeTab === 'history'
                     ? 'bg-[#0066CC] text-white shadow-xs'
                     : 'bg-white text-[#292525]/70 hover:bg-[#F0F7FF] hover:text-[#0066CC] border border-slate-200'
-                }`}
+                  }`}
               >
                 <Clock className="w-3.5 h-3.5" />
                 <span>Alert History ({historyAlerts.length})</span>

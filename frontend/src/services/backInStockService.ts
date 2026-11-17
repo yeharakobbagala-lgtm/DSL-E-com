@@ -6,28 +6,33 @@ export const backInStockService = {
    * Subscribe an authenticated customer to back-in-stock notifications for an out-of-stock product.
    */
   async subscribe(productId: string): Promise<BackInStockAlert> {
-    return apiClient.post<BackInStockAlert>('/back-in-stock/subscribe', { productId });
+    const res = await apiClient.post<any>('/back-in-stock/subscribe', { productId });
+    return res && res.data !== undefined ? res.data : res;
   },
 
   /**
    * Get all back-in-stock alert subscriptions for the authenticated customer.
    */
   async getMyAlerts(): Promise<BackInStockAlert[]> {
-    return apiClient.get<BackInStockAlert[]>('/back-in-stock/my-alerts');
+    const res = await apiClient.get<any>('/back-in-stock/my-alerts');
+    if (Array.isArray(res)) return res;
+    if (res && Array.isArray(res.data)) return res.data;
+    return [];
   },
 
   /**
    * Cancel an active alert subscription.
    */
   async cancelAlert(alertId: string): Promise<{ success: boolean; message: string }> {
-    return apiClient.delete<{ success: boolean; message: string }>(`/back-in-stock/${alertId}`);
+    const res = await apiClient.delete<any>(`/back-in-stock/${alertId}`);
+    return res && res.data !== undefined ? res.data : res;
   },
 
   /**
    * Check whether the authenticated customer is subscribed to a product.
    */
   async getStatus(productId: string): Promise<BackInStockStatusResponse> {
-    return apiClient.get<BackInStockStatusResponse>(`/back-in-stock/status/${productId}`);
+    const res = await apiClient.get<any>(`/back-in-stock/status/${productId}`);
+    return res && res.data !== undefined ? res.data : res;
   },
 };
-
