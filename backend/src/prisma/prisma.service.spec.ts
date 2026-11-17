@@ -67,6 +67,29 @@ describe('PrismaService', () => {
       expect(connectSpy).toHaveBeenCalled();
     });
 
+    it('warns but does not throw when connecting as postgres without enforcement', async () => {
+      vi.spyOn(service, '$connect').mockResolvedValue(undefined);
+      vi.spyOn((service as any).pool, 'query').mockResolvedValue({
+        rows: [{ current_user: 'postgres', current_database: 'dsl_stationery' }],
+      });
+      const warnSpy = vi.spyOn((service as any).logger, 'warn');
+      delete process.env.ENFORCE_LEAST_PRIVILEGE_DB;
+
+      await expect(service.onModuleInit()).resolves.toBeUndefined();
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('Application runtime is connected as "postgres" superuser'));
+    });
+
+    it('throws critical security violation when connecting as postgres with ENFORCE_LEAST_PRIVILEGE_DB=true', async () => {
+      vi.spyOn(service, '$connect').mockResolvedValue(undefined);
+      vi.spyOn((service as any).pool, 'query').mockResolvedValue({
+        rows: [{ current_user: 'postgres', current_database: 'dsl_stationery' }],
+      });
+      process.env.ENFORCE_LEAST_PRIVILEGE_DB = 'true';
+
+      await expect(service.onModuleInit()).rejects.toThrow('CRITICAL SECURITY VIOLATION');
+      delete process.env.ENFORCE_LEAST_PRIVILEGE_DB;
+    });
+
     it('calls $disconnect and ends pool during onModuleDestroy', async () => {
       const disconnectSpy = vi.spyOn(service, '$disconnect').mockResolvedValue(undefined);
       const poolEndSpy = vi.spyOn((service as any).pool, 'end').mockResolvedValue(undefined);

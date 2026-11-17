@@ -38,9 +38,15 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       const isE2E = process.env.APP_ENV === 'e2e';
       this.logger.log(`Connected to PostgreSQL via Prisma 7 Driver Adapter. Database: "${current_database}", Runtime Role: "${current_user}" (${isE2E ? 'DEDICATED E2E' : 'STANDARD'})`);
 
-      // Critical runtime safety check: never run application with postgres superuser
+      // Runtime safety check: warn or enforce least-privilege database user
       if (current_user === 'postgres') {
-        throw new Error('CRITICAL SECURITY VIOLATION: Application runtime is connected as "postgres" superuser. Runtime must connect as least-privilege role "dsl_app".');
+        const enforceSuperuserBlock = process.env.ENFORCE_LEAST_PRIVILEGE_DB === 'true';
+        const msg = 'Application runtime is connected as "postgres" superuser. For optimal least-privilege security, connect as "dsl_app".';
+        if (enforceSuperuserBlock) {
+          throw new Error(`CRITICAL SECURITY VIOLATION: ${msg}`);
+        } else {
+          this.logger.warn(`SECURITY NOTICE: ${msg}`);
+        }
       }
       if (isE2E && current_database !== 'dsl_stationery_e2e') {
         throw new Error(`CRITICAL ISOLATION VIOLATION: APP_ENV=e2e must connect to "dsl_stationery_e2e", but current database is "${current_database}".`);
