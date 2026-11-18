@@ -9,6 +9,7 @@ import { brandService, BrandQueryOptions } from './brandService';
 import { INITIAL_CATEGORIES } from '@/mocks/categories';
 
 const CAT_STORAGE_KEY = 'dsl_categories_data_v1';
+const EXCLUDED_CATEGORY_IDS = new Set(['cat-diapers', 'cat-craft', 'cat-accessories']);
 
 export function deduplicateCategories(cats: ProductCategory[]): ProductCategory[] {
   const seenIds = new Set<string>();
@@ -17,7 +18,16 @@ export function deduplicateCategories(cats: ProductCategory[]): ProductCategory[
   const result: ProductCategory[] = [];
 
   for (const cat of cats) {
-    if (!cat) continue;
+    if (!cat || EXCLUDED_CATEGORY_IDS.has(cat.id)) continue;
+    if (
+      cat.slug.includes('diaper') ||
+      cat.slug.includes('stage4') ||
+      cat.slug.includes('import-test') ||
+      cat.name.toLowerCase().includes('stage4') ||
+      cat.name.toLowerCase().includes('unrelated')
+    ) {
+      continue;
+    }
     const idKey = (cat.id || '').toLowerCase().trim();
     const slugKey = (cat.slug || '').toLowerCase().trim();
     const nameKey = (cat.name || '').toLowerCase().trim();
@@ -141,7 +151,27 @@ class CategoryService {
     try {
       const res = await apiClient.get<BackendApiResponse<ProductCategory[]>>('categories/tree');
       if (res.success && Array.isArray(res.data)) {
-        return res.data;
+        const validTree = res.data
+          .filter(
+            (c) =>
+              !EXCLUDED_CATEGORY_IDS.has(c.id) &&
+              !c.slug.includes('diaper') &&
+              !c.slug.includes('stage4') &&
+              !c.slug.includes('import-test') &&
+              !c.name.toLowerCase().includes('stage4') &&
+              !c.name.toLowerCase().includes('diaper') &&
+              !c.name.toLowerCase().includes('unrelated')
+          )
+          .map((root) => ({
+            ...root,
+            children: (root.children || []).filter(
+              (sc) =>
+                !EXCLUDED_CATEGORY_IDS.has(sc.id) &&
+                !sc.slug.includes('stage4') &&
+                !sc.name.toLowerCase().includes('stage4')
+            ),
+          }));
+        return validTree;
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);

@@ -55,7 +55,7 @@ const DEFAULT_COLUMNS: ColumnDefinition[] = [
   { id: 'status', label: 'Account Status', visible: true },
   { id: 'isEmailVerified', label: 'Email Verified', visible: false },
   { id: 'orderCount', label: 'Orders Placed', visible: true },
-  { id: 'totalSpend', label: 'Total Spent (LKR)', visible: true, locked: true },
+  { id: 'totalSpend', label: 'Total Spent (Rs.)', visible: true, locked: true },
   { id: 'firstPurchaseDate', label: 'First Purchase', visible: false },
   { id: 'lastPurchaseDate', label: 'Last Purchase', visible: true },
   { id: 'createdAt', label: 'Registration Date', visible: true },
@@ -862,7 +862,7 @@ export default function AdminCustomersPage() {
                         }}
                         className="hover:text-slate-900 flex items-center gap-1 font-bold ml-auto cursor-pointer"
                       >
-                        Total Spent
+                        Total Spent (Rs.)
                       </button>
                     </th>
                   )}
@@ -1198,8 +1198,8 @@ export default function AdminCustomersPage() {
                         )}
 
                         {isColVisible('totalSpend') && (
-                          <td className="py-3 px-4 text-right font-black text-slate-900">
-                            {formatLKR(c.totalSpendCents)}
+                          <td className="py-3 px-4 text-right font-bold text-slate-900">
+                            {(c.totalSpendCents / 100).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
                         )}
 

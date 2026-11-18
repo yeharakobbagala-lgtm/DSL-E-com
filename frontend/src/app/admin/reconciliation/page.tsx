@@ -30,6 +30,22 @@ import {
 } from '@/types/order';
 import { AdminPageAccess } from '@/components/admin/AdminPageAccess';
 
+function renderSmallRsAmount(cents: number, colorClass = '') {
+  const isNegative = cents < 0;
+  const absCents = Math.abs(Math.round(cents));
+  const rupees = Math.floor(absCents / 100);
+  const remainderCents = absCents % 100;
+  const formattedRupees = rupees.toLocaleString('en-LK');
+  const formattedCents = remainderCents.toString().padStart(2, '0');
+  const sign = isNegative ? '-' : '';
+
+  return (
+    <span className={`inline-flex items-baseline ${colorClass}`}>
+      <span>{sign}{formattedRupees}.{formattedCents}</span>
+    </span>
+  );
+}
+
 function ReconciliationContent() {
   const [items, setItems] = useState<ReconciliationItem[]>([]);
   const [summary, setSummary] = useState<ReconciliationSummary | null>(null);
@@ -142,7 +158,7 @@ function ReconciliationContent() {
             {summary ? summary.totalOrders : '—'}
           </span>
           <span className="text-[10px] text-slate-400">
-            Total: {summary ? formatLKR(summary.totalOrderAmountCents) : '—'}
+            Total: {summary ? renderSmallRsAmount(summary.totalOrderAmountCents) : '—'}
           </span>
         </div>
 
@@ -151,7 +167,7 @@ function ReconciliationContent() {
             Verified Collections
           </span>
           <span className="text-xl font-black text-emerald-700 mt-1 block">
-            {summary ? formatLKR(summary.totalVerifiedCollectedCents) : '—'}
+            {summary ? renderSmallRsAmount(summary.totalVerifiedCollectedCents, 'text-emerald-700') : '—'}
           </span>
           <span className="text-[10px] text-slate-400">Proven funds collected</span>
         </div>
@@ -161,7 +177,7 @@ function ReconciliationContent() {
             Completed Refunds
           </span>
           <span className="text-xl font-black text-slate-900 mt-1 block">
-            {summary ? formatLKR(summary.totalCompletedRefundsCents) : '—'}
+            {summary ? renderSmallRsAmount(summary.totalCompletedRefundsCents) : '—'}
           </span>
           <span className="text-[10px] text-slate-400">Executed with evidence</span>
         </div>
@@ -171,7 +187,7 @@ function ReconciliationContent() {
             Reserved / In-Flight
           </span>
           <span className="text-xl font-black text-amber-600 mt-1 block">
-            {summary ? formatLKR(summary.totalReservedRefundsCents) : '—'}
+            {summary ? renderSmallRsAmount(summary.totalReservedRefundsCents, 'text-amber-600') : '—'}
           </span>
           <span className="text-[10px] text-slate-400">Encumbered balances</span>
         </div>
@@ -331,11 +347,11 @@ function ReconciliationContent() {
                   <th className="py-3 px-4">Order</th>
                   <th className="py-3 px-4">Customer</th>
                   <th className="py-3 px-4">Method &amp; Status</th>
-                  <th className="py-3 px-4 text-right">Order Total</th>
-                  <th className="py-3 px-4 text-right">Verified Collected</th>
-                  <th className="py-3 px-4 text-right">Completed Refund</th>
-                  <th className="py-3 px-4 text-right">Reserved Refund</th>
-                  <th className="py-3 px-4 text-center">Audit Audit State</th>
+                  <th className="py-3 px-4 text-right">Order Total (Rs.)</th>
+                  <th className="py-3 px-4 text-right">Verified Collected (Rs.)</th>
+                  <th className="py-3 px-4 text-right">Completed Refund (Rs.)</th>
+                  <th className="py-3 px-4 text-right">Reserved Refund (Rs.)</th>
+                  <th className="py-3 px-4 text-center">Audit State</th>
                   <th className="py-3 px-4 text-center">Action</th>
                 </tr>
               </thead>
@@ -385,12 +401,12 @@ function ReconciliationContent() {
                       </span>
                     </td>
 
-                    <td className="py-3.5 px-4 text-right font-black text-slate-900 font-mono">
-                      {formatLKR(row.totalCents)}
+                    <td className="py-3.5 px-4 text-right font-bold text-slate-900 font-mono">
+                      {renderSmallRsAmount(row.totalCents)}
                     </td>
 
-                    <td className="py-3.5 px-4 text-right font-black text-emerald-700 font-mono">
-                      {formatLKR(row.verifiedCollectedCents)}
+                    <td className="py-3.5 px-4 text-right font-bold text-emerald-700 font-mono">
+                      {renderSmallRsAmount(row.verifiedCollectedCents, 'text-emerald-700')}
                       {row.paymentReferences.length > 0 && (
                         <span className="block text-[9px] text-slate-400 font-mono font-normal">
                           Ref: {row.paymentReferences[0]}
@@ -398,8 +414,8 @@ function ReconciliationContent() {
                       )}
                     </td>
 
-                    <td className="py-3.5 px-4 text-right font-black text-slate-900 font-mono">
-                      {formatLKR(row.completedRefundsCents)}
+                    <td className="py-3.5 px-4 text-right font-bold text-slate-900 font-mono">
+                      {renderSmallRsAmount(row.completedRefundsCents)}
                       {row.refundReferences.length > 0 && (
                         <span className="block text-[9px] text-slate-400 font-mono font-normal">
                           Ext: {row.refundReferences[0]}
@@ -408,7 +424,7 @@ function ReconciliationContent() {
                     </td>
 
                     <td className="py-3.5 px-4 text-right font-bold text-amber-700 font-mono">
-                      {formatLKR(row.reservedRefundsCents)}
+                      {renderSmallRsAmount(row.reservedRefundsCents, 'text-amber-700')}
                     </td>
 
                     <td className="py-3.5 px-4 text-center">

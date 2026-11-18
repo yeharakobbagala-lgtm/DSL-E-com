@@ -3,4 +3,5 @@ export * from './CatalogPagination';
 export * from './CatalogFilterToolbar';
 export * from './CatalogKpiCards';
 export * from './CatalogExportModal';
+export * from './CategoryProductsModal';
 

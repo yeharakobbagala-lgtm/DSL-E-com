@@ -168,10 +168,11 @@ export const OrderVelocityChart: React.FC<OrderVelocityChartProps> = ({
 
           <div className="my-auto py-8 text-center">
             <div className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-              Rs. {grossRevenueLkr.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              <span className="text-sm sm:text-base font-semibold text-slate-400 mr-1.5 select-none">Rs.</span>
+              <span>{grossRevenueLkr.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </div>
             <div className="text-xs font-bold text-slate-400 mt-2 uppercase tracking-wider">
-              GROSS REVENUE (LKR)
+              GROSS REVENUE
             </div>
           </div>
         </div>

@@ -845,6 +845,7 @@ export class CheckoutService {
           unitPriceCents: it.unitPriceCents,
           quantity: it.quantity,
           totalPriceCents: it.unitPriceCents * it.quantity,
+          customization: (it as any).customization || null,
         };
       });
 

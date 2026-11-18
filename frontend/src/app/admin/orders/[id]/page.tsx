@@ -22,7 +22,10 @@ import {
   Clock,
   RefreshCw,
   ShoppingBag,
+  PenTool,
+  Printer,
 } from 'lucide-react';
+import { OrderInvoiceModal } from '@/components/admin/orders/OrderInvoiceModal';
 import { orderService, PERMITTED_ORDER_TRANSITIONS } from '@/services/orderService';
 import { orderSocketService } from '@/services/orderSocketService';
 import { Order, OrderStatus, ShippingAddress } from '@/types/order';
@@ -61,6 +64,7 @@ function AdminOrderDetailContent() {
   const [targetStatusForModal, setTargetStatusForModal] = useState<OrderStatus | null>(null);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [isMarkingPaid, setIsMarkingPaid] = useState(false);
+  const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -234,6 +238,16 @@ function AdminOrderDetailContent() {
 
         {/* Global Action CTAs */}
         <div className="flex flex-wrap items-center gap-2.5">
+          {/* Print Sold Invoice / Work Order Button */}
+          <button
+            onClick={() => setIsInvoiceOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs shadow-2xs transition-all hover:scale-[1.02] cursor-pointer"
+            title="Print Official Invoice & Engraving Work Order"
+          >
+            <Printer className="w-4 h-4 text-[#0066CC]" />
+            <span>Print Sold Invoice</span>
+          </button>
+
           {/* Mark COD Paid Button */}
           {(order.paymentMethod === 'CASH_ON_DELIVERY' || order.paymentMethod === 'cash_on_delivery') &&
             order.paymentStatus !== 'PAID' &&
@@ -447,8 +461,8 @@ function AdminOrderDetailContent() {
                 <th className="py-2.5 px-3">Item</th>
                 <th className="py-2.5 px-3">SKU</th>
                 <th className="py-2.5 px-3 text-center">Quantity</th>
-                <th className="py-2.5 px-3 text-right">Unit Price</th>
-                <th className="py-2.5 px-3 text-right">Line Subtotal</th>
+                <th className="py-2.5 px-3 text-right">Unit Price (Rs.)</th>
+                <th className="py-2.5 px-3 text-right">Line Subtotal (Rs.)</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -480,6 +494,21 @@ function AdminOrderDetailContent() {
                               Variant: {item.variantName}
                             </span>
                           )}
+                          {item.customization && (
+                            <div className="mt-1.5 p-2 bg-blue-50/80 border border-blue-200/90 rounded-xl text-[11px] space-y-0.5">
+                              <div className="flex items-center gap-1.5 font-bold text-[#08275E]">
+                                <PenTool className="w-3.5 h-3.5 text-[#0066CC] shrink-0" />
+                                <span>ENGRAVING: &ldquo;{item.customization.engravingText}&rdquo;</span>
+                              </div>
+                              <div className="text-[10px] text-slate-600 flex flex-wrap gap-x-3 gap-y-0.5">
+                                <span>Font: <strong className="text-slate-900 font-mono">{item.customization.font}</strong></span>
+                                <span>Position: <strong className="text-slate-900">{item.customization.position}</strong></span>
+                                {item.customization.customizationFeeCents > 0 && (
+                                  <span className="text-blue-800 font-semibold">Fee: {formatLKR(item.customization.customizationFeeCents)}</span>
+                                )}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </td>
@@ -493,11 +522,11 @@ function AdminOrderDetailContent() {
                     </td>
 
                     <td className="py-3 px-3 text-right text-slate-600 font-medium">
-                      {formatLKR(item.unitPriceCents)}
+                      {(item.unitPriceCents / 100).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
 
                     <td className="py-3 px-3 text-right font-black text-slate-900">
-                      {formatLKR(item.totalPriceCents || item.unitPriceCents * item.quantity)}
+                      {((item.totalPriceCents || item.unitPriceCents * item.quantity) / 100).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
                   </tr>
                 );
@@ -748,6 +777,12 @@ function AdminOrderDetailContent() {
           loadOrder();
           showToast('Order cancelled. Stock replenished.');
         }}
+      />
+
+      <OrderInvoiceModal
+        order={order}
+        isOpen={isInvoiceOpen}
+        onClose={() => setIsInvoiceOpen(false)}
       />
     </div>
   );

@@ -502,7 +502,7 @@ function AdminPaymentsDashboardContent() {
                 <th className="py-3 px-4">Order #</th>
                 <th className="py-3 px-4">Customer</th>
                 <th className="py-3 px-4">Method</th>
-                <th className="py-3 px-4">Amount</th>
+                <th className="py-3 px-4">Amount (Rs.)</th>
                 <th className="py-3 px-4">Payment Status</th>
                 <th className="py-3 px-4">Order Status</th>
                 <th className="py-3 px-4">Created Date</th>
@@ -541,7 +541,7 @@ function AdminPaymentsDashboardContent() {
                     </td>
                     <td className="py-3 px-4">{getMethodBadge(tx.paymentMethod)}</td>
                     <td className="py-3 px-4 font-black text-slate-900">
-                      {formatLKR(tx.totalAmountCents)}
+                      {(tx.totalAmountCents / 100).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
                     <td className="py-3 px-4">{getPaymentStatusBadge(tx.paymentStatus)}</td>
                     <td className="py-3 px-4">

@@ -22,9 +22,10 @@ import {
   Copy,
   Check,
   UserCheck,
-  Sparkles,
+  ShoppingBag,
   X,
   Bookmark,
+  PenTool,
 } from 'lucide-react';
 import { useCartStore } from '@/services/cartStore';
 import { useUserStore } from '@/services/userStore';
@@ -387,6 +388,7 @@ export default function CheckoutPage() {
           productId: item.productId,
           variantId: item.variantId || null,
           quantity: item.quantity,
+          customization: item.customization || null,
         }));
 
         const res = await checkoutService.createReservation({
@@ -680,6 +682,16 @@ export default function CheckoutPage() {
       });
 
       const createdOrder = res.order;
+      const trackingToken = (res as any).trackingToken;
+
+      if (trackingToken && typeof window !== 'undefined') {
+        sessionStorage.setItem(`order_token_${createdOrder.id}`, trackingToken);
+        if (createdOrder.orderNumber) {
+          sessionStorage.setItem(`order_token_${createdOrder.orderNumber}`, trackingToken);
+        }
+        sessionStorage.setItem('last_tracking_token', trackingToken);
+      }
+      const tokenParam = trackingToken ? `&token=${encodeURIComponent(trackingToken)}` : '';
 
       // 4. Phase A requirement: Remove only purchased items, keeping unselected items in cart
       removePurchasedItems(
@@ -695,7 +707,7 @@ export default function CheckoutPage() {
       router.push(
         `/checkout/result?orderId=${createdOrder.id || createdOrder.orderNumber}&email=${encodeURIComponent(
           effectiveEmail
-        )}`
+        )}${tokenParam}`
       );
     } catch (err: any) {
       setSubmitError(
@@ -766,75 +778,20 @@ export default function CheckoutPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8 relative">
-      {/* Guest Welcome & Benefits Pop-up Modal (First visit prompt for unauthenticated shoppers) */}
+      {/* Guest Welcome & Benefits Pop-up Modal (Liquid Glass styling) */}
       {showGuestModal && !currentUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs transition-opacity animate-fade-in">
-          <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden p-6 sm:p-7">
-            {/* Close button */}
-            <button
-              type="button"
-              onClick={() => {
-                setShowGuestModal(false);
-                if (typeof window !== 'undefined') {
-                  sessionStorage.setItem('dsl_guest_checkout_modal_seen', 'true');
-                }
-              }}
-              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors cursor-pointer"
-              aria-label="Close modal"
-            >
-              <X className="w-5 h-5" />
-            </button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/45 backdrop-blur-md transition-all duration-300 animate-fade-in">
+          {/* Outer glowing liquid light orbs */}
+          <div className="relative w-full max-w-md">
+            <div className="absolute -top-12 -left-12 w-48 h-48 bg-gradient-to-br from-[#0066CC]/30 to-[#08275E]/30 rounded-full blur-2xl pointer-events-none" />
+            <div className="absolute -bottom-12 -right-12 w-48 h-48 bg-gradient-to-tl from-[#FFD21C]/25 to-[#0066CC]/25 rounded-full blur-2xl pointer-events-none" />
 
-            {/* Header Badge */}
-            <div className="flex items-center gap-3 mb-3">
-              <span className="inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-[#08275E]/10 text-[#08275E] shrink-0">
-                <Sparkles className="w-6 h-6 text-[#0066CC]" />
-              </span>
-              <div>
-                <span className="text-[10px] font-black uppercase tracking-wider text-[#0066CC] bg-blue-50 px-2 py-0.5 rounded-full">
-                  DSL Customer Experience
-                </span>
-                <h3 className="text-lg font-black text-[#08275E] leading-tight mt-0.5">Welcome to DSL Stationery</h3>
-              </div>
-            </div>
+            {/* Liquid Glass Card Container */}
+            <div className="relative w-full bg-white/75 backdrop-blur-2xl rounded-3xl shadow-[0_25px_60px_-15px_rgba(8,39,94,0.3),0_0_0_1px_rgba(255,255,255,0.85)_inset] border border-white/60 overflow-hidden p-6 sm:p-7">
+              {/* Specular glass reflection line at top */}
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/90 to-transparent pointer-events-none" />
 
-            <p className="text-xs text-slate-600 leading-relaxed mb-4">
-              Get the most out of your purchase! Sign in to track orders live via SMS and email, enjoy 1-click checkout with saved addresses, and receive member-exclusive offers.
-            </p>
-
-            {/* Benefits List */}
-            <div className="space-y-2.5 bg-slate-50 p-3.5 rounded-2xl border border-slate-100 mb-5 text-xs">
-              <div className="flex items-center gap-2.5 text-slate-700">
-                <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 text-xs font-bold">✓</span>
-                <span className="font-medium">Live SMS &amp; email delivery tracking updates</span>
-              </div>
-              <div className="flex items-center gap-2.5 text-slate-700">
-                <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center shrink-0 text-xs font-bold">✓</span>
-                <span className="font-medium">Saved delivery addresses for fast future re-orders</span>
-              </div>
-              <div className="flex items-center gap-2.5 text-slate-700">
-                <span className="w-5 h-5 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center shrink-0 text-xs font-bold">✓</span>
-                <span className="font-medium">Exclusive school supplies, stationery deals &amp; vouchers</span>
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex flex-col gap-2.5">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowGuestModal(false);
-                  if (typeof window !== 'undefined') {
-                    sessionStorage.setItem('dsl_guest_checkout_modal_seen', 'true');
-                  }
-                  router.push('/login?redirect=/checkout');
-                }}
-                className="w-full py-3 px-4 bg-[#08275E] hover:bg-[#061e47] text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <span>Sign In or Register</span>
-                <ArrowRight className="w-4 h-4 text-[#FFD21C]" />
-              </button>
-
+              {/* Close button with frosted glass pill */}
               <button
                 type="button"
                 onClick={() => {
@@ -843,10 +800,76 @@ export default function CheckoutPage() {
                     sessionStorage.setItem('dsl_guest_checkout_modal_seen', 'true');
                   }
                 }}
-                className="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition-all text-center cursor-pointer"
+                className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/60 hover:bg-white/90 backdrop-blur-md border border-white/80 flex items-center justify-center text-slate-500 hover:text-slate-800 transition-all shadow-xs cursor-pointer active:scale-95"
+                aria-label="Close modal"
               >
-                Continue as Guest
+                <X className="w-4 h-4" />
               </button>
+
+              {/* Header Badge */}
+              <div className="flex items-center gap-3 mb-3.5">
+                <div className="relative inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-gradient-to-br from-[#08275E] via-[#09357a] to-[#0066CC] text-white shadow-lg shadow-[#08275E]/20 border border-white/30 shrink-0">
+                  <ShoppingBag className="w-5 h-5 text-white" />
+                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-[#FFD21C] rounded-full ring-2 ring-white" />
+                </div>
+                <div>
+                  <span className="text-[10px] font-black uppercase tracking-wider text-[#0066CC] bg-blue-50/80 backdrop-blur-xs border border-blue-200/60 px-2.5 py-0.5 rounded-full">
+                    DSL Customer Experience
+                  </span>
+                  <h3 className="text-lg font-black text-[#08275E] leading-tight mt-0.5">Welcome to DSL Stationery</h3>
+                </div>
+              </div>
+
+              <p className="text-xs text-slate-600 leading-relaxed mb-4">
+                Get the most out of your purchase! Sign in to track orders live via SMS and email, enjoy 1-click checkout with saved addresses, and receive member-exclusive offers.
+              </p>
+
+              {/* Perks List (Frosted Glass Panel) */}
+              <div className="space-y-2.5 bg-white/50 backdrop-blur-md p-3.5 rounded-2xl border border-white/70 shadow-[inset_0_1px_2px_rgba(255,255,255,0.6)] mb-5 text-xs">
+                <div className="flex items-center gap-2.5 text-slate-700">
+                  <span className="w-5 h-5 rounded-full bg-emerald-500/15 text-emerald-700 border border-emerald-500/30 flex items-center justify-center shrink-0 text-xs font-bold shadow-2xs">✓</span>
+                  <span className="font-medium">Live SMS &amp; email delivery tracking updates</span>
+                </div>
+                <div className="flex items-center gap-2.5 text-slate-700">
+                  <span className="w-5 h-5 rounded-full bg-blue-500/15 text-blue-700 border border-blue-500/30 flex items-center justify-center shrink-0 text-xs font-bold shadow-2xs">✓</span>
+                  <span className="font-medium">Saved delivery addresses for fast future re-orders</span>
+                </div>
+                <div className="flex items-center gap-2.5 text-slate-700">
+                  <span className="w-5 h-5 rounded-full bg-amber-500/20 text-amber-800 border border-amber-500/30 flex items-center justify-center shrink-0 text-xs font-bold shadow-2xs">✓</span>
+                  <span className="font-medium">Exclusive school supplies, stationery deals &amp; vouchers</span>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowGuestModal(false);
+                    if (typeof window !== 'undefined') {
+                      sessionStorage.setItem('dsl_guest_checkout_modal_seen', 'true');
+                    }
+                    router.push('/login?redirect=/checkout');
+                  }}
+                  className="w-full py-3 px-4 bg-gradient-to-r from-[#08275E] via-[#0b337c] to-[#0066CC] hover:from-[#061e47] hover:to-[#004d99] text-white font-bold text-xs rounded-xl shadow-lg shadow-[#08275E]/25 border border-white/20 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]"
+                >
+                  <span>Sign In or Register</span>
+                  <ArrowRight className="w-4 h-4 text-[#FFD21C]" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowGuestModal(false);
+                    if (typeof window !== 'undefined') {
+                      sessionStorage.setItem('dsl_guest_checkout_modal_seen', 'true');
+                    }
+                  }}
+                  className="w-full py-2.5 px-4 bg-white/60 hover:bg-white/90 backdrop-blur-md text-slate-700 font-semibold text-xs rounded-xl border border-white/80 hover:border-slate-300/80 shadow-xs transition-all text-center cursor-pointer active:scale-[0.99]"
+                >
+                  Continue as Guest
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -1488,27 +1511,45 @@ export default function CheckoutPage() {
 
             {/* Selected Item List */}
             <div className="divide-y divide-slate-100 max-h-64 overflow-y-auto pr-1">
-              {itemsToCheckout.map((item) => (
-                <div key={item.id} className="py-3 flex items-start justify-between gap-3 text-xs">
-                  <div className="flex-1">
-                    <h4 className="font-bold text-[#09285C]">{item.product.name}</h4>
-                    {item.variantName && (
-                      <p className="text-[11px] text-slate-500">{item.variantName}</p>
-                    )}
-                    {item.bundleInfo && (
-                      <span className="inline-block mt-1 text-[10px] font-bold text-[#0866E8] bg-blue-50 px-2 py-0.5 rounded-full">
-                        🎒 {item.bundleInfo.packName}
+              {itemsToCheckout.map((item) => {
+                const effectiveUnitPrice = item.unitPriceCents || item.product.priceCents;
+                return (
+                  <div key={item.id} className="py-3 flex items-start justify-between gap-3 text-xs">
+                    <div className="flex-1">
+                      <h4 className="font-bold text-[#09285C]">{item.product.name}</h4>
+                      {item.variantName && (
+                        <p className="text-[11px] text-slate-500">{item.variantName}</p>
+                      )}
+                      {item.bundleInfo && (
+                        <span className="inline-block mt-1 text-[10px] font-bold text-[#0866E8] bg-blue-50 px-2 py-0.5 rounded-full">
+                          🎒 {item.bundleInfo.packName}
+                        </span>
+                      )}
+                      {item.customization && (
+                        <div className="mt-1 p-2 bg-slate-50 border border-slate-200/80 rounded-lg text-[11px] space-y-0.5">
+                          <div className="flex items-center gap-1.5 font-bold text-[#09285C]">
+                            <PenTool className="w-3 h-3 text-[#0066CC] shrink-0" />
+                            <span>Engraved: &ldquo;{item.customization.engravingText}&rdquo;</span>
+                          </div>
+                          <div className="text-[10px] text-slate-500 flex gap-2">
+                            <span>Font: {item.customization.font}</span>
+                            <span>Pos: {item.customization.position}</span>
+                            {item.customization.customizationFeeCents > 0 && (
+                              <span className="text-blue-700 font-semibold">Fee: {formatLKR(item.customization.customizationFeeCents)}</span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                      <span className="text-[11px] text-slate-400 block mt-0.5">
+                        Qty: {item.quantity} × {formatLKR(effectiveUnitPrice)}
                       </span>
-                    )}
-                    <span className="text-[11px] text-slate-400 block mt-0.5">
-                      Qty: {item.quantity} × {formatLKR(item.product.priceCents)}
+                    </div>
+                    <span className="font-bold text-[#09285C]">
+                      {formatLKR(item.quantity * effectiveUnitPrice)}
                     </span>
                   </div>
-                  <span className="font-bold text-[#09285C]">
-                    {formatLKR(item.quantity * item.product.priceCents)}
-                  </span>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Calculations Breakdown */}

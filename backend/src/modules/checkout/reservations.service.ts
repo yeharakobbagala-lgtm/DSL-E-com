@@ -224,6 +224,7 @@ export class ReservationsService implements OnModuleInit, OnModuleDestroy {
         quantity: number;
         unitPriceCents: number;
         stockQuantity: number;
+        customization?: any;
       }> = [];
 
       for (const item of sortedItems) {
@@ -308,7 +309,30 @@ export class ReservationsService implements OnModuleInit, OnModuleDestroy {
           );
         }
 
-        const unitPrice = variant ? variant.priceCents : product.priceCents;
+        let unitPrice = variant ? variant.priceCents : product.priceCents;
+        let customizationSnapshot: any = null;
+        if (item.customization) {
+          const config = await tx.productCustomizationConfig.findUnique({
+            where: { productId: product.id },
+          });
+          let fee = config?.baseFeeCents ?? 35000;
+          if (config && Array.isArray(config.bulkRules)) {
+            const rules = [...(config.bulkRules as any[])].sort((a, b) => (b.minQuantity || 0) - (a.minQuantity || 0));
+            for (const r of rules) {
+              if (item.quantity >= r.minQuantity) {
+                fee = r.feeCents ?? fee;
+                break;
+              }
+            }
+          }
+          unitPrice += fee;
+          customizationSnapshot = {
+            ...item.customization,
+            customizationFeeCents: fee,
+            baseUnitPriceCents: variant ? variant.priceCents : product.priceCents,
+          };
+        }
+
         reservedItemsPayload.push({
           productId: product.id,
           variantId: variant ? variant.id : null,
@@ -317,6 +341,7 @@ export class ReservationsService implements OnModuleInit, OnModuleDestroy {
           quantity: item.quantity,
           unitPriceCents: unitPrice,
           stockQuantity: physicalStock,
+          customization: customizationSnapshot,
         });
       }
 
@@ -334,6 +359,7 @@ export class ReservationsService implements OnModuleInit, OnModuleDestroy {
               variantId: rp.variantId,
               quantity: rp.quantity,
               unitPriceCents: rp.unitPriceCents,
+              customization: rp.customization || null,
             })),
           },
         },

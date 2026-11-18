@@ -20,6 +20,7 @@ import {
   Share2,
   Copy,
   Bookmark,
+  PenTool,
 } from 'lucide-react';
 import { productService } from '@/services/productService';
 import { Product, ProductVariant } from '@/types/product';
@@ -27,6 +28,7 @@ import { formatLKR, calculateSavingsPercent } from '@/lib/currency';
 import { useCartStore } from '@/services/cartStore';
 import { useWishlistStore } from '@/services/wishlistStore';
 import { ProductCard } from '@/components/products/ProductCard';
+import { resolveImageUrl } from '@/lib/image';
 import { SaveToListModal } from '@/components/products/SaveToListModal';
 import { BackInStockButton } from '@/components/products/BackInStockButton';
 
@@ -60,6 +62,7 @@ function ProductDetailContent() {
   const [product, setProduct] = useState<Product | null | undefined>(undefined);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | undefined>(undefined);
   const [activeImageIdx, setActiveImageIdx] = useState(0);
+  const [imageError, setImageError] = useState(false);
   const [copied, setCopied] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
@@ -85,6 +88,7 @@ function ProductDetailContent() {
 
       setProduct(p);
       setActiveImageIdx(0);
+      setImageError(false);
 
       if (p) {
         const activeVariants = (p.variants || []).filter((v) => v.isActive);
@@ -196,10 +200,15 @@ function ProductDetailContent() {
           {/* LEFT: Image Gallery */}
           <div className="lg:col-span-6 space-y-4">
             <div className="relative bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-10 aspect-square flex items-center justify-center overflow-hidden shadow-xs">
-              {product.images && product.images.length > 0 && typeof product.images[activeImageIdx] === 'string' && (product.images[activeImageIdx].startsWith('http') || !product.images[activeImageIdx].includes('.png')) ? (
+              {product.images &&
+              product.images.length > 0 &&
+              typeof product.images[activeImageIdx] === 'string' &&
+              product.images[activeImageIdx].trim() !== '' &&
+              !imageError ? (
                 <img
-                  src={product.images[activeImageIdx]}
+                  src={resolveImageUrl(product.images[activeImageIdx])}
                   alt={product.name}
+                  onError={() => setImageError(true)}
                   className="w-full h-full object-contain object-center transition-transform duration-300 hover:scale-105"
                 />
               ) : (
@@ -226,14 +235,24 @@ function ProductDetailContent() {
                   <button
                     key={idx}
                     type="button"
-                    onClick={() => setActiveImageIdx(idx)}
+                    onClick={() => {
+                      setActiveImageIdx(idx);
+                      setImageError(false);
+                    }}
                     className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white border p-2 shrink-0 transition-all cursor-pointer ${
                       activeImageIdx === idx
                         ? 'border-[#0866E8] ring-2 ring-[#0866E8]/20 shadow-xs'
                         : 'border-slate-200 hover:border-slate-300'
                     }`}
                   >
-                    <img src={img} alt={`Thumb ${idx + 1}`} className="w-full h-full object-contain" />
+                    <img
+                      src={resolveImageUrl(img)}
+                      alt={`Thumb ${idx + 1}`}
+                      onError={(e) => {
+                        e.currentTarget.src = '/products/default.png';
+                      }}
+                      className="w-full h-full object-contain"
+                    />
                   </button>
                 ))}
               </div>
@@ -332,6 +351,32 @@ function ProductDetailContent() {
                 </span>
               )}
             </div>
+
+            {/* Customization Callout if Eligible */}
+            {product?.customizationConfig?.isCustomizable && (
+              <div className="p-4 bg-gradient-to-r from-blue-50 via-indigo-50/60 to-amber-50/40 rounded-2xl border border-blue-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-[#0066CC] text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <PenTool className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs sm:text-sm font-bold text-[#08275E]">
+                      Laser Engraving Available for this Pen
+                    </h4>
+                    <p className="text-[11px] text-slate-600 mt-0.5">
+                      Personalize with custom name, initials or date on cap, barrel or clip.
+                    </p>
+                  </div>
+                </div>
+                <Link
+                  href={`/customize-pen?product=${product.slug}`}
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#0066CC] hover:bg-[#0052a3] text-white text-xs font-bold rounded-xl shadow-xs transition-all hover:scale-[1.02] shrink-0 cursor-pointer"
+                >
+                  <PenTool className="w-3.5 h-3.5" />
+                  <span>Customize Pen &rarr;</span>
+                </Link>
+              </div>
+            )}
 
             {/* Quantity Stepper & Add to Cart Controls */}
             {isOutOfStock ? (

@@ -5,6 +5,12 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 // Zod Validation Schemas
 // -----------------------------------------------------------------------------
 
+export const penCustomizationSchema = z.object({
+  engravingText: z.string().trim().min(1, 'Engraving text cannot be empty').max(50, 'Text exceeds maximum length of 50 characters'),
+  font: z.string().min(1, 'Font is required'),
+  position: z.string().min(1, 'Engraving position is required'),
+});
+
 export const addToCartSchema = z.object({
   productId: z.string().min(1, 'Product ID is required'),
   variantId: z.string().min(1).optional().nullable(),
@@ -14,6 +20,7 @@ export const addToCartSchema = z.object({
     .min(1, 'Quantity must be at least 1')
     .max(1000, 'Quantity cannot exceed 1000')
     .default(1),
+  customization: penCustomizationSchema.optional().nullable(),
 });
 
 export const updateCartItemSchema = z.object({
@@ -66,6 +73,17 @@ export const addBulkItemsToCartSchema = z.object({
 // TypeScript DTO Types & Swagger Decorators
 // -----------------------------------------------------------------------------
 
+export class PenCustomizationDto {
+  @ApiProperty({ description: 'Custom text to engrave', example: 'Kasun Perera' })
+  engravingText!: string;
+
+  @ApiProperty({ description: 'Chosen font style', example: 'Script' })
+  font!: string;
+
+  @ApiProperty({ description: 'Engraving position on pen', example: 'BARREL' })
+  position!: string;
+}
+
 export class AddToCartDto {
   @ApiProperty({ description: 'ID of the product to add', example: 'cuid_prod_123' })
   productId!: string;
@@ -75,6 +93,9 @@ export class AddToCartDto {
 
   @ApiPropertyOptional({ description: 'Quantity to add (integer >= 1)', default: 1, example: 2 })
   quantity!: number;
+
+  @ApiPropertyOptional({ description: 'Optional pen customization instructions', type: PenCustomizationDto })
+  customization?: PenCustomizationDto | null;
 }
 
 export class UpdateCartItemDto {
@@ -170,6 +191,13 @@ export interface CartItemResponse {
   quantity: number;
   unitPriceCents: number;
   totalPriceCents: number;
+  customization?: {
+    engravingText: string;
+    font: string;
+    position: string;
+    customizationFeeCents: number;
+    baseUnitPriceCents?: number;
+  } | null;
   isAvailable: boolean;
   isOutOfStock: boolean;
   exceedsStock: boolean;

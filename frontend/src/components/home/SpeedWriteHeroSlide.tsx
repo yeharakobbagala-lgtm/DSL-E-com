@@ -76,8 +76,43 @@ export const SpeedWriteHeroSlide: React.FC = () => {
           speed={0.4}
           scale={1.5}
           transparent={true}
-          intro={true}
         />
+      </div>
+
+      {/* ========================================================= */}
+      {/* 3 FEATURE BADGES (Anchored in True Top-Left Corner)        */}
+      {/* 3 Icons Revealed Sequentially with Slow, Smooth Glide     */}
+      {/* ========================================================= */}
+      <div className="absolute top-4 sm:top-6 lg:top-8 left-4 sm:left-6 lg:left-8 z-[35] flex flex-col gap-2 sm:gap-2.5 pointer-events-none">
+        {/* Feature Icon 1: Smooth Flow */}
+        <div className="speed-entrance-icon-1">
+          <img
+            src="/images/hero/speed-hero/badge-1.png"
+            alt="Feature Badge: Smooth Flow"
+            className="w-14 sm:w-16 md:w-[76px] lg:w-[86px] h-auto object-contain select-none drop-shadow-md"
+            draggable={false}
+          />
+        </div>
+
+        {/* Feature Icon 2: Comfort Grip */}
+        <div className="speed-entrance-icon-2">
+          <img
+            src="/images/hero/speed-hero/badge-2.png"
+            alt="Feature Badge: Comfort Grip"
+            className="w-14 sm:w-16 md:w-[76px] lg:w-[86px] h-auto object-contain select-none drop-shadow-md"
+            draggable={false}
+          />
+        </div>
+
+        {/* Feature Icon 3: Reliable & Durable */}
+        <div className="speed-entrance-icon-3">
+          <img
+            src="/images/hero/speed-hero/badge-3.png"
+            alt="Feature Badge: Reliable and Durable"
+            className="w-14 sm:w-16 md:w-[76px] lg:w-[86px] h-auto object-contain select-none drop-shadow-md"
+            draggable={false}
+          />
+        </div>
       </div>
 
       {/* ========================================================= */}
@@ -92,57 +127,7 @@ export const SpeedWriteHeroSlide: React.FC = () => {
             maxHeight: '100%',
           }}
         >
-          {/* ========================================================= */}
-          {/* LAYER 2: FEATURE BULLET ICONS (Top Left)                  */}
-          {/* 3 Icons Revealed Sequentially with Slow, Smooth Glide     */}
-          {/* ========================================================= */}
-          <div className="absolute inset-0 w-full h-full pointer-events-none z-[35] speed-left-shift">
-            <div
-              className="w-full h-full origin-left"
-              style={{
-                transform: 'scale(1.18)',
-              }}
-            >
-              {/* Feature Icon 1: Smooth Flow */}
-              <div
-                className="absolute inset-0 w-full h-full speed-entrance-icon-1"
-                style={{ clipPath: 'inset(0% 0% 68.22% 0%)' }}
-              >
-                <img
-                  src="/images/hero/speed-hero/feature-icons.png"
-                  alt="Feature Badge: Smooth Flow"
-                  className="w-full h-full object-contain select-none"
-                  draggable={false}
-                />
-              </div>
 
-              {/* Feature Icon 2: Comfort Grip */}
-              <div
-                className="absolute inset-0 w-full h-full speed-entrance-icon-2"
-                style={{ clipPath: 'inset(31.78% 0% 56.43% 0%)' }}
-              >
-                <img
-                  src="/images/hero/speed-hero/feature-icons.png"
-                  alt="Feature Badge: Comfort Grip"
-                  className="w-full h-full object-contain select-none"
-                  draggable={false}
-                />
-              </div>
-
-              {/* Feature Icon 3: Reliable & Durable */}
-              <div
-                className="absolute inset-0 w-full h-full speed-entrance-icon-3"
-                style={{ clipPath: 'inset(43.57% 0% 0% 0%)' }}
-              >
-                <img
-                  src="/images/hero/speed-hero/feature-icons.png"
-                  alt="Feature Badge: Reliable and Durable"
-                  className="w-full h-full object-contain select-none"
-                  draggable={false}
-                />
-              </div>
-            </div>
-          </div>
 
           {/* ========================================================= */}
           {/* LAYER 11: MANUFACTURER & DISTRIBUTOR TEXT (Below 3 Badges)*/}
@@ -333,36 +318,6 @@ export const SpeedWriteHeroSlide: React.FC = () => {
       {/* KEYFRAME ANIMATIONS, TIMELINES & RESPONSIVE ALIGNMENT     */}
       {/* ========================================================= */}
       <style jsx>{`
-        /* Shift feature icons left and up */
-        .speed-left-shift {
-          transform: translate(-10px, -20px);
-        }
-        @media (min-width: 640px) {
-          .speed-left-shift {
-            transform: translate(-35px, -30px);
-          }
-        }
-        @media (min-width: 768px) {
-          .speed-left-shift {
-            transform: translate(-60px, -40px);
-          }
-        }
-        @media (min-width: 1024px) {
-          .speed-left-shift {
-            transform: translate(clamp(-160px, -8.5vw, -80px), -48px);
-          }
-        }
-        @media (min-width: 1280px) {
-          .speed-left-shift {
-            transform: translate(clamp(-210px, -10vw, -110px), -55px);
-          }
-        }
-        @media (min-width: 1536px) {
-          .speed-left-shift {
-            transform: translate(clamp(-260px, -12vw, -140px), -65px);
-          }
-        }
-
         /* Shift SPEED logo and 3 pens right on larger screens */
         .speed-right-shift {
           transform: translateX(0px);

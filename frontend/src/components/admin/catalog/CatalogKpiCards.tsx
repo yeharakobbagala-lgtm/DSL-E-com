@@ -63,6 +63,26 @@ const colorMap = {
   },
 };
 
+const renderCardValue = (val: number | string) => {
+  if (typeof val === 'string') {
+    const match = val.match(/^([+-]?)\s*(Rs\.?|LKR)\s*([\d,]+(?:\.\d+)?.*)$/i);
+    if (match) {
+      const sign = match[1];
+      const numPart = match[3];
+      return (
+        <span className="inline-flex items-baseline">
+          {sign && <span className="mr-0.5">{sign}</span>}
+          <span className="text-xs sm:text-sm font-semibold text-slate-400 mr-1 select-none">
+            Rs.
+          </span>
+          <span>{numPart}</span>
+        </span>
+      );
+    }
+  }
+  return val;
+};
+
 export const CatalogKpiCards: React.FC<CatalogKpiCardsProps> = ({ cards, isLoading }) => {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -96,7 +116,7 @@ export const CatalogKpiCards: React.FC<CatalogKpiCardsProps> = ({ cards, isLoadi
                 {isLoading ? (
                   <span className="inline-block w-8 h-6 bg-slate-100 animate-pulse rounded" />
                 ) : (
-                  card.value
+                  renderCardValue(card.value)
                 )}
               </span>
               {card.subtitle && (

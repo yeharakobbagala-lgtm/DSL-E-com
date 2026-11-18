@@ -97,7 +97,7 @@ export class CartService {
     // 1. Verify product existence & sale eligibility
     const product = await this.prisma.product.findUnique({
       where: { id: dto.productId },
-      include: { variants: true },
+      include: { variants: true, customizationConfig: true },
     });
 
     if (!product) {
@@ -131,14 +131,78 @@ export class CartService {
       );
     }
 
+    // 2.1 Validate pen customization if submitted
+    let customizationData: any = null;
+    if (dto.customization) {
+      if (!product.customizationConfig || !product.customizationConfig.isCustomizable) {
+        throw new BadRequestException(`Product '${product.name}' does not support customization`);
+      }
+      const config = product.customizationConfig;
+      const text = dto.customization.engravingText ? dto.customization.engravingText.trim() : '';
+      if (!text || text.length === 0) {
+        throw new BadRequestException('Engraving text cannot be empty');
+      }
+      const maxLen = config.maxCharacters || 25;
+      if (text.length > maxLen) {
+        throw new BadRequestException(`Engraving text exceeds maximum limit of ${maxLen} characters`);
+      }
+
+      const allowedFonts = Array.isArray(config.allowedFonts) && config.allowedFonts.length > 0
+        ? config.allowedFonts
+        : ['Arial', 'Times New Roman', 'Italic', 'Calibri', 'Script'];
+      if (!allowedFonts.includes(dto.customization.font)) {
+        throw new BadRequestException(
+          `Font '${dto.customization.font}' is not supported. Supported fonts: ${allowedFonts.join(', ')}`
+        );
+      }
+
+      const allowedPositions = Array.isArray(config.allowedPositions) && config.allowedPositions.length > 0
+        ? config.allowedPositions.map((p: string) => p.toUpperCase())
+        : ['CAP', 'BARREL', 'CLIP'];
+
+      const normPos = dto.customization.position.toUpperCase().replace(/^PEN\s+/, '');
+      const validPosition = allowedPositions.find(
+        (p: string) => p === normPos || p === dto.customization!.position.toUpperCase()
+      );
+      if (!validPosition) {
+        throw new BadRequestException(
+          `Position '${dto.customization.position}' is not supported. Supported positions: ${config.allowedPositions.join(', ')}`
+        );
+      }
+
+      const fee = this.calculateCustomizationFee(dto.quantity, config);
+      customizationData = {
+        engravingText: text,
+        font: dto.customization.font,
+        position: dto.customization.position,
+        customizationFeeCents: fee,
+      };
+    }
+
     // 3. Check for existing cart item to prevent duplicates
-    const existingItem = await this.prisma.cartItem.findFirst({
+    // When customized, items must match the EXACT customization text, font, and position to merge
+    const candidateItems = await this.prisma.cartItem.findMany({
       where: {
         cartId: cart.id,
         productId: dto.productId,
         variantId: dto.variantId || null,
       },
     });
+
+    let existingItem: any = null;
+    if (customizationData) {
+      existingItem = candidateItems.find((ci) => {
+        const c = ci.customization as any;
+        return (
+          c &&
+          c.engravingText === customizationData.engravingText &&
+          c.font === customizationData.font &&
+          c.position === customizationData.position
+        );
+      });
+    } else {
+      existingItem = candidateItems.find((ci) => !ci.customization);
+    }
 
     if (existingItem) {
       const newQuantity = existingItem.quantity + dto.quantity;
@@ -150,7 +214,10 @@ export class CartService {
 
       await this.prisma.cartItem.update({
         where: { id: existingItem.id },
-        data: { quantity: newQuantity },
+        data: {
+          quantity: newQuantity,
+          ...(customizationData ? { customization: customizationData } : {}),
+        },
       });
     } else {
       if (dto.quantity > availableStock) {
@@ -165,6 +232,7 @@ export class CartService {
           productId: dto.productId,
           variantId: dto.variantId || null,
           quantity: dto.quantity,
+          customization: customizationData,
         },
       });
     }
@@ -651,14 +719,30 @@ export class CartService {
         continue; // Skip out-of-stock items
       }
 
-      // Check if user's cart already has this product + variant
-      const existingUserItem = await this.prisma.cartItem.findFirst({
+      // Check if user's cart already has this product + variant with matching customization
+      const candidateUserItems = await this.prisma.cartItem.findMany({
         where: {
           cartId: userCart.id,
           productId: guestItem.productId,
           variantId: guestItem.variantId || null,
         },
       });
+
+      let existingUserItem: any = null;
+      if (guestItem.customization) {
+        const gCust = guestItem.customization as any;
+        existingUserItem = candidateUserItems.find((ui) => {
+          const uCust = ui.customization as any;
+          return (
+            uCust &&
+            uCust.engravingText === gCust.engravingText &&
+            uCust.font === gCust.font &&
+            uCust.position === gCust.position
+          );
+        });
+      } else {
+        existingUserItem = candidateUserItems.find((ui) => !ui.customization);
+      }
 
       if (existingUserItem) {
         const mergedQty = Math.min(
@@ -678,6 +762,7 @@ export class CartService {
               productId: guestItem.productId,
               variantId: guestItem.variantId || null,
               quantity: initialQty,
+              customization: (guestItem.customization as any) ?? undefined,
             },
           });
         }
@@ -697,6 +782,24 @@ export class CartService {
   }
 
   /**
+   * Authoritatively calculate engraving fee per unit based on product configuration and tiered bulk pricing rules
+   */
+  calculateCustomizationFee(quantity: number, config: any): number {
+    if (!config || !config.isCustomizable) {
+      return 0;
+    }
+    const baseFee = config.baseFeeCents ?? 35000;
+    const bulkRules = Array.isArray(config.bulkRules) ? config.bulkRules : [];
+    const sorted = [...bulkRules].sort((a: any, b: any) => (b.minQuantity || 0) - (a.minQuantity || 0));
+    for (const rule of sorted) {
+      if (typeof rule.minQuantity === 'number' && quantity >= rule.minQuantity) {
+        return rule.feeCents ?? baseFee;
+      }
+    }
+    return baseFee;
+  }
+
+  /**
    * Internal builder for authoritative cart response with full pricing & stock indicators.
    */
   private async buildCartResponse(
@@ -712,6 +815,7 @@ export class CartService {
             product: {
               include: {
                 category: true,
+                customizationConfig: true,
               },
             },
             variant: true,
@@ -748,7 +852,23 @@ export class CartService {
       const v = item.variant;
 
       // Authoritative database price (ignoring any client inputs)
-      const unitPriceCents = v ? v.priceCents : p.priceCents;
+      const baseUnitPriceCents = v ? v.priceCents : p.priceCents;
+      let customizationFeeCents = 0;
+      let customizationResponse: any = null;
+
+      if (item.customization && typeof item.customization === 'object') {
+        const itemCust = item.customization as any;
+        customizationFeeCents = this.calculateCustomizationFee(item.quantity, p.customizationConfig);
+        customizationResponse = {
+          engravingText: itemCust.engravingText,
+          font: itemCust.font,
+          position: itemCust.position,
+          customizationFeeCents,
+          baseUnitPriceCents,
+        };
+      }
+
+      const unitPriceCents = baseUnitPriceCents + customizationFeeCents;
       const lineTotalCents = unitPriceCents * item.quantity;
       const availableStock = v ? v.stockQuantity : p.stockQuantity;
 
@@ -797,6 +917,7 @@ export class CartService {
         quantity: item.quantity,
         unitPriceCents,
         totalPriceCents: lineTotalCents,
+        customization: customizationResponse,
         isAvailable,
         isOutOfStock,
         exceedsStock,

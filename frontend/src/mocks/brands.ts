@@ -71,25 +71,4 @@ export const INITIAL_BRANDS: Brand[] = [
     description: 'Precision electronic desktop and scientific calculators distributed across Sri Lanka by DSL.',
     originCountry: 'Sri Lanka',
   },
-  {
-    id: 'brand-atlas',
-    name: 'Atlas',
-    slug: 'atlas',
-    description: "Sri Lanka's most trusted school and office stationery brand for generations.",
-    originCountry: 'Sri Lanka',
-  },
-  {
-    id: 'brand-promate',
-    name: 'Promate',
-    slug: 'promate',
-    description: 'High quality paper products, stylish notebooks, and premium student supplies.',
-    originCountry: 'Sri Lanka',
-  },
-  {
-    id: 'brand-faber',
-    name: 'Faber-Castell',
-    slug: 'faber-castell',
-    description: 'World-renowned art materials, tri-grip colour pencils, and precision writing instruments.',
-    originCountry: 'Germany',
-  },
 ];

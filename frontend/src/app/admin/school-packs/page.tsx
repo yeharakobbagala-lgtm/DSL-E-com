@@ -218,7 +218,7 @@ export default function AdminSchoolPacksPage() {
                     <th className="py-3 px-4 font-bold">Grade</th>
                     <th className="py-3 px-4 font-bold">Tier</th>
                     <th className="py-3 px-4 font-bold">Items Count</th>
-                    <th className="py-3 px-4 font-bold">Bundle Price</th>
+                    <th className="py-3 px-4 font-bold">Bundle Price (Rs.)</th>
                     <th className="py-3 px-4 font-bold">Discount</th>
                     <th className="py-3 px-4 font-bold">Stock Status</th>
                     <th className="py-3 px-4 font-bold">Visibility</th>
@@ -240,10 +240,10 @@ export default function AdminSchoolPacksPage() {
                       </td>
                       <td className="py-3.5 px-4 text-slate-600">{pack.items.length} items</td>
                       <td className="py-3.5 px-4 font-black text-[#08275E]">
-                        {formatLKR(pack.totalPriceCents)}
+                        {(pack.totalPriceCents / 100).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         {pack.calculatedOriginalSubtotalCents && pack.calculatedOriginalSubtotalCents > pack.totalPriceCents && (
                           <span className="block text-[10px] font-normal text-slate-400 line-through">
-                            {formatLKR(pack.calculatedOriginalSubtotalCents)}
+                            {(pack.calculatedOriginalSubtotalCents / 100).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </span>
                         )}
                       </td>

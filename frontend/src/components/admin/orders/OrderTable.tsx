@@ -122,7 +122,7 @@ export const OrderTable: React.FC<OrderTableProps> = ({
               <th className="py-3.5 px-4">Customer</th>
               <th className="py-3.5 px-4">Date &amp; Time</th>
               <th className="py-3.5 px-4">Items</th>
-              <th className="py-3.5 px-4">Total Amount</th>
+              <th className="py-3.5 px-4">Total Amount (Rs.)</th>
               <th className="py-3.5 px-4">Payment</th>
               <th className="py-3.5 px-4">Fulfilment</th>
               <th className="py-3.5 px-4 text-right">Actions</th>
@@ -234,8 +234,8 @@ export const OrderTable: React.FC<OrderTableProps> = ({
 
                     {/* Total Amount */}
                     <td className="py-3.5 px-4 whitespace-nowrap">
-                      <span className="font-black text-slate-900 text-sm">
-                        {formatLKR(order.totalCents)}
+                      <span className="font-bold text-slate-900 text-sm">
+                        {(order.totalCents / 100).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </span>
                     </td>
 

@@ -3,7 +3,17 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Package, ArrowRight, Loader2, Repeat, ShoppingBag } from 'lucide-react';
+import {
+  Package,
+  ArrowRight,
+  Loader2,
+  Repeat,
+  ShoppingBag,
+  CreditCard,
+  Banknote,
+  Building2,
+  Calendar,
+} from 'lucide-react';
 import { AccountNav } from '@/components/common/AccountNav';
 import { orderService } from '@/services/orderService';
 import { useUserStore } from '@/services/userStore';
@@ -11,6 +21,27 @@ import { useCartStore } from '@/services/cartStore';
 import { Order, BuyAgainResponse } from '@/types/order';
 import { formatLKR } from '@/lib/currency';
 import { BuyAgainModal } from '@/components/orders/BuyAgainModal';
+
+function formatPaymentMethod(method?: string) {
+  if (!method) return 'Cash on Delivery';
+  const m = method.toUpperCase();
+  if (m.includes('CARD') || m.includes('PAYHERE')) return 'Credit / Debit Card';
+  if (m.includes('BANK')) return 'Bank Transfer';
+  if (m.includes('COD') || m.includes('CASH')) return 'Cash on Delivery';
+  return method.replace(/_/g, ' ');
+}
+
+function getPaymentIcon(method?: string) {
+  if (!method) return <Banknote className="w-3.5 h-3.5 text-emerald-600" />;
+  const m = method.toUpperCase();
+  if (m.includes('CARD') || m.includes('PAYHERE')) {
+    return <CreditCard className="w-3.5 h-3.5 text-[#0066CC]" />;
+  }
+  if (m.includes('BANK')) {
+    return <Building2 className="w-3.5 h-3.5 text-blue-600" />;
+  }
+  return <Banknote className="w-3.5 h-3.5 text-emerald-600" />;
+}
 
 export default function AccountOrdersPage() {
   const router = useRouter();
@@ -130,23 +161,47 @@ export default function AccountOrdersPage() {
             </div>
           ) : (
             orders.map((order) => (
-              <div key={order.id} className="bg-white rounded-3xl border border-slate-100 p-5 sm:p-7 shadow-xs space-y-4">
-                <div className="flex flex-wrap items-center justify-between pb-3 border-b border-slate-100 gap-2">
+              <div
+                key={order.id}
+                className="bg-white rounded-3xl border border-slate-100 p-5 sm:p-6 shadow-xs hover:border-blue-100 transition-all space-y-4"
+              >
+                {/* Order Top Bar: Number, Date, Status, Track Details CTA */}
+                <div className="flex flex-wrap items-center justify-between pb-3 border-b border-slate-100 gap-3">
                   <div>
-                    <span className="font-mono text-xs font-black text-[#0866E8]">{order.orderNumber}</span>
-                    <span className="text-[11px] text-slate-400 block mt-0.5">
-                      {new Date(order.createdAt).toLocaleDateString()}
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs font-black text-[#0866E8]">{order.orderNumber}</span>
+                      <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#F7FAFF] text-[#09285C] border border-blue-100">
+                        {order.orderStatus}
+                      </span>
+                    </div>
+                    <span className="text-[11px] text-slate-400 block mt-1">
+                      Placed on {new Date(order.createdAt).toLocaleDateString('en-LK', { year: 'numeric', month: 'short', day: 'numeric' })}
                     </span>
                   </div>
 
+                  <div className="flex items-center gap-2">
+                    <Link
+                      href={`/orders/${order.id}`}
+                      className="bg-[#0866E8] hover:bg-[#09285C] text-white text-xs font-bold px-4 py-2 rounded-full transition-all flex items-center gap-1.5 shadow-xs touch-target cursor-pointer"
+                    >
+                      <span>Track Details</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
+                </div>
+
+                {/* Order Summary: Payment Method & Total Amount (No item list clutter) */}
+                <div className="flex flex-wrap items-center justify-between gap-3 text-xs pt-0.5">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-[#F7FAFF] text-[#09285C] border border-blue-100">
-                      {order.orderStatus}
+                    <span className="text-[11px] text-slate-400">Payment:</span>
+                    <span className="inline-flex items-center gap-1.5 font-bold text-[#09285C] bg-slate-50 px-2.5 py-1 rounded-xl border border-slate-100">
+                      {getPaymentIcon(order.paymentMethod)}
+                      <span>{formatPaymentMethod(order.paymentMethod)}</span>
                     </span>
 
                     {(order.paymentMethod === 'BANK_TRANSFER' || order.paymentMethod === 'bank_transfer_mock') && (
                       <span
-                        className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${
+                        className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full ${
                           order.paymentStatus === 'PAID' || order.paymentStatus === 'paid'
                             ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                             : order.orderStatus === 'CANCELLED' || order.paymentStatus === 'FAILED' || order.paymentStatus === 'failed'
@@ -161,50 +216,12 @@ export default function AccountOrdersPage() {
                           : 'Verification Pending'}
                       </span>
                     )}
-
-                    {/* Buy Again Action */}
-                    <button
-                      type="button"
-                      onClick={() => handleBuyAgain(order.id)}
-                      disabled={reorderingOrderId === order.id}
-                      className="bg-white hover:bg-blue-50 text-[#0866E8] border border-blue-200 text-xs font-bold px-3 py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-xs disabled:opacity-50 touch-target"
-                      title="Quickly reorder available products from this order"
-                    >
-                      {reorderingOrderId === order.id ? (
-                        <>
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          <span>Checking...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Repeat className="w-3.5 h-3.5" />
-                          <span>Buy Again</span>
-                        </>
-                      )}
-                    </button>
-
-                    <Link
-                      href={`/orders/${order.id}`}
-                      className="bg-[#0866E8] hover:bg-[#09285C] text-white text-xs font-bold px-3.5 py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-xs touch-target"
-                    >
-                      <span>Track Details</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </Link>
                   </div>
-                </div>
 
-                <div className="space-y-1.5 text-xs text-slate-600">
-                  {order.items.map((item: any) => (
-                    <div key={item.id} className="flex justify-between gap-2">
-                      <span className="truncate">{item.quantity}x {item.product?.name || item.productName || 'Stationery Item'}</span>
-                      <span className="font-bold text-[#09285C] shrink-0">{formatLKR(item.totalPriceCents)}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="pt-3 border-t border-slate-100 flex justify-between text-xs font-bold text-slate-700">
-                  <span>Total Amount</span>
-                  <span className="text-base font-black text-[#0866E8]">{formatLKR(order.totalCents)}</span>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-[11px] text-slate-400 font-medium">Total Amount:</span>
+                    <span className="text-base font-black text-[#0866E8]">{formatLKR(order.totalCents)}</span>
+                  </div>
                 </div>
               </div>
             ))

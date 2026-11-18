@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import {
   Package,
@@ -43,6 +44,7 @@ import { SensitiveActionConfirmationModal } from '@/components/admin/security/Se
 import { KpiAnalyticsCard } from '@/components/admin/analytics/KpiAnalyticsCard';
 import { DonutDistributionChart } from '@/components/admin/analytics/DonutDistributionChart';
 import { InventoryHealthSection } from '@/components/admin/analytics/InventoryHealthSection';
+import { ProductThumbnail } from '@/components/common/ProductThumbnail';
 
 interface ProductAnalyticsData {
   totalProducts: number;
@@ -70,7 +72,7 @@ const DEFAULT_COLUMNS: ColumnDefinition[] = [
   { id: 'id', label: 'Product ID', visible: false },
   { id: 'category', label: 'Category', visible: true },
   { id: 'brand', label: 'Brand', visible: true },
-  { id: 'price', label: 'Price (LKR)', visible: true },
+  { id: 'price', label: 'Price (Rs.)', visible: true },
   { id: 'stock', label: 'Stock Quantity', visible: true },
   { id: 'stockHealth', label: 'Stock Health', visible: true },
   { id: 'status', label: 'Active Status', visible: true },
@@ -78,8 +80,11 @@ const DEFAULT_COLUMNS: ColumnDefinition[] = [
   { id: 'actions', label: 'Actions', visible: true, locked: true },
 ];
 
-export default function AdminProductsPage() {
+function AdminProductsContent() {
   const hasPermission = useUserStore((state) => state.hasPermission);
+  const searchParams = useSearchParams();
+  const urlCategory = searchParams.get('category') || searchParams.get('categoryId') || 'all';
+
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<ProductCategory[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
@@ -93,10 +98,19 @@ export default function AdminProductsPage() {
 
   // Filter state
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCat, setSelectedCat] = useState('all');
+  const [selectedCat, setSelectedCat] = useState(urlCategory);
   const [selectedBrand, setSelectedBrand] = useState('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [stockStatusFilter, setStockStatusFilter] = useState<'all' | 'HEALTHY' | 'LOW_STOCK' | 'OUT_OF_STOCK'>('all');
+
+  // React to URL search params dynamically
+  useEffect(() => {
+    const cat = searchParams.get('category') || searchParams.get('categoryId');
+    if (cat && cat !== selectedCat) {
+      setSelectedCat(cat);
+      setPage(1);
+    }
+  }, [searchParams]);
 
   // UI state
   const [columns, setColumns] = useState<ColumnDefinition[]>(DEFAULT_COLUMNS);
@@ -478,7 +492,7 @@ export default function AdminProductsPage() {
             isLoading={isLoading && !analytics}
           />
           <KpiAnalyticsCard
-            title="Total Stock Value (LKR)"
+            title="Total Stock Value"
             value={formattedStockValue}
             colorTheme="blue"
             icon={<TrendingUp className="w-5 h-5 text-white" />}
@@ -718,7 +732,7 @@ export default function AdminProductsPage() {
                   {isColVisible('id') && <th className="py-3 px-3 font-bold">ID</th>}
                   {isColVisible('category') && <th className="py-3 px-3 font-bold">Category</th>}
                   {isColVisible('brand') && <th className="py-3 px-3 font-bold">Brand</th>}
-                  {isColVisible('price') && <th className="py-3 px-3 font-bold">Price (LKR)</th>}
+                  {isColVisible('price') && <th className="py-3 px-3 font-bold">Price (Rs.)</th>}
                   {isColVisible('stock') && <th className="py-3 px-3 font-bold">Stock</th>}
                   {isColVisible('stockHealth') && <th className="py-3 px-3 font-bold">Stock Health</th>}
                   {isColVisible('status') && <th className="py-3 px-3 font-bold">Status</th>}
@@ -772,19 +786,12 @@ export default function AdminProductsPage() {
                         {/* Image Thumbnail */}
                         {isColVisible('image') && (
                           <td className="py-3 px-3">
-                            <div className="w-10 h-10 rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-center overflow-hidden relative">
-                              {p.images && p.images[0] ? (
-                                <Image
-                                  src={p.images[0]}
-                                  alt={p.name}
-                                  width={40}
-                                  height={40}
-                                  className="object-contain p-0.5 w-full h-full"
-                                />
-                              ) : (
-                                <Package className="w-5 h-5 text-slate-300" />
-                              )}
-                            </div>
+                            <ProductThumbnail
+                              src={p.images && p.images[0] ? p.images[0] : null}
+                              alt={p.name}
+                              brandName={p.brandName}
+                              className="w-10 h-10 rounded-lg"
+                            />
                           </td>
                         )}
 
@@ -833,7 +840,7 @@ export default function AdminProductsPage() {
                         {/* Price */}
                         {isColVisible('price') && (
                           <td className="py-3 px-3 font-bold text-slate-900 whitespace-nowrap">
-                            {formatLKR(p.priceCents)}
+                            {(p.priceCents / 100).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
                         )}
 
@@ -987,5 +994,20 @@ export default function AdminProductsPage() {
         />
       </div>
     </AdminPageAccess>
+  );
+}
+
+export default function AdminProductsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-12 text-center text-slate-400">
+          <RotateCcw className="w-6 h-6 animate-spin text-blue-600 mx-auto mb-2" />
+          <span className="text-sm font-semibold text-slate-600">Loading products catalog...</span>
+        </div>
+      }
+    >
+      <AdminProductsContent />
+    </Suspense>
   );
 }

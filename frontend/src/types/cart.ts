@@ -6,6 +6,14 @@ export interface CartBundleInfo {
   savingsPercentage: number;
 }
 
+export interface PenCustomizationItem {
+  engravingText: string;
+  font: string; // 'Arial' | 'Times New Roman' | 'Italic' | 'Calibri' | 'Script'
+  position: string; // 'CAP' | 'BARREL' | 'CLIP'
+  customizationFeeCents: number;
+  baseUnitPriceCents?: number;
+}
+
 export interface CartItem {
   id: string; // unique item id in cart (product.id or product.id + variant.id)
   productId: string;
@@ -20,6 +28,7 @@ export interface CartItem {
   isOutOfStock?: boolean;
   exceedsStock?: boolean;
   bundleInfo?: CartBundleInfo;
+  customization?: PenCustomizationItem;
   selected?: boolean; // Phase A: Item selection for selective checkout (default: true)
 }
 

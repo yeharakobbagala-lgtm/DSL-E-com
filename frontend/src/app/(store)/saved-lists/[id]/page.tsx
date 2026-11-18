@@ -23,6 +23,7 @@ import { useSavedListStore } from '@/services/savedListStore';
 import { useCartStore } from '@/services/cartStore';
 import { useUserStore } from '@/services/userStore';
 import { productService } from '@/services/productService';
+import { ProductThumbnail } from '@/components/common/ProductThumbnail';
 import { Product } from '@/types/product';
 import { SavedListItem, ListAvailabilityReport } from '@/types/savedList';
 import { formatLKR } from '@/lib/currency';
@@ -314,13 +315,12 @@ export default function SavedListDetailPage() {
                   className="flex items-center justify-between p-2 rounded-xl hover:bg-[#F0F7FF] transition-colors"
                 >
                   <div className="flex items-center gap-2 min-w-0">
-                    <div className="w-9 h-9 rounded-lg bg-[#FAF7EE] border border-[#C6E7FF]/40 shrink-0 p-0.5 flex items-center justify-center overflow-hidden">
-                      {prod.images?.[0] ? (
-                        <img src={prod.images[0]} alt="" className="w-full h-full object-contain" />
-                      ) : (
-                        <Package className="w-4 h-4 text-[#0066CC]" />
-                      )}
-                    </div>
+                    <ProductThumbnail
+                      src={prod.images?.[0]}
+                      alt={prod.name}
+                      brandName={prod.brandName}
+                      className="w-9 h-9 rounded-lg shrink-0 p-0.5"
+                    />
                     <div className="min-w-0">
                       <p className="text-xs font-bold text-[#292525] truncate">{prod.name}</p>
                       <p className="text-[10px] text-[#0066CC] font-semibold">
@@ -383,15 +383,12 @@ export default function SavedListDetailPage() {
                           href={`/products/${prod.slug}`}
                           className="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-[#F7FAFF] border border-blue-100 p-1 flex items-center justify-center shrink-0 overflow-hidden"
                         >
-                          {prod.images?.[0] ? (
-                            <img
-                              src={prod.images[0]}
-                              alt={prod.name}
-                              className="w-full h-full object-contain"
-                            />
-                          ) : (
-                            <Package className="w-6 h-6 text-[#0866E8]" />
-                          )}
+                          <ProductThumbnail
+                            src={prod.images?.[0]}
+                            alt={prod.name}
+                            brandName={prod.brandName}
+                            className="w-full h-full rounded-xl"
+                          />
                         </Link>
                         <div className="flex-1 min-w-0">
                           <Link

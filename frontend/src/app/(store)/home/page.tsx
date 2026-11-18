@@ -35,25 +35,44 @@ import { MovingWatermarkBackground } from '@/components/common/MovingWatermarkBa
 import { formatLKR } from '@/lib/currency';
 import { NewsletterSubscriptionForm } from '@/components/newsletter/NewsletterSubscriptionForm';
 import { WelcomeSplashLoader } from '@/components/common/WelcomeSplashLoader';
-import { MOCK_BEST_SELLERS, MOCK_NEW_ARRIVALS } from '@/mocks/products';
+import { INITIAL_PRODUCTS } from '@/mocks/products';
+
+function getCuratedStorefrontProducts(items: Product[], type: 'best' | 'new'): Product[] {
+  const withImages = items.filter(
+    (p) => p && p.images && p.images.length > 0 && p.images[0] && p.images[0].trim() !== ''
+  );
+  if (withImages.length === 0) return [];
+
+  if (type === 'best') {
+    const tagged = withImages.filter((p) => p.isBestSeller);
+    if (tagged.length >= 6) return tagged.slice(0, 10);
+    const remaining = withImages.filter((p) => !tagged.some((t) => t.id === p.id));
+    return [...tagged, ...remaining].slice(0, 10);
+  } else {
+    const tagged = withImages.filter((p) => p.isNewArrival || p.tags?.includes('new'));
+    if (tagged.length >= 6) return tagged.slice(0, 10);
+    const remaining = withImages.filter((p) => !tagged.some((t) => t.id === p.id));
+    return [...tagged, ...remaining].slice(0, 10);
+  }
+}
 
 export default function HomeStorefrontPage() {
   const sectionOurBrandsRef = useRef<HTMLElement>(null);
-  const [bestSellers, setBestSellers] = useState<Product[]>(MOCK_BEST_SELLERS);
-  const [newArrivals, setNewArrivals] = useState<Product[]>(MOCK_NEW_ARRIVALS);
+  const [bestSellers, setBestSellers] = useState<Product[]>(() => getCuratedStorefrontProducts(INITIAL_PRODUCTS, 'best'));
+  const [newArrivals, setNewArrivals] = useState<Product[]>(() => getCuratedStorefrontProducts(INITIAL_PRODUCTS, 'new'));
   const [categories, setCategories] = useState<ProductCategory[]>([]);
   const [schoolPacks, setSchoolPacks] = useState<SchoolPack[]>([]);
   const [copiedCode, setCopiedCode] = useState(false);
   const [midPromoBanner, setMidPromoBanner] = useState<HomepageBanner | null>(null);
 
   useEffect(() => {
-    // Initial sync load from local cached products or mock data
+    // Initial sync load from local cached products
     const all = productService.getAll();
-    const localBest = all.filter((p) => p.isBestSeller && p.images && p.images.length > 0 && p.images[0]);
-    const localNew = all.filter((p) => (p.isNewArrival || p.tags.includes('new')) && p.images && p.images.length > 0 && p.images[0]);
+    const localBest = getCuratedStorefrontProducts(all, 'best');
+    const localNew = getCuratedStorefrontProducts(all, 'new');
 
-    setBestSellers(localBest.length >= 6 ? localBest.slice(0, 8) : MOCK_BEST_SELLERS);
-    setNewArrivals(localNew.length >= 6 ? localNew.slice(0, 8) : MOCK_NEW_ARRIVALS);
+    if (localBest.length > 0) setBestSellers(localBest);
+    if (localNew.length > 0) setNewArrivals(localNew);
     setCategories(categoryService.getCategories().slice(0, 6));
     setSchoolPacks(schoolPackService.getAll().slice(0, 3));
 
@@ -67,12 +86,12 @@ export default function HomeStorefrontPage() {
     ])
       .then(([productRes, catList, packsRes, promoBanners]) => {
         if (isMounted) {
-          const items = productRes.items;
-          const apiBest = items.filter((p) => p.isBestSeller && p.images && p.images.length > 0 && p.images[0]);
-          const apiNew = items.filter((p) => (p.isNewArrival || p.tags.includes('new')) && p.images && p.images.length > 0 && p.images[0]);
+          const items = productRes.items || [];
+          const apiBest = getCuratedStorefrontProducts(items, 'best');
+          const apiNew = getCuratedStorefrontProducts(items, 'new');
 
-          setBestSellers(apiBest.length >= 6 ? apiBest.slice(0, 8) : MOCK_BEST_SELLERS);
-          setNewArrivals(apiNew.length >= 6 ? apiNew.slice(0, 8) : MOCK_NEW_ARRIVALS);
+          if (apiBest.length > 0) setBestSellers(apiBest);
+          if (apiNew.length > 0) setNewArrivals(apiNew);
           setCategories(catList.slice(0, 6));
           if (packsRes?.items) {
             setSchoolPacks(packsRes.items.slice(0, 3));
@@ -83,19 +102,20 @@ export default function HomeStorefrontPage() {
         }
       })
       .catch((err) => {
-        console.warn('Home storefront API fetch error, using fallback mock dataset for best sellers & new arrivals:', err);
+        console.warn('Home storefront API fetch error, maintaining authentic products:', err);
         if (isMounted) {
-          setBestSellers(MOCK_BEST_SELLERS);
-          setNewArrivals(MOCK_NEW_ARRIVALS);
+          const fallbackAll = productService.getAll();
+          setBestSellers(getCuratedStorefrontProducts(fallbackAll, 'best'));
+          setNewArrivals(getCuratedStorefrontProducts(fallbackAll, 'new'));
         }
       });
 
     const unsubProduct = productService.subscribe(() => {
       const updated = productService.getAll();
-      const updatedBest = updated.filter((p) => p.isBestSeller && p.images && p.images.length > 0 && p.images[0]);
-      const updatedNew = updated.filter((p) => (p.isNewArrival || p.tags.includes('new')) && p.images && p.images.length > 0 && p.images[0]);
-      setBestSellers(updatedBest.length >= 6 ? updatedBest.slice(0, 8) : MOCK_BEST_SELLERS);
-      setNewArrivals(updatedNew.length >= 6 ? updatedNew.slice(0, 8) : MOCK_NEW_ARRIVALS);
+      const updatedBest = getCuratedStorefrontProducts(updated, 'best');
+      const updatedNew = getCuratedStorefrontProducts(updated, 'new');
+      if (updatedBest.length > 0) setBestSellers(updatedBest);
+      if (updatedNew.length > 0) setNewArrivals(updatedNew);
     });
 
     const unsubCat = categoryService.subscribe(() => {
@@ -210,8 +230,21 @@ export default function HomeStorefrontPage() {
               </Link>
             </div>
 
-            {/* Continuous Right-Moving Product Track with Hover-Pause */}
-            <div className="relative overflow-hidden py-3 group">
+            {/* Continuous Right-Moving Product Track with Hover/Touch/Focus-Pause */}
+            <div
+              className="relative overflow-hidden py-3 group"
+              onTouchStart={(e) => {
+                const el = e.currentTarget.querySelector('.animate-marquee-right');
+                if (el) (el as HTMLElement).style.animationPlayState = 'paused';
+              }}
+              onTouchEnd={(e) => {
+                const target = e.currentTarget;
+                setTimeout(() => {
+                  const el = target.querySelector('.animate-marquee-right');
+                  if (el) (el as HTMLElement).style.animationPlayState = 'running';
+                }, 3000);
+              }}
+            >
               <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-r from-white to-transparent z-10" />
               <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-l from-white to-transparent z-10" />
 
@@ -250,8 +283,21 @@ export default function HomeStorefrontPage() {
               </Link>
             </div>
 
-            {/* Continuous Left-Moving Product Track with Hover-Pause */}
-            <div className="relative overflow-hidden py-3 group">
+            {/* Continuous Left-Moving Product Track with Hover/Touch/Focus-Pause */}
+            <div
+              className="relative overflow-hidden py-3 group"
+              onTouchStart={(e) => {
+                const el = e.currentTarget.querySelector('.animate-marquee-left');
+                if (el) (el as HTMLElement).style.animationPlayState = 'paused';
+              }}
+              onTouchEnd={(e) => {
+                const target = e.currentTarget;
+                setTimeout(() => {
+                  const el = target.querySelector('.animate-marquee-left');
+                  if (el) (el as HTMLElement).style.animationPlayState = 'running';
+                }, 3000);
+              }}
+            >
               <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-r from-white to-transparent z-10" />
               <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-l from-white to-transparent z-10" />
 

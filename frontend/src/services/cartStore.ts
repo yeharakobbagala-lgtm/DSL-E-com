@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { CartItem, AppliedDiscount, CartSummary, CartBundleInfo } from '@/types/cart';
+import { CartItem, AppliedDiscount, CartSummary, CartBundleInfo, PenCustomizationItem } from '@/types/cart';
 import { Product, ProductVariant } from '@/types/product';
 import {
   calculateDiscountCents,
@@ -24,7 +24,8 @@ interface CartState {
     product: Product,
     quantity?: number,
     variant?: ProductVariant,
-    bundleInfo?: CartBundleInfo
+    bundleInfo?: CartBundleInfo,
+    customization?: PenCustomizationItem
   ) => Promise<boolean>;
   addBuyAgainBatch: (
     items: Array<{
@@ -163,19 +164,24 @@ export const useCartStore = create<CartState>()(
       /**
        * Add product or variant with optimistic UI update and authoritative server validation.
        */
-      addItem: async (product, quantity = 1, variant, bundleInfo) => {
-        const availableStock = variant ? variant.stockQuantity : product.stockQuantity;
-        if (!product.isActive || (variant && !variant.isActive) || availableStock <= 0) {
+      addItem: async (product, quantity = 1, variant, bundleInfo, customization) => {
+        const availableStock = variant
+          ? (typeof variant.stockQuantity === 'number' ? variant.stockQuantity : 100)
+          : (typeof product.stockQuantity === 'number' ? product.stockQuantity : 100);
+        if (product.isActive === false || (variant && variant.isActive === false) || availableStock <= 0) {
           return false;
         }
 
         const items = get().items;
-        const itemId = variant ? `${product.id}-${variant.id}` : product.id;
-        const existingIndex = items.findIndex(
-          (i) => i.id === itemId || (i.productId === product.id && i.variantId === variant?.id)
-        );
+        const fee = customization?.customizationFeeCents || 0;
+        const customSignature = customization
+          ? `-custom-${customization.position}-${customization.font}-${customization.engravingText.replace(/\s+/g, '_')}`
+          : '';
+        const itemId = `${variant ? `${product.id}-${variant.id}` : product.id}${customSignature}`;
 
-        const unitPriceCents = variant ? variant.priceCents : product.priceCents;
+        const existingIndex = items.findIndex((i) => i.id === itemId);
+
+        const unitPriceCents = (variant ? variant.priceCents : product.priceCents) + fee;
         const maxStock = availableStock;
 
         let rollbackItems = [...items];
@@ -194,6 +200,7 @@ export const useCartStore = create<CartState>()(
             quantity: newQty,
             totalPriceCents: unitPriceCents * newQty,
             ...(bundleInfo ? { bundleInfo } : {}),
+            ...(customization ? { customization } : {}),
           };
           set({ items: updatedItems });
         } else {
@@ -208,6 +215,7 @@ export const useCartStore = create<CartState>()(
             unitPriceCents,
             totalPriceCents: unitPriceCents * newQty,
             bundleInfo,
+            customization,
             selected: true,
           };
           set({ items: [...items, newItem] });
@@ -216,10 +224,13 @@ export const useCartStore = create<CartState>()(
         // Authoritatively sync with backend server
         set({ isLoading: true });
         try {
-          const backendCart = await cartService.addItem(product.id, quantity, variant?.id);
+          const backendCart = await cartService.addItem(product.id, quantity, variant?.id, customization);
           const existingSelectedMap = new Map(get().items.map((i) => [i.id, i.selected]));
           const existingBundleMap = new Map(
             get().items.filter((i) => i.bundleInfo).map((i) => [i.id, i.bundleInfo])
+          );
+          const existingCustomMap = new Map(
+            get().items.filter((i) => i.customization).map((i) => [i.id, i.customization])
           );
           set({
             items: backendCart.items.map((b) => {
@@ -228,6 +239,13 @@ export const useCartStore = create<CartState>()(
                 clientItem.bundleInfo = existingBundleMap.get(clientItem.id);
               } else if (bundleInfo && (clientItem.id === itemId || clientItem.productId === product.id)) {
                 clientItem.bundleInfo = bundleInfo;
+              }
+              if (b.customization) {
+                clientItem.customization = b.customization;
+              } else if (existingCustomMap.has(clientItem.id)) {
+                clientItem.customization = existingCustomMap.get(clientItem.id);
+              } else if (customization && (clientItem.id === itemId || clientItem.productId === product.id)) {
+                clientItem.customization = customization;
               }
               if (existingSelectedMap.has(clientItem.id)) {
                 clientItem.selected = existingSelectedMap.get(clientItem.id);

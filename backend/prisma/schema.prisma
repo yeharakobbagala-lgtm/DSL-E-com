@@ -297,6 +297,7 @@ model Product {
   reservationItems  StockReservationItem[]
   backInStockAlerts BackInStockAlert[]
   promotions        PromotionProduct[]
+  customizationConfig ProductCustomizationConfig?
 
   @@index([slug])
   @@index([sku])
@@ -329,6 +330,28 @@ model ProductVariant {
 
   @@index([productId])
   @@index([sku])
+}
+
+// ------------------------------------------------------------------------------
+// PEN & PRODUCT PERSONALIZATION CONFIGURATION
+// ------------------------------------------------------------------------------
+
+model ProductCustomizationConfig {
+  id               String   @id @default(cuid())
+  productId        String   @unique
+  product          Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  isCustomizable   Boolean  @default(true)
+  maxCharacters    Int      @default(25)
+  baseFeeCents     Int      @default(35000) // e.g. Rs. 350.00
+  allowedPositions String[] @default(["CAP", "BARREL", "CLIP"])
+  allowedFonts     String[] @default(["Arial", "Times New Roman", "Italic", "Calibri", "Script"])
+  bulkRules        Json     @default("[]") // Array of { minQuantity: number, feeCents: number }
+  previewConfig    Json     @default("{}") // Visual preview overlay coordinates per position
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([productId])
+  @@index([isCustomizable])
 }
 
 model InventoryMovement {
@@ -475,6 +498,7 @@ model OrderItem {
   unitPriceCents  Int // Frozen price snapshot at purchase time
   quantity        Int
   totalPriceCents Int // unitPriceCents * quantity
+  customization   Json? // Frozen customization snapshot: { engravingText, font, position, customizationFeeCents, baseUnitPriceCents }
   createdAt       DateTime          @default(now())
   returnItems     OrderReturnItem[]
 
@@ -645,6 +669,7 @@ model StockReservationItem {
   variant        ProductVariant?  @relation(fields: [variantId], references: [id], onDelete: SetNull)
   quantity       Int
   unitPriceCents Int
+  customization  Json?
   createdAt      DateTime         @default(now())
 
   @@index([reservationId])
@@ -990,10 +1015,11 @@ model CartItem {
   cart      Cart            @relation(fields: [cartId], references: [id], onDelete: Cascade)
   productId String
   product   Product         @relation(fields: [productId], references: [id], onDelete: Restrict)
-  variantId String?
-  variant   ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
-  quantity  Int             @default(1)
-  createdAt DateTime        @default(now())
+  variantId     String?
+  variant       ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  quantity      Int             @default(1)
+  customization Json? // Customer customization: { engravingText, font, position, customizationFeeCents }
+  createdAt     DateTime        @default(now())
   updatedAt DateTime        @updatedAt
 
   @@index([cartId])

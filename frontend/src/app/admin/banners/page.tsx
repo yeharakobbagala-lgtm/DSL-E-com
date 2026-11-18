@@ -1098,7 +1098,7 @@ export default function AdminBannersPage() {
                             required
                             value={imageAltText}
                             onChange={(e) => setImageAltText(e.target.value)}
-                            placeholder="e.g. Back-to-school stationery bundles with Faber-Castell and Atlas notebooks"
+                            placeholder="e.g. Back-to-school stationery bundles with Speed and Doms notebooks"
                             className="w-full px-3.5 py-2.5 text-xs font-medium border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#08275E]/20 focus:border-[#08275E] bg-white"
                           />
                           <p className="text-[10px] text-slate-500 mt-1">
@@ -1345,7 +1345,7 @@ export default function AdminBannersPage() {
                             </h4>
                             <p className="text-xs text-blue-100/75 mt-1.5 leading-relaxed line-clamp-3">
                               {description.trim() ||
-                                'Direct distribution agreements with Atlas, Promate, and Faber-Castell guarantee authentic supplies at authoritative distributor pricing.'}
+                                'Direct distribution agreements with Speed, Doms, and Kokuyo Camlin guarantee authentic supplies at authoritative distributor pricing.'}
                             </p>
                           </div>
 

@@ -13,6 +13,8 @@
   "dependencies": {
     "@gsap/react": "^2.1.2",
     "@hookform/resolvers": "^3.10.0",
+    "@react-three/drei": "^10.7.9",
+    "@react-three/fiber": "^9.8.2",
     "framer-motion": "^14.13.0",
     "gsap": "^3.15.1",
     "leaflet": "^1.9.4",
@@ -23,6 +25,7 @@
     "react-hook-form": "^7.91.0",
     "recharts": "^3.10.1",
     "socket.io-client": "^4.8.4",
+    "three": "^0.187.0",
     "zod": "^4.6.7",
     "zustand": "^5.0.16"
   },
@@ -35,6 +38,7 @@
     "@types/node": "^24.19.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/three": "^0.187.0",
     "@vitejs/plugin-react": "^6.1.2",
     "eslint": "^9",
     "eslint-config-next": "^16.4.6",

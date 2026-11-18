@@ -16,6 +16,7 @@ import {
   Layers,
   Sparkles,
   Package,
+  PenTool,
 } from 'lucide-react';
 import { Logo } from './Logo';
 import { useCartStore } from '@/services/cartStore';
@@ -35,11 +36,9 @@ export const Navbar: React.FC = () => {
   const [suggestions, setSuggestions] = useState<Product[]>([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isCatDropdownOpen, setIsCatDropdownOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
 
   const searchRef = useRef<HTMLDivElement>(null);
-  const catDropdownRef = useRef<HTMLDivElement>(null);
   const userDropdownRef = useRef<HTMLDivElement>(null);
 
   const items = useCartStore((state) => state.items);
@@ -75,9 +74,6 @@ export const Navbar: React.FC = () => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
         setIsSearchOpen(false);
       }
-      if (catDropdownRef.current && !catDropdownRef.current.contains(event.target as Node)) {
-        setIsCatDropdownOpen(false);
-      }
       if (userDropdownRef.current && !userDropdownRef.current.contains(event.target as Node)) {
         setIsUserDropdownOpen(false);
       }
@@ -86,7 +82,6 @@ export const Navbar: React.FC = () => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setIsSearchOpen(false);
-        setIsCatDropdownOpen(false);
         setIsUserDropdownOpen(false);
         setIsMobileMenuOpen(false);
       }
@@ -129,33 +124,53 @@ export const Navbar: React.FC = () => {
 
   const isHomeActive = pathname === '/' || pathname === '/home';
   const isShopActive = pathname.startsWith('/shop') || pathname.startsWith('/categories');
+  const isCustomizePenActive = pathname.startsWith('/customize-pen');
   const isFindStationeryActive = pathname.startsWith('/find-my-stationery');
   const isSchoolPackActive = pathname.startsWith('/school-packs');
-  const isBulkOrderActive = pathname.startsWith('/bulk-order');
-  const isBrandsActive = pathname.startsWith('/brands');
+
   const isAboutActive = pathname.startsWith('/about');
   const isFaqActive = pathname.startsWith('/faq');
   const isWishlistActive = pathname.startsWith('/account/wishlist') || pathname === '/wishlist';
 
-  const navItemClass = (isActive: boolean) =>
-    `px-3.5 xl:px-4 py-1.5 rounded-full font-bold text-xs xl:text-sm transition-all duration-200 whitespace-nowrap ${
-      isActive
+  const navItemClass = (isActive: boolean) => {
+    if (isCustomizePenActive) {
+      return `px-3.5 xl:px-4 py-1.5 rounded-full font-bold text-xs xl:text-sm transition-all duration-200 whitespace-nowrap ${isActive
+          ? 'bg-white text-[#07080A] font-black shadow-[0_0_25px_rgba(255,255,255,0.45)]'
+          : 'text-slate-300 hover:text-white hover:bg-white/10'
+        }`;
+    }
+    return `px-3.5 xl:px-4 py-1.5 rounded-full font-bold text-xs xl:text-sm transition-all duration-200 whitespace-nowrap ${isActive
         ? 'bg-[#09285C] text-white shadow-xs'
         : 'text-[#09285C] hover:text-[#0866E8] hover:bg-[#EAF4FF]/50'
-    }`;
+      }`;
+  };
+
+  const navIconBtnClass = isCustomizePenActive
+    ? 'p-2 rounded-full text-slate-300 hover:text-white hover:bg-white/10 transition-colors cursor-pointer touch-target flex items-center justify-center'
+    : 'p-2 rounded-full text-[#09285C] hover:text-[#0866E8] hover:bg-[#EAF4FF] transition-colors cursor-pointer touch-target flex items-center justify-center';
 
   return (
     <header className="sticky top-0 z-50 w-full select-none">
       {/* Subtle top brand accent line */}
-      <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-[#09285C] via-[#0866E8] to-[#FFD84D] pointer-events-none z-20" />
+      <div
+        className={`absolute top-0 inset-x-0 h-1 pointer-events-none z-20 ${isCustomizePenActive
+            ? 'bg-gradient-to-r from-white/30 via-white to-white/30 shadow-[0_0_12px_rgba(255,255,255,0.6)]'
+            : 'bg-gradient-to-r from-[#09285C] via-[#0866E8] to-[#FFD84D]'
+          }`}
+      />
 
       {/* Main Navbar Card with restrained glass styling */}
-      <div className="relative z-10 w-full bg-white/95 backdrop-blur-md rounded-b-2xl sm:rounded-b-3xl shadow-[0_4px_20px_rgba(9,40,92,0.06)] border-b border-slate-100">
+      <div
+        className={`relative z-10 w-full rounded-b-2xl sm:rounded-b-3xl transition-colors duration-300 ${isCustomizePenActive
+            ? 'bg-[#07080A]/90 backdrop-blur-2xl shadow-[0_10px_40px_rgba(0,0,0,0.85)] border-b border-white/20 text-white'
+            : 'bg-white/95 backdrop-blur-md shadow-[0_4px_20px_rgba(9,40,92,0.06)] border-b border-slate-100'
+          }`}
+      >
         <div className="w-full max-w-[1720px] mx-auto px-3.5 sm:px-6 lg:px-12 xl:px-16 py-2.5 sm:py-3.5 flex items-center justify-between gap-3 sm:gap-4">
-          
+
           {/* LEFT: DSL ENTERPRISES BRAND LOGO */}
           <div className="shrink-0 flex items-center">
-            <Logo href="/home" />
+            <Logo href="/home" variant={isCustomizePenActive ? 'dark' : 'light'} />
           </div>
 
           {/* CENTER: DESKTOP NAVIGATION LINKS */}
@@ -165,67 +180,22 @@ export const Navbar: React.FC = () => {
               Home
             </Link>
 
-            {/* 2. Shop Dropdown */}
-            <div
-              className="relative"
-              ref={catDropdownRef}
-              onMouseEnter={() => setIsCatDropdownOpen(true)}
-              onMouseLeave={() => setIsCatDropdownOpen(false)}
-            >
-              <Link
-                href="/shop"
-                className={`inline-flex items-center gap-1.5 ${navItemClass(isShopActive)}`}
-              >
-                <span>Shop</span>
-                <ChevronDown
-                  className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                    isShopActive ? 'text-white' : 'text-[#09285C]/70'
-                  } ${isCatDropdownOpen ? 'rotate-180' : ''}`}
-                />
-              </Link>
+            {/* 2. Shop */}
+            <Link href="/shop" className={navItemClass(isShopActive)}>
+              Shop
+            </Link>
 
-              {/* Dropdown Menu */}
-              {isCatDropdownOpen && (
-                <div className="absolute top-full left-0 mt-1.5 w-64 bg-white rounded-2xl shadow-2xl border border-slate-100 p-2.5 z-50 animate-fade-in text-xs text-[#09285C]">
-                  <div className="px-3 py-2 text-[11px] font-bold text-[#09285C]/60 uppercase tracking-wider border-b border-slate-100">
-                    Product Categories
-                  </div>
-                  <div className="py-1">
-                    <Link
-                      href="/shop"
-                      onClick={() => setIsCatDropdownOpen(false)}
-                      className="flex items-center justify-between px-3 py-2 rounded-xl text-[#09285C] hover:bg-[#F7FAFF] hover:text-[#0866E8] transition-colors font-medium"
-                    >
-                      <span>All Products</span>
-                      <ArrowRight className="w-3 h-3 opacity-60" />
-                    </Link>
-                    {categories.map((cat) => (
-                      <Link
-                        key={cat.id}
-                        href={`/categories/${cat.slug}`}
-                        onClick={() => setIsCatDropdownOpen(false)}
-                        className="flex items-center justify-between px-3 py-2 rounded-xl text-[#09285C] hover:bg-[#F7FAFF] hover:text-[#0866E8] transition-colors font-medium"
-                      >
-                        <span>{cat.name}</span>
-                      </Link>
-                    ))}
-                    <div className="mt-1 pt-1 border-t border-slate-100">
-                      <Link
-                        href="/school-packs"
-                        onClick={() => setIsCatDropdownOpen(false)}
-                        className="flex items-center justify-between px-3 py-2 rounded-xl text-[#0866E8] font-bold hover:bg-[#EAF4FF] transition-colors"
-                      >
-                        <span className="flex items-center gap-1.5">
-                          <Layers className="w-3.5 h-3.5" />
-                          <span>School Stationery Packs</span>
-                        </span>
-                        <ArrowRight className="w-3 h-3" />
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
+            {/* 2.5 Customize Pen */}
+            <Link
+              href="/customize-pen"
+              className={`inline-flex items-center gap-1.5 ${navItemClass(isCustomizePenActive)}`}
+            >
+              <PenTool className="w-3.5 h-3.5 text-[#0066CC]" />
+              <span>Customize Pen</span>
+              <span className="text-[9px] font-black uppercase tracking-wider bg-[#FFD84D] text-[#09285C] px-1.5 py-0.2 rounded-full">
+                New
+              </span>
+            </Link>
 
             {/* 3. Find My Stationery (Bearista Finder) */}
             <Link
@@ -241,15 +211,7 @@ export const Navbar: React.FC = () => {
               School Packs
             </Link>
 
-            {/* 5. Bulk Order */}
-            <Link href="/bulk-order" className={navItemClass(isBulkOrderActive)}>
-              Bulk Order
-            </Link>
 
-            {/* 6. Brands */}
-            <Link href="/brands" className={navItemClass(isBrandsActive)}>
-              Brands
-            </Link>
 
             {/* 7. About Us */}
             <Link href="/about" className={navItemClass(isAboutActive)}>
@@ -269,7 +231,7 @@ export const Navbar: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsSearchOpen(!isSearchOpen)}
-                className="p-2 rounded-full text-[#09285C] hover:text-[#0866E8] hover:bg-[#EAF4FF] transition-colors cursor-pointer touch-target flex items-center justify-center"
+                className={navIconBtnClass}
                 aria-label="Search products"
                 title="Search products"
               >
@@ -319,7 +281,7 @@ export const Navbar: React.FC = () => {
             {/* Wishlist Link (Desktop) */}
             <Link
               href="/account/wishlist"
-              className="relative p-2 rounded-full text-[#09285C] hover:text-[#0866E8] hover:bg-[#EAF4FF] transition-colors hidden sm:flex items-center justify-center touch-target"
+              className={`relative hidden sm:flex ${navIconBtnClass}`}
               aria-label={`Wishlist with ${wishlistCount} items`}
               title="My Wishlist"
             >
@@ -336,7 +298,7 @@ export const Navbar: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
-                className="p-2 rounded-full text-[#09285C] hover:text-[#0866E8] hover:bg-[#EAF4FF] transition-colors cursor-pointer touch-target flex items-center justify-center"
+                className={navIconBtnClass}
                 aria-label="User account"
                 title={currentUser ? currentUser.name : 'Account'}
               >
@@ -419,13 +381,18 @@ export const Navbar: React.FC = () => {
             <button
               type="button"
               onClick={() => setDrawerOpen(true)}
-              className="relative p-2 rounded-full text-[#09285C] hover:text-[#0866E8] hover:bg-[#EAF4FF] transition-colors cursor-pointer touch-target flex items-center justify-center"
+              className={`relative ${navIconBtnClass}`}
               aria-label={`Cart with ${isMounted ? cartItemCount : 0} items`}
               title="Shopping Cart"
             >
               <ShoppingCart className="w-5 h-5" />
               {isMounted && cartItemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-[#0866E8] text-white text-[10px] font-black w-4.5 h-4.5 rounded-full flex items-center justify-center shadow-xs">
+                <span
+                  className={`absolute -top-1 -right-1 text-[10px] font-black w-4.5 h-4.5 rounded-full flex items-center justify-center shadow-xs ${isCustomizePenActive
+                      ? 'bg-white text-[#07080A]'
+                      : 'bg-[#0866E8] text-white'
+                    }`}
+                >
                   {cartItemCount > 99 ? '99+' : cartItemCount}
                 </span>
               )}
@@ -435,7 +402,7 @@ export const Navbar: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden p-2 rounded-xl text-[#09285C] hover:bg-[#EAF4FF] transition-colors ml-0.5 touch-target flex items-center justify-center"
+              className={`lg:hidden ml-0.5 ${navIconBtnClass}`}
               aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
             >
               {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -482,64 +449,56 @@ export const Navbar: React.FC = () => {
             <Link
               href="/home"
               onClick={() => setIsMobileMenuOpen(false)}
-              className={`px-4 py-3 rounded-xl text-sm font-bold transition-colors ${
-                isHomeActive ? 'bg-[#09285C] text-white' : 'text-[#09285C] hover:bg-[#F7FAFF]'
-              }`}
+              className={`px-4 py-3 rounded-xl text-sm font-bold transition-colors ${isHomeActive ? 'bg-[#09285C] text-white' : 'text-[#09285C] hover:bg-[#F7FAFF]'
+                }`}
             >
               Home
             </Link>
             <Link
               href="/shop"
               onClick={() => setIsMobileMenuOpen(false)}
-              className={`px-4 py-3 rounded-xl text-sm font-bold transition-colors flex items-center justify-between ${
-                isShopActive ? 'bg-[#09285C] text-white' : 'text-[#09285C] hover:bg-[#F7FAFF]'
-              }`}
+              className={`px-4 py-3 rounded-xl text-sm font-bold transition-colors flex items-center justify-between ${isShopActive ? 'bg-[#09285C] text-white' : 'text-[#09285C] hover:bg-[#F7FAFF]'
+                }`}
             >
               <span>Shop All Products</span>
               <ArrowRight className={`w-4 h-4 ${isShopActive ? 'text-white' : 'text-slate-400'}`} />
             </Link>
             <Link
+              href="/customize-pen"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className={`px-4 py-3 rounded-xl text-sm font-bold transition-colors flex items-center justify-between ${isCustomizePenActive ? 'bg-[#09285C] text-white' : 'text-[#09285C] hover:bg-[#F7FAFF]'
+                }`}
+            >
+              <div className="flex items-center gap-2">
+                <PenTool className="w-4 h-4 text-[#0066CC]" />
+                <span>Customize Your Pen</span>
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">
+                New
+              </span>
+            </Link>
+            <Link
               href="/school-packs"
               onClick={() => setIsMobileMenuOpen(false)}
-              className={`px-4 py-3 rounded-xl text-sm font-bold transition-colors ${
-                isSchoolPackActive ? 'bg-[#09285C] text-white' : 'text-[#09285C] hover:bg-[#F7FAFF]'
-              }`}
+              className={`px-4 py-3 rounded-xl text-sm font-bold transition-colors ${isSchoolPackActive ? 'bg-[#09285C] text-white' : 'text-[#09285C] hover:bg-[#F7FAFF]'
+                }`}
             >
               School Packs
             </Link>
-            <Link
-              href="/bulk-order"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className={`px-4 py-3 rounded-xl text-sm font-bold transition-colors ${
-                isBulkOrderActive ? 'bg-[#09285C] text-white' : 'text-[#09285C] hover:bg-[#F7FAFF]'
-              }`}
-            >
-              Bulk Order
-            </Link>
-            <Link
-              href="/brands"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className={`px-4 py-3 rounded-xl text-sm font-bold transition-colors ${
-                isBrandsActive ? 'bg-[#09285C] text-white' : 'text-[#09285C] hover:bg-[#F7FAFF]'
-              }`}
-            >
-              Authorised Brands
-            </Link>
+
             <Link
               href="/about"
               onClick={() => setIsMobileMenuOpen(false)}
-              className={`px-4 py-3 rounded-xl text-sm font-bold transition-colors ${
-                isAboutActive ? 'bg-[#09285C] text-white' : 'text-[#09285C] hover:bg-[#F7FAFF]'
-              }`}
+              className={`px-4 py-3 rounded-xl text-sm font-bold transition-colors ${isAboutActive ? 'bg-[#09285C] text-white' : 'text-[#09285C] hover:bg-[#F7FAFF]'
+                }`}
             >
               About DSL Enterprises
             </Link>
             <Link
               href="/faq"
               onClick={() => setIsMobileMenuOpen(false)}
-              className={`px-4 py-3 rounded-xl text-sm font-bold transition-colors ${
-                isFaqActive ? 'bg-[#09285C] text-white' : 'text-[#09285C] hover:bg-[#F7FAFF]'
-              }`}
+              className={`px-4 py-3 rounded-xl text-sm font-bold transition-colors ${isFaqActive ? 'bg-[#09285C] text-white' : 'text-[#09285C] hover:bg-[#F7FAFF]'
+                }`}
             >
               FAQ &amp; Help
             </Link>

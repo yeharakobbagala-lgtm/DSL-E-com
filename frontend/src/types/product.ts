@@ -41,6 +41,38 @@ export interface ProductVariant {
   isActive?: boolean;
 }
 
+export interface BulkPricingRule {
+  minQuantity: number;
+  feeCents: number;
+}
+
+export interface CustomizationPositionConfig {
+  label?: string;
+  top?: string | number;
+  left?: string | number;
+  width?: string | number;
+  height?: string | number;
+  angle?: number;
+  rotation?: number;
+  textAlign?: 'left' | 'center' | 'right';
+  textColor?: string;
+  maxChars?: number;
+  letterSpacing?: number;
+  fontScale?: number;
+}
+
+export interface ProductCustomizationConfig {
+  id?: string;
+  productId?: string;
+  isCustomizable: boolean;
+  maxCharacters: number;
+  baseFeeCents: number;
+  allowedPositions: string[];
+  allowedFonts: string[];
+  bulkRules: BulkPricingRule[];
+  previewConfig?: Record<string, CustomizationPositionConfig>;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -72,6 +104,7 @@ export interface Product {
   reviewCount: number;
   variants?: ProductVariant[];
   specifications: Record<string, string>;
+  customizationConfig?: ProductCustomizationConfig | null;
   createdAt: string;
   updatedAt: string;
 }
