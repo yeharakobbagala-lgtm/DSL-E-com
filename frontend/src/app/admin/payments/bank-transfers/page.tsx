@@ -371,7 +371,7 @@ function BankTransfersQueueContent() {
               <tr>
                 <th className="py-3 px-4">Order #</th>
                 <th className="py-3 px-4">Customer</th>
-                <th className="py-3 px-4">Payable Amount</th>
+                <th className="py-3 px-4">Payable Amount (Rs.)</th>
                 <th className="py-3 px-4">Bank Reference</th>
                 <th className="py-3 px-4">Deposit Date</th>
                 <th className="py-3 px-4">Verification Status</th>
@@ -418,7 +418,7 @@ function BankTransfersQueueContent() {
                         </div>
                       </td>
                       <td className="py-3 px-4 font-black text-slate-900">
-                        {formatLKR(sub.amountCents || sub.order?.totalAmountCents)}
+                        {((sub.amountCents || sub.order?.totalAmountCents || 0) / 100).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>
                       <td className="py-3 px-4 font-mono font-bold text-slate-700">
                         {sub.referenceNumber || (

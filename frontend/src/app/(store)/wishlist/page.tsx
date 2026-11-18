@@ -18,6 +18,7 @@ import { useWishlistStore } from '@/services/wishlistStore';
 import { useCartStore } from '@/services/cartStore';
 import { useUserStore } from '@/services/userStore';
 import { formatLKR, calculateSavingsPercent } from '@/lib/currency';
+import { ProductThumbnail } from '@/components/common/ProductThumbnail';
 import { WishlistItem } from '@/types/wishlist';
 
 export default function WishlistPage() {
@@ -235,17 +236,12 @@ export default function WishlistPage() {
                     className="block relative bg-[#F7FAFF] aspect-square overflow-hidden p-4 sm:p-6"
                   >
                     <div className="w-full h-full flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-                      {product.images && product.images.length > 0 && typeof product.images[0] === 'string' && (product.images[0].startsWith('http') || !product.images[0].includes('.png')) ? (
-                        <img
-                          src={product.images[0]}
-                          alt={product.name}
-                          className="w-full h-full object-contain object-center"
-                        />
-                      ) : (
-                        <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-white border border-blue-100 flex items-center justify-center text-[#0866E8] font-black text-xl sm:text-2xl">
-                          {product.name.charAt(0)}
-                        </div>
-                      )}
+                      <ProductThumbnail
+                        src={product.images?.[0]}
+                        alt={product.name}
+                        brandName={product.brandName}
+                        className="w-full h-full rounded-2xl bg-transparent border-0"
+                      />
                     </div>
                   </Link>
 

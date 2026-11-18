@@ -16,16 +16,23 @@ export default function StoreLayout({
   const pathname = usePathname();
   // Only isolated welcome splash screen hides common store chrome
   const isSplashPage = pathname === '/welcome';
+  const isCustomizePen = pathname === '/customize-pen' || pathname?.startsWith('/customize-pen');
 
   return (
-    <div className="min-h-screen flex flex-col text-[#09285C] bg-white antialiased selection:bg-[#EAF4FF] selection:text-[#0866E8]">
+    <div
+      className={`min-h-screen flex flex-col antialiased ${
+        isCustomizePen
+          ? 'bg-[#060709] text-white selection:bg-[#D4AF37] selection:text-black'
+          : 'text-[#09285C] bg-white selection:bg-[#EAF4FF] selection:text-[#0866E8]'
+      }`}
+    >
       {!isSplashPage && <Navbar />}
-      {!isSplashPage && <DemoBanner />}
+      {!isSplashPage && !isCustomizePen && <DemoBanner />}
       <CartDrawer />
       <main className="flex-1 pb-16 lg:pb-0">
         {children}
       </main>
-      {!isSplashPage && <Footer />}
+      {!isSplashPage && !isCustomizePen && <Footer />}
       {!isSplashPage && <MobileBottomNav />}
     </div>
   );

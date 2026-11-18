@@ -66,6 +66,26 @@ const themeStyles: Record<
   },
 };
 
+const renderKpiValue = (val: string | number) => {
+  if (typeof val === 'string') {
+    const match = val.match(/^([+-]?)\s*(Rs\.?|LKR)\s*([\d,]+(?:\.\d+)?.*)$/i);
+    if (match) {
+      const sign = match[1];
+      const numPart = match[3];
+      return (
+        <span className="inline-flex items-baseline">
+          {sign && <span className="mr-0.5">{sign}</span>}
+          <span className="text-xs sm:text-sm font-bold text-slate-400 mr-1.5 uppercase tracking-normal select-none">
+            Rs.
+          </span>
+          <span>{numPart}</span>
+        </span>
+      );
+    }
+  }
+  return val;
+};
+
 export const KpiAnalyticsCard: React.FC<KpiAnalyticsCardProps> = ({
   title,
   value,
@@ -119,7 +139,7 @@ export const KpiAnalyticsCard: React.FC<KpiAnalyticsCardProps> = ({
           {isLoading ? (
             <div className="h-8 w-20 bg-slate-200 animate-pulse rounded" />
           ) : (
-            value
+            renderKpiValue(value)
           )}
         </div>
       </div>

@@ -116,7 +116,7 @@ export const ProductFilters: React.FC<ProductFiltersProps> = ({
       {/* Price Range */}
       <div className="pt-4 border-t border-slate-100">
         <h4 className="text-xs font-black text-[#09285C] uppercase tracking-wider mb-2.5">
-          Price Range (LKR)
+          Price Range (Rs.)
         </h4>
         <div className="grid grid-cols-2 gap-2 text-xs">
           <div>

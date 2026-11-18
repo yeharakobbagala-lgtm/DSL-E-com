@@ -46,7 +46,7 @@ class ProductService {
     this.products = [...INITIAL_PRODUCTS];
   }
 
-  private persistAndNotify() {
+  private persist() {
     if (typeof window !== 'undefined') {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(this.products));
@@ -54,6 +54,10 @@ class ProductService {
         console.error('Error persisting products:', err);
       }
     }
+  }
+
+  private persistAndNotify() {
+    this.persist();
     this.listeners.forEach((listener) => listener());
   }
 
@@ -174,7 +178,7 @@ class ProductService {
         const existingMap = new Map(this.products.map((p) => [p.id, p]));
         res.data.forEach((p) => existingMap.set(p.id, p));
         this.products = Array.from(existingMap.values());
-        this.persistAndNotify();
+        this.persist();
 
         return {
           items: res.data,
@@ -208,7 +212,7 @@ class ProductService {
         } else {
           this.products.push(res.data);
         }
-        this.persistAndNotify();
+        this.persist();
         return res.data;
       }
     } catch (err) {
@@ -231,7 +235,7 @@ class ProductService {
         } else {
           this.products.push(res.data);
         }
-        this.persistAndNotify();
+        this.persist();
         return res.data;
       }
     } catch (err) {
@@ -839,6 +843,55 @@ class ProductService {
       return res.data;
     }
     throw new Error(res.message || 'Failed to fetch import history');
+  }
+
+  /**
+   * Fetch all active pen products configured for engraving / personalization.
+   */
+  public async fetchCustomizablePens(): Promise<Product[]> {
+    try {
+      const res = await apiClient.get<BackendApiResponse<Product[]>>('products/customizable/pens');
+      if (res.success && Array.isArray(res.data)) {
+        return res.data;
+      }
+    } catch (err) {
+      console.warn('API error fetching customizable pens, falling back to local pen filter:', err);
+    }
+    // Fallback filter
+    return this.products.filter(
+      (p) =>
+        p.isActive &&
+        (p.customizationConfig?.isCustomizable ||
+          p.categoryId === 'cat-pens' ||
+          p.name.toLowerCase().includes('pen'))
+    );
+  }
+
+  /**
+   * Fetch personalization configuration for a specific product.
+   */
+  public async fetchCustomizationConfig(productId: string): Promise<any | null> {
+    try {
+      const res = await apiClient.get<BackendApiResponse<any>>(`products/${productId}/customization`);
+      if (res.success) {
+        return res.data;
+      }
+    } catch (err) {
+      console.warn(`Failed to fetch customization config for product ${productId}:`, err);
+    }
+    const local = this.products.find((p) => p.id === productId);
+    return local?.customizationConfig || null;
+  }
+
+  /**
+   * Update personalization configuration for a specific product (Admin only).
+   */
+  public async updateCustomizationConfig(productId: string, config: any): Promise<any> {
+    const res = await apiClient.put<BackendApiResponse<any>>(`products/${productId}/customization`, config);
+    if (res.success) {
+      return res.data;
+    }
+    throw new Error(res.message || 'Failed to update customization configuration');
   }
 }
 

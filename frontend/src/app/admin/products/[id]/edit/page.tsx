@@ -3,13 +3,14 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Save, Plus, Trash2, AlertCircle, RotateCcw, Layers, Upload, X, Sparkles } from 'lucide-react';
+import { ArrowLeft, Save, Plus, Trash2, AlertCircle, RotateCcw, Layers, Upload, X, Sparkles, PenTool, Check } from 'lucide-react';
 import { productService } from '@/services/productService';
 import { categoryService } from '@/services/categoryService';
 import { brandService } from '@/services/brandService';
 import { ProductCategory, Brand, Product } from '@/types/product';
 import { rupeesToCents, centsToRupees, formatLKR } from '@/lib/currency';
 import { AdminPageAccess } from '@/components/admin/AdminPageAccess';
+import { resolveImageUrl } from '@/lib/image';
 
 function AdminEditProductContent() {
   const params = useParams();
@@ -49,20 +50,55 @@ function AdminEditProductContent() {
   const [isGeneratingVarSku, setIsGeneratingVarSku] = useState(false);
   const [variantError, setVariantError] = useState<string | null>(null);
 
+  // Pen Customization state
+  const [isCustomizable, setIsCustomizable] = useState(false);
+  const [maxCharacters, setMaxCharacters] = useState(25);
+  const [customizationFeeRupees, setCustomizationFeeRupees] = useState<number | ''>(350);
+  const [allowedPositions, setAllowedPositions] = useState<string[]>(['CAP', 'BARREL', 'CLIP']);
+  const [allowedFonts, setAllowedFonts] = useState<string[]>(['Arial', 'Times New Roman', 'Italic', 'Calibri', 'Script']);
+  const [bulkRules, setBulkRules] = useState<Array<{ minQuantity: number; feeRupees: number }>>([
+    { minQuantity: 10, feeRupees: 250 },
+    { minQuantity: 50, feeRupees: 180 },
+    { minQuantity: 100, feeRupees: 120 },
+  ]);
+  const [isSavingCustomization, setIsSavingCustomization] = useState(false);
+  const [customizationSaveMsg, setCustomizationSaveMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
   const loadAllData = async () => {
     setIsLoading(true);
     setApiError(null);
     try {
-      const [p, cats, brs, vars] = await Promise.all([
+      const [p, cats, brs, vars, customConfig] = await Promise.all([
         productService.fetchProductById(id),
         categoryService.fetchCategories(),
         brandService.fetchBrands(),
         productService.fetchVariants(id),
+        productService.fetchCustomizationConfig(id).catch(() => null),
       ]);
 
       setCategories(cats);
       setBrands(brs);
       setVariants(vars || []);
+
+      if (customConfig) {
+        setIsCustomizable(Boolean(customConfig.isCustomizable));
+        setMaxCharacters(customConfig.maxCharacters || 25);
+        setCustomizationFeeRupees(centsToRupees(customConfig.baseFeeCents ?? 35000));
+        if (customConfig.allowedPositions && Array.isArray(customConfig.allowedPositions)) {
+          setAllowedPositions(customConfig.allowedPositions);
+        }
+        if (customConfig.allowedFonts && Array.isArray(customConfig.allowedFonts)) {
+          setAllowedFonts(customConfig.allowedFonts);
+        }
+        if (customConfig.bulkRules && Array.isArray(customConfig.bulkRules)) {
+          setBulkRules(
+            customConfig.bulkRules.map((r: any) => ({
+              minQuantity: Number(r.minQuantity),
+              feeRupees: centsToRupees(Number(r.feeCents)),
+            }))
+          );
+        }
+      }
 
       if (p) {
         setProduct(p);
@@ -208,6 +244,34 @@ function AdminEditProductContent() {
     } catch (err: any) {
       console.error('Failed to delete variant:', err);
       alert(err?.message || 'Failed to deactivate variant');
+    }
+  };
+
+  const handleSaveCustomization = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingCustomization(true);
+    setCustomizationSaveMsg(null);
+    try {
+      const payload = {
+        isCustomizable,
+        maxCharacters: Number(maxCharacters) || 25,
+        baseFeeCents: rupeesToCents(Number(customizationFeeRupees) || 0),
+        allowedPositions: allowedPositions.length > 0 ? allowedPositions : ['CAP', 'BARREL', 'CLIP'],
+        allowedFonts: allowedFonts.length > 0 ? allowedFonts : ['Arial', 'Times New Roman', 'Italic', 'Calibri', 'Script'],
+        bulkRules: bulkRules
+          .filter((r) => r.minQuantity > 0 && r.feeRupees >= 0)
+          .map((r) => ({
+            minQuantity: Number(r.minQuantity),
+            feeCents: rupeesToCents(Number(r.feeRupees)),
+          })),
+      };
+      await productService.updateCustomizationConfig(id, payload);
+      setCustomizationSaveMsg({ type: 'success', text: 'Customization settings updated successfully!' });
+      setTimeout(() => setCustomizationSaveMsg(null), 4000);
+    } catch (err: any) {
+      setCustomizationSaveMsg({ type: 'error', text: err?.message || 'Failed to update customization settings' });
+    } finally {
+      setIsSavingCustomization(false);
     }
   };
 
@@ -383,7 +447,14 @@ function AdminEditProductContent() {
                   className="relative w-20 h-20 rounded-xl border border-slate-200 bg-slate-50 overflow-hidden flex items-center justify-center group"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={imgUrl} alt={`Product ${index + 1}`} className="w-full h-full object-cover" />
+                  <img
+                    src={resolveImageUrl(imgUrl)}
+                    alt={`Product ${index + 1}`}
+                    onError={(e) => {
+                      e.currentTarget.src = '/products/default.png';
+                    }}
+                    className="w-full h-full object-cover"
+                  />
                   {imgUrl !== '/products/default.png' && (
                     <button
                       type="button"
@@ -541,7 +612,7 @@ function AdminEditProductContent() {
                 />
               </div>
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Price (LKR)</label>
+                <label className="font-bold text-slate-700 block mb-1">Price (Rs.)</label>
                 <input
                   type="number"
                   placeholder="Leave empty for base price"
@@ -656,6 +727,240 @@ function AdminEditProductContent() {
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+      </div>
+
+      {/* 3. Pen Customization & Engraving Configuration */}
+      <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-blue-50 text-[#0066CC] flex items-center justify-center shrink-0">
+              <PenTool className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-slate-900">Customization &amp; Engraving Settings</h2>
+              <p className="text-xs text-slate-500">Configure personalization eligibility, character limits, positions, fonts &amp; bulk fees</p>
+            </div>
+          </div>
+
+          <label className="relative inline-flex items-center cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={isCustomizable}
+              onChange={(e) => setIsCustomizable(e.target.checked)}
+              className="sr-only peer"
+            />
+            <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#0066CC]"></div>
+            <span className="ml-3 text-xs font-bold text-slate-800">
+              {isCustomizable ? 'Personalization Enabled' : 'Disabled'}
+            </span>
+          </label>
+        </div>
+
+        {customizationSaveMsg && (
+          <div
+            className={`p-3 rounded-xl text-xs flex items-center gap-2 ${
+              customizationSaveMsg.type === 'success'
+                ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                : 'bg-rose-50 text-rose-800 border border-rose-200'
+            }`}
+          >
+            {customizationSaveMsg.type === 'success' ? (
+              <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+            ) : (
+              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+            )}
+            <span>{customizationSaveMsg.text}</span>
+          </div>
+        )}
+
+        {isCustomizable ? (
+          <form onSubmit={handleSaveCustomization} className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">
+                  Base Engraving Fee (Rs.)
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-2.5 text-xs text-slate-400 font-bold">Rs.</span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={customizationFeeRupees}
+                    onChange={(e) => setCustomizationFeeRupees(e.target.value ? Number(e.target.value) : '')}
+                    className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#0066CC]"
+                    placeholder="350"
+                  />
+                </div>
+                <p className="text-[10px] text-slate-400 mt-1">Single-unit personalization fee added to pen price</p>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">
+                  Maximum Character Limit
+                </label>
+                <input
+                  type="number"
+                  min="5"
+                  max="100"
+                  value={maxCharacters}
+                  onChange={(e) => setMaxCharacters(Number(e.target.value))}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#0066CC]"
+                  placeholder="25"
+                />
+                <p className="text-[10px] text-slate-400 mt-1">Recommended 20-30 characters for standard pens</p>
+              </div>
+            </div>
+
+            {/* Allowed Positions */}
+            <div>
+              <label className="text-xs font-bold text-slate-700 block mb-2">
+                Supported Engraving Positions
+              </label>
+              <div className="flex flex-wrap gap-3">
+                {['CAP', 'BARREL', 'CLIP'].map((pos) => {
+                  const checked = allowedPositions.includes(pos);
+                  return (
+                    <label
+                      key={pos}
+                      className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-bold cursor-pointer transition-all ${
+                        checked
+                          ? 'bg-blue-50 border-[#0066CC] text-[#0066CC]'
+                          : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => {
+                          if (checked) {
+                            if (allowedPositions.length > 1) {
+                              setAllowedPositions(allowedPositions.filter((p) => p !== pos));
+                            }
+                          } else {
+                            setAllowedPositions([...allowedPositions, pos]);
+                          }
+                        }}
+                        className="rounded text-[#0066CC] focus:ring-[#0066CC]"
+                      />
+                      <span>Pen {pos.charAt(0) + pos.slice(1).toLowerCase()}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Allowed Fonts */}
+            <div>
+              <label className="text-xs font-bold text-slate-700 block mb-2">
+                Supported Engraving Fonts
+              </label>
+              <div className="flex flex-wrap gap-3">
+                {['Arial', 'Times New Roman', 'Italic', 'Calibri', 'Script'].map((font) => {
+                  const checked = allowedFonts.includes(font);
+                  return (
+                    <label
+                      key={font}
+                      className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-bold cursor-pointer transition-all ${
+                        checked
+                          ? 'bg-blue-50 border-[#0066CC] text-[#0066CC]'
+                          : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => {
+                          if (checked) {
+                            if (allowedFonts.length > 1) {
+                              setAllowedFonts(allowedFonts.filter((f) => f !== font));
+                            }
+                          } else {
+                            setAllowedFonts([...allowedFonts, font]);
+                          }
+                        }}
+                        className="rounded text-[#0066CC] focus:ring-[#0066CC]"
+                      />
+                      <span>{font}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Tiered Bulk Pricing Rules */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs font-bold text-slate-700">
+                  Bulk Engraving Discount Tiers
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setBulkRules([...bulkRules, { minQuantity: 200, feeRupees: 100 }])}
+                  className="text-[11px] font-bold text-[#0066CC] hover:underline inline-flex items-center gap-1 cursor-pointer"
+                >
+                  <Plus className="w-3 h-3" />
+                  <span>Add Tier</span>
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                {bulkRules.map((rule, idx) => (
+                  <div key={idx} className="flex items-center gap-3 p-2.5 bg-slate-50 rounded-xl border border-slate-200 text-xs">
+                    <span className="font-bold text-slate-500 w-16">Min Qty:</span>
+                    <input
+                      type="number"
+                      min="2"
+                      value={rule.minQuantity}
+                      onChange={(e) => {
+                        const updated = [...bulkRules];
+                        updated[idx].minQuantity = Number(e.target.value);
+                        setBulkRules(updated);
+                      }}
+                      className="w-20 px-2 py-1 bg-white border border-slate-200 rounded-lg font-bold text-center"
+                    />
+                    <span className="font-bold text-slate-500">units &rarr; Fee: Rs.</span>
+                    <input
+                      type="number"
+                      min="0"
+                      value={rule.feeRupees}
+                      onChange={(e) => {
+                        const updated = [...bulkRules];
+                        updated[idx].feeRupees = Number(e.target.value);
+                        setBulkRules(updated);
+                      }}
+                      className="w-24 px-2 py-1 bg-white border border-slate-200 rounded-lg font-bold text-center"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setBulkRules(bulkRules.filter((_, i) => i !== idx))}
+                      className="ml-auto text-slate-400 hover:text-rose-600 p-1 transition-colors cursor-pointer"
+                      title="Remove tier"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Save Button */}
+            <div className="pt-2 flex justify-end">
+              <button
+                type="submit"
+                disabled={isSavingCustomization}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#0066CC] hover:bg-[#0052a3] text-white text-xs font-bold transition-all shadow-xs cursor-pointer disabled:opacity-50"
+              >
+                <Save className="w-4 h-4" />
+                <span>{isSavingCustomization ? 'Saving Settings...' : 'Save Customization Settings'}</span>
+              </button>
+            </div>
+          </form>
+        ) : (
+          <div className="p-4 rounded-2xl bg-slate-50 text-center text-xs text-slate-500">
+            Personalization is currently disabled for this product. Enable the toggle above to accept laser engraving requests.
           </div>
         )}
       </div>

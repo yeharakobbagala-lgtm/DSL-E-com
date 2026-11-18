@@ -552,7 +552,7 @@ export default function AdminSettingsPage() {
             <div className="space-y-4 pt-4 border-t border-slate-100">
               <h2 className="text-sm font-bold text-slate-900 pb-2 border-b border-slate-100 flex items-center gap-2">
                 <Truck className="w-4 h-4 text-[#08275E]" />
-                Delivery Calculation Thresholds (LKR)
+                Delivery Calculation Thresholds (Rs.)
               </h2>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

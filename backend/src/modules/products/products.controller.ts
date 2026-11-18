@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Patch,
+  Put,
   Delete,
   Param,
   Query,
@@ -50,6 +51,10 @@ import {
   CreateVariantDto,
   UpdateVariantDto,
 } from './dto/create-variant.dto';
+import {
+  updateCustomizationConfigSchema,
+  UpdateCustomizationConfigDto,
+} from './dto/customization.dto';
 import { createZodPipe } from '../../common/pipes/zod-validation.pipe';
 import { AdminAuthGuard } from '../../common/guards/admin-auth.guard';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -92,6 +97,61 @@ export class ProductsController {
     @Query(createZodPipe(productQuerySchema)) query: ProductQueryDto
   ) {
     return this.productsService.findAll(query);
+  }
+
+  @ApiTags('Products')
+  @Get('customizable/pens')
+  @ApiOperation({
+    summary: 'List products eligible for pen customization',
+    description: 'Public endpoint to query all active pens configured with customizable options.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of customizable pen products returned successfully',
+  })
+  async getCustomizablePens() {
+    const pens = await this.productsService.findCustomizableProducts();
+    return createApiResponse(pens, 'Customizable pens retrieved successfully');
+  }
+
+  @ApiTags('Products')
+  @Get(':id/customization')
+  @ApiOperation({
+    summary: 'Get product customization configuration',
+    description: 'Public endpoint to retrieve engraving positions, fonts, fees, and bulk pricing rules for a product.',
+  })
+  async getProductCustomization(@Param('id') id: string) {
+    const config = await this.productsService.getCustomizationConfig(id);
+    return createApiResponse(config, 'Product customization configuration retrieved');
+  }
+
+  @ApiTags('Products')
+  @Put(':id/customization')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('MANAGE_PRODUCTS')
+  @ApiOperation({
+    summary: 'Update product customization configuration (Admin only)',
+    description: 'Allows administrators to configure engraving positions, fonts, fees, character limits, and bulk rules.',
+  })
+  async updateProductCustomization(
+    @Param('id') id: string,
+    @Body(createZodPipe(updateCustomizationConfigSchema)) dto: UpdateCustomizationConfigDto
+  ) {
+    const updated = await this.productsService.updateCustomizationConfig(id, dto);
+    return createApiResponse(updated, 'Product customization configuration updated successfully');
+  }
+
+  @ApiTags('Products')
+  @Delete(':id/customization')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('MANAGE_PRODUCTS')
+  @ApiOperation({
+    summary: 'Remove pen customization configuration (Admin only)',
+    description: 'Deletes the customization configuration for a product, removing it from the customization studio.',
+  })
+  async deleteProductCustomization(@Param('id') id: string) {
+    const deleted = await this.productsService.deleteCustomizationConfig(id);
+    return createApiResponse(deleted, 'Pen customization configuration removed successfully');
   }
 
   @ApiTags('Products')

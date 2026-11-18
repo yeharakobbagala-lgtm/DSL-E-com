@@ -121,7 +121,7 @@ class CheckoutService {
    * Creates an all-or-nothing 10-minute stock reservation.
    */
   async createReservation(params: {
-    items: Array<{ productId: string; variantId?: string | null; quantity: number; packId?: string | null }>;
+    items: Array<{ productId: string; variantId?: string | null; quantity: number; packId?: string | null; customization?: any | null }>;
     sessionId?: string | null;
     idempotencyKey?: string | null;
   }): Promise<ReservationResponse> {

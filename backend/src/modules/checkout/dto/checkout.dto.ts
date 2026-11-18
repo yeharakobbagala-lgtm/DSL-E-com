@@ -32,6 +32,16 @@ export const createReservationItemSchema = z.object({
   variantId: z.string().optional().nullable(),
   quantity: z.number().int().min(1, 'Quantity must be at least 1').max(999),
   packId: z.string().optional().nullable(),
+  customization: z
+    .object({
+      engravingText: z.string().min(1),
+      font: z.string().min(1),
+      position: z.string().min(1),
+      customizationFeeCents: z.number().optional().nullable(),
+      baseUnitPriceCents: z.number().optional().nullable(),
+    })
+    .optional()
+    .nullable(),
 });
 
 export const createReservationSchema = z.object({

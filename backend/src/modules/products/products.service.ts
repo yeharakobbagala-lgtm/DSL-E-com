@@ -73,9 +73,12 @@ export class ProductsService {
       where.id = query.productId.trim();
     }
 
-    // Category filter by ID or Slug
+    // Category filter by ID or Slug (supports matching either categoryId or subcategoryId)
     if (query.categoryId) {
-      where.categoryId = query.categoryId;
+      where.OR = [
+        { categoryId: query.categoryId },
+        { subcategoryId: query.categoryId },
+      ];
     } else if (query.categorySlug) {
       where.category = { slug: query.categorySlug };
     }
@@ -424,6 +427,7 @@ export class ProductsService {
         subcategory: { select: { id: true, name: true, slug: true } },
         brand: { select: { id: true, name: true, slug: true } },
         variants: includeInactive ? true : { where: { isActive: true } },
+        customizationConfig: true,
       },
     });
 
@@ -449,6 +453,7 @@ export class ProductsService {
       subcategory: { select: { id: true, name: true, slug: true } },
       brand: { select: { id: true, name: true, slug: true } },
       variants: includeInactive ? true : { where: { isActive: true } },
+      customizationConfig: true,
     };
 
     // 1. Try exact match on slug
@@ -1051,5 +1056,102 @@ export class ProductsService {
    */
   async generateVariantSku(productId: string, color?: string): Promise<string> {
     return this.skuGenerator.generateVariantSku(productId, { color });
+  }
+
+  /**
+   * Get customization configuration for a product.
+   */
+  async getCustomizationConfig(productId: string) {
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+      include: { customizationConfig: true },
+    });
+    if (!product) {
+      throw new NotFoundException(`Product with ID "${productId}" not found`);
+    }
+    return product.customizationConfig || null;
+  }
+
+  /**
+   * Upsert customization configuration for a product (admin only).
+   */
+  async updateCustomizationConfig(productId: string, dto: any) {
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+      include: { customizationConfig: true },
+    });
+    if (!product) {
+      throw new NotFoundException(`Product with ID "${productId}" not found`);
+    }
+
+    return this.prisma.productCustomizationConfig.upsert({
+      where: { productId },
+      create: {
+        productId,
+        isCustomizable: dto.isCustomizable ?? true,
+        maxCharacters: dto.maxCharacters ?? 25,
+        baseFeeCents: dto.baseFeeCents ?? 35000,
+        allowedPositions: dto.allowedPositions ?? ['CAP', 'BARREL', 'CLIP'],
+        allowedFonts: dto.allowedFonts ?? ['Arial', 'Times New Roman', 'Italic', 'Calibri', 'Script'],
+        bulkRules: dto.bulkRules ?? [],
+        previewConfig: dto.previewConfig ?? {},
+      },
+      update: {
+        ...(dto.isCustomizable !== undefined ? { isCustomizable: dto.isCustomizable } : {}),
+        ...(dto.maxCharacters !== undefined ? { maxCharacters: dto.maxCharacters } : {}),
+        ...(dto.baseFeeCents !== undefined ? { baseFeeCents: dto.baseFeeCents } : {}),
+        ...(dto.allowedPositions !== undefined ? { allowedPositions: dto.allowedPositions } : {}),
+        ...(dto.allowedFonts !== undefined ? { allowedFonts: dto.allowedFonts } : {}),
+        ...(dto.bulkRules !== undefined ? { bulkRules: dto.bulkRules } : {}),
+        ...(dto.previewConfig !== undefined ? { previewConfig: dto.previewConfig } : {}),
+      },
+    });
+  }
+
+  /**
+   * Delete customization configuration for a product.
+   */
+  async deleteCustomizationConfig(productId: string) {
+    return this.prisma.productCustomizationConfig.deleteMany({
+      where: { productId },
+    });
+  }
+
+  /**
+   * Find all active products eligible for pen customization.
+   */
+  async findCustomizableProducts() {
+    const configs = await this.prisma.productCustomizationConfig.findMany({
+      where: { isCustomizable: true },
+      include: {
+        product: {
+          include: {
+            variants: { where: { isActive: true } },
+            category: true,
+            brand: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return configs
+      .filter((c) => c.product && c.product.isActive)
+      .map((c) => {
+        const p = c.product;
+        return {
+          ...p,
+          customizationConfig: {
+            id: c.id,
+            isCustomizable: c.isCustomizable,
+            maxCharacters: c.maxCharacters,
+            baseFeeCents: c.baseFeeCents,
+            allowedPositions: c.allowedPositions,
+            allowedFonts: c.allowedFonts,
+            bulkRules: c.bulkRules,
+            previewConfig: c.previewConfig,
+          },
+        };
+      });
   }
 }

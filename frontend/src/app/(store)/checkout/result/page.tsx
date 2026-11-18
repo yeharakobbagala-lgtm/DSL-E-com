@@ -130,6 +130,19 @@ function CheckoutResultContent() {
   const isFailed =
     paymentStatus === 'FAILED' || paymentStatus === 'failed' || paymentStatus === 'CANCELLED';
 
+  const effectiveOrderId = order?.id || order?.orderNumber || orderId;
+
+  const orderToken =
+    tokenParam ||
+    (typeof window !== 'undefined' && effectiveOrderId
+      ? sessionStorage.getItem(`order_token_${effectiveOrderId}`)
+      : null) ||
+    (typeof window !== 'undefined' ? sessionStorage.getItem('last_tracking_token') : null);
+
+  const viewOrderUrl = effectiveOrderId
+    ? `/orders/${effectiveOrderId}${orderToken ? `?token=${encodeURIComponent(orderToken)}` : ''}`
+    : '/account/orders';
+
   useEffect(() => {
     fetchAuthoritativeStatus();
   }, [fetchAuthoritativeStatus]);
@@ -379,11 +392,17 @@ function CheckoutResultContent() {
               <span className="text-[10px] text-slate-400 block uppercase font-mono">Order Number</span>
               <span className="text-lg font-black text-[#0866E8] font-mono">{order.orderNumber}</span>
             </div>
-            <div className="text-right">
-              <span className="text-[10px] text-slate-400 block uppercase">Authoritative Status</span>
+            <div className="flex flex-wrap items-center gap-2.5">
               <span className="text-xs font-bold font-mono bg-[#F7FAFF] px-2.5 py-1 rounded-full border border-blue-100 text-[#09285C]">
                 {order.orderStatus || 'CONFIRMED'} &bull; {order.paymentStatus || 'PAID'}
               </span>
+              <Link
+                href={viewOrderUrl}
+                className="inline-flex items-center gap-1 text-xs font-bold text-[#0866E8] hover:text-[#09285C] hover:underline"
+              >
+                <Eye className="w-3.5 h-3.5" />
+                <span>View Full Order Details</span>
+              </Link>
             </div>
           </div>
 
@@ -712,19 +731,13 @@ function CheckoutResultContent() {
 
       {/* Next Actions */}
       <div className="flex flex-wrap items-center justify-center gap-3 pt-4">
-        {order && (
+        {effectiveOrderId && (
           <Link
-            href={`/orders/${order.id || order.orderNumber}${
-              typeof window !== 'undefined' && sessionStorage.getItem(`order_token_${order.id}`)
-                ? `?token=${encodeURIComponent(sessionStorage.getItem(`order_token_${order.id}`) || '')}`
-                : tokenParam
-                ? `?token=${encodeURIComponent(tokenParam)}`
-                : ''
-            }`}
-            className="bg-[#0066CC] hover:bg-[#0052a3] text-white text-xs font-bold px-6 py-3 rounded-full transition-all shadow-md flex items-center gap-2"
+            href={viewOrderUrl}
+            className="bg-[#0866E8] hover:bg-[#09285C] text-white text-xs font-bold px-7 py-3 rounded-full transition-all shadow-md flex items-center gap-2 group cursor-pointer"
           >
-            <Package className="w-4 h-4" />
-            <span>Track Order Status</span>
+            <Eye className="w-4 h-4 group-hover:scale-110 transition-transform" />
+            <span>View Order</span>
           </Link>
         )}
 
@@ -732,7 +745,7 @@ function CheckoutResultContent() {
           href="/shop"
           className="bg-white hover:bg-[#FFFDF0] text-[#292525] border border-[#C6E7FF] text-xs font-bold px-6 py-3 rounded-full transition-all shadow-xs flex items-center gap-1.5"
         >
-          Continue Shopping <ArrowRight className="w-3.5 h-3.5" />
+          <span>Continue Shopping</span> <ArrowRight className="w-3.5 h-3.5" />
         </Link>
       </div>
     </div>

@@ -3,13 +3,14 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Heart, ShoppingBag, Check, Star, Bookmark, AlertCircle, Plus } from 'lucide-react';
+import { Heart, ShoppingBag, Check, Star, Bookmark, AlertCircle, Plus, Minus, PenTool } from 'lucide-react';
 import { Product } from '@/types/product';
 import { formatLKR, calculateSavingsPercent } from '@/lib/currency';
 import { useCartStore } from '@/services/cartStore';
 import { useWishlistStore } from '@/services/wishlistStore';
 import { inventorySocketService } from '@/services/inventorySocketService';
 import { SaveToListModal } from './SaveToListModal';
+import { resolveImageUrl } from '@/lib/image';
 
 interface ProductCardProps {
   product: Product;
@@ -22,13 +23,30 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const [stockError, setStockError] = useState<string | null>(null);
   const [imageError, setImageError] = useState<boolean>(false);
 
-  const [liveStock, setLiveStock] = useState<number>(
-    product.availableStock !== undefined ? product.availableStock : product.stockQuantity
-  );
+  const initialStock =
+    typeof product.availableStock === 'number'
+      ? product.availableStock
+      : typeof product.stockQuantity === 'number'
+      ? product.stockQuantity
+      : 100;
+
+  const [liveStock, setLiveStock] = useState<number>(initialStock);
+
+  React.useEffect(() => {
+    const currentStock =
+      typeof product.availableStock === 'number'
+        ? product.availableStock
+        : typeof product.stockQuantity === 'number'
+        ? product.stockQuantity
+        : 100;
+    setLiveStock(currentStock);
+  }, [product.id, product.availableStock, product.stockQuantity]);
 
   React.useEffect(() => {
     const unsub = inventorySocketService.subscribeProduct(product.id, (update) => {
-      setLiveStock(update.availableStock);
+      if (typeof update.availableStock === 'number') {
+        setLiveStock(update.availableStock);
+      }
     });
     return () => unsub();
   }, [product.id]);
@@ -39,10 +57,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const inWishlist = useWishlistStore((state) => state.savedProductIds.includes(product.id));
   const toggleWishlist = useWishlistStore((state) => state.toggleWishlist);
 
-  const existingCartItem = cartItems.find((item) => item.product.id === product.id);
-  const alreadyInCart = existingCartItem ? existingCartItem.quantity : 0;
-  const maxCanAdd = Math.max(0, liveStock - alreadyInCart);
-  const isOutOfStock = liveStock <= 0;
+  const totalInCartForProduct = cartItems
+    .filter((item) => (item.productId === product.id || item.product?.id === product.id))
+    .reduce((acc, curr) => acc + curr.quantity, 0);
+  const alreadyInCart = totalInCartForProduct;
+  const effectiveStock =
+    typeof liveStock === 'number' && !isNaN(liveStock)
+      ? liveStock
+      : (typeof product.stockQuantity === 'number' ? product.stockQuantity : 100);
+  const maxCanAdd = Math.max(0, effectiveStock - alreadyInCart);
+  const isOutOfStock = effectiveStock <= 0;
   const hasVariants = Boolean(product.variants && product.variants.length > 1);
 
   const parsedCount = parseInt(quantityInput, 10);
@@ -50,7 +74,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     !isOutOfStock &&
     !isNaN(parsedCount) &&
     parsedCount >= 1 &&
-    parsedCount <= maxCanAdd;
+    (maxCanAdd > 0 ? parsedCount <= maxCanAdd : true);
 
   const handleQuantityChange = (val: string) => {
     setQuantityInput(val);
@@ -59,10 +83,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       setStockError('Enter valid count');
     } else if (num <= 0) {
       setStockError('Minimum order is 1');
-    } else if (num > liveStock) {
-      setStockError(`Max ${liveStock} units`);
-    } else if (num > maxCanAdd) {
+    } else if (effectiveStock > 0 && num > effectiveStock) {
+      setStockError(`Max ${effectiveStock} units`);
+    } else if (maxCanAdd > 0 && num > maxCanAdd) {
       setStockError(`Max ${maxCanAdd} more`);
+    } else if (maxCanAdd <= 0 && alreadyInCart > 0) {
+      setStockError('Max stock already in bag');
     } else {
       setStockError(null);
     }
@@ -79,17 +105,30 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     if (isOutOfStock) return;
 
     const count = Math.max(1, isNaN(parsedCount) ? 1 : parsedCount);
-    if (count > maxCanAdd) {
+    if (maxCanAdd > 0 && count > maxCanAdd) {
       setStockError(`Only ${maxCanAdd} left to add`);
       return;
     }
+    if (maxCanAdd <= 0) {
+      setStockError('Max stock already in bag');
+      return;
+    }
 
-    const success = await addItem(product, count);
+    const cleanProduct: Product = {
+      ...product,
+      isActive: product.isActive !== false,
+      stockQuantity: product.stockQuantity ?? effectiveStock,
+    };
+
+    const success = await addItem(cleanProduct, count);
     if (success) {
       setAdded(true);
       setQuantityInput('1');
       setStockError(null);
       setTimeout(() => setAdded(false), 1400);
+    } else {
+      setStockError('Could not add to cart');
+      setTimeout(() => setStockError(null), 2500);
     }
   };
 
@@ -122,6 +161,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         {product.isNewArrival && (
           <span className="bg-[#EAF4FF] border border-[#0866E8]/30 text-[#0866E8] text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full uppercase tracking-wider shadow-xs">
             New
+          </span>
+        )}
+        {product.customizationConfig?.isCustomizable && (
+          <span className="bg-[#0066CC] text-white text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full uppercase tracking-wider shadow-xs flex items-center gap-1">
+            <PenTool className="w-2.5 h-2.5" />
+            Engravable
           </span>
         )}
       </div>
@@ -169,7 +214,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           product.images[0].trim() !== '' &&
           !imageError ? (
             <img
-              src={product.images[0]}
+              src={resolveImageUrl(product.images[0])}
               alt={product.name}
               loading="lazy"
               onError={() => setImageError(true)}
@@ -225,7 +270,21 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <div className="flex items-center justify-between gap-1 h-6">
             <div className="flex items-baseline gap-1 sm:gap-1.5 flex-wrap">
               <span className="text-xs sm:text-sm md:text-base font-black text-[#09285C] tracking-tight">
-                {formatLKR(product.priceCents)}
+                {(() => {
+                  const formatted = formatLKR(product.priceCents);
+                  const match = formatted.match(/^([+-]?)\s*(Rs\.?|LKR)\s*([\d,]+(?:\.\d+)?.*)$/i);
+                  if (match) {
+                    return (
+                      <span className="inline-flex items-baseline">
+                        <span className="text-[10px] sm:text-xs font-semibold text-slate-400 mr-0.5 select-none">
+                          Rs.
+                        </span>
+                        <span>{match[3]}</span>
+                      </span>
+                    );
+                  }
+                  return formatted;
+                })()}
               </span>
               {product.compareAtPriceCents &&
                 product.compareAtPriceCents > product.priceCents && (
@@ -240,12 +299,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               className={`text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-md border shrink-0 ${
                 isOutOfStock
                   ? 'text-rose-600 bg-rose-50 border-rose-200/60'
-                  : liveStock < 10
+                  : effectiveStock < 10
                   ? 'text-amber-700 bg-amber-50 border-amber-200/60'
                   : 'text-emerald-700 bg-emerald-50/90 border-emerald-200/60'
               }`}
             >
-              {isOutOfStock ? 'Out of stock' : liveStock < 10 ? `${liveStock} left` : 'In stock'}
+              {isOutOfStock ? 'Out of stock' : effectiveStock < 10 ? `${effectiveStock} left` : 'In stock'}
             </span>
           </div>
 
@@ -282,28 +341,65 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             </div>
           ) : (
             <div className="flex flex-col gap-1.5 w-full">
-              {/* Responsive Cart Action: Full width touch button on mobile, with quantity stepper on desktop */}
+              {/* Responsive Cart Action: Compact Quantity Stepper + Add to Cart Button */}
               <div className="flex items-center gap-1.5 w-full">
-                {/* Desktop Quantity Input */}
-                <div className="relative w-14 sm:w-16 shrink-0 hidden sm:block">
+                {/* Stepper with - and + buttons */}
+                <div className="flex items-center border border-slate-200 rounded-xl bg-white h-[34px] shrink-0 overflow-hidden shadow-2xs">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      const current = parseInt(quantityInput, 10) || 1;
+                      const next = Math.max(1, current - 1);
+                      handleQuantityChange(String(next));
+                    }}
+                    disabled={parseInt(quantityInput, 10) <= 1}
+                    className="px-2 h-full hover:bg-slate-50 text-[#09285C] disabled:opacity-30 transition-colors flex items-center justify-center cursor-pointer"
+                    title="Decrease quantity"
+                    aria-label="Decrease quantity"
+                  >
+                    <Minus className="w-3 h-3" />
+                  </button>
                   <input
                     type="number"
                     min="1"
-                    max={liveStock}
+                    max={maxCanAdd > 0 ? maxCanAdd : effectiveStock}
                     value={quantityInput}
                     onChange={(e) => handleQuantityChange(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (isCountValid) {
+                          handleAddToCart(e as any);
+                        }
+                      }
+                    }}
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
                     }}
-                    className={`w-full py-1.5 px-1 text-center text-xs font-black rounded-xl border transition-all h-[34px] ${
-                      stockError
-                        ? 'border-rose-500 bg-rose-50 text-rose-700 ring-1 ring-rose-200'
-                        : 'border-slate-200 bg-white text-[#09285C] focus:border-[#0866E8]'
-                    }`}
+                    className="w-8 sm:w-9 text-center text-xs font-black text-[#09285C] bg-transparent border-0 focus:outline-none p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     aria-label="Quantity"
-                    title="Enter count"
+                    title="Enter quantity"
                   />
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      const current = parseInt(quantityInput, 10) || 1;
+                      const next = maxCanAdd > 0 ? Math.min(maxCanAdd, current + 1) : current + 1;
+                      handleQuantityChange(String(next));
+                    }}
+                    disabled={maxCanAdd > 0 && parseInt(quantityInput, 10) >= maxCanAdd}
+                    className="px-2 h-full hover:bg-slate-50 text-[#09285C] disabled:opacity-30 transition-colors flex items-center justify-center cursor-pointer"
+                    title="Increase quantity"
+                    aria-label="Increase quantity"
+                  >
+                    <Plus className="w-3 h-3" />
+                  </button>
                 </div>
 
                 {/* Add to Cart Button */}
@@ -311,7 +407,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                   type="button"
                   onClick={handleAddToCart}
                   disabled={!isCountValid}
-                  className={`w-full sm:flex-1 py-2 sm:py-1.5 px-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer touch-target h-[34px] ${
+                  className={`flex-1 py-2 sm:py-1.5 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer touch-target h-[34px] ${
                     !isCountValid
                       ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
                       : added
@@ -335,11 +431,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
               {/* Wholesale Quick Presets (Desktop only) */}
               <div className="hidden sm:flex items-center justify-end gap-1 pt-0.5 h-[18px]">
-                {liveStock >= 20 ? (
+                {effectiveStock >= 20 ? (
                   <>
                     <span className="text-[9px] text-slate-400 font-semibold mr-auto">Bulk:</span>
                     {[10, 50]
-                      .filter((q) => q <= liveStock)
+                      .filter((q) => q <= effectiveStock)
                       .map((preset) => (
                         <button
                           key={preset}

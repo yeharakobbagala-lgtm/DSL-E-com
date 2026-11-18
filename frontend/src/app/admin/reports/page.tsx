@@ -780,12 +780,12 @@ export default function AdminReportsPage() {
                     <thead className="bg-slate-50 text-slate-600 uppercase font-bold border-b border-slate-200">
                       <tr>
                         <th className="py-2.5 px-3">Date (Colombo)</th>
-                        <th className="py-2.5 px-3 text-right">Gross Sales</th>
-                        <th className="py-2.5 px-3 text-right">Refunds</th>
-                        <th className="py-2.5 px-3 text-right">Net Revenue</th>
+                        <th className="py-2.5 px-3 text-right">Gross Sales (Rs.)</th>
+                        <th className="py-2.5 px-3 text-right">Refunds (Rs.)</th>
+                        <th className="py-2.5 px-3 text-right">Net Revenue (Rs.)</th>
                         <th className="py-2.5 px-3 text-center">Paid Orders</th>
                         <th className="py-2.5 px-3 text-center">Total Orders</th>
-                        <th className="py-2.5 px-3 text-right">Daily AOV</th>
+                        <th className="py-2.5 px-3 text-right">Daily AOV (Rs.)</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
@@ -793,18 +793,18 @@ export default function AdminReportsPage() {
                         <tr key={d.date} className="hover:bg-slate-50/60">
                           <td className="py-2.5 px-3 font-semibold text-slate-800">{d.date}</td>
                           <td className="py-2.5 px-3 text-right font-medium text-slate-900">
-                            {formatLKR(d.grossSalesCents)}
+                            {(d.grossSalesCents / 100).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
                           <td className="py-2.5 px-3 text-right font-medium text-rose-600">
-                            {d.refundsCents > 0 ? `-${formatLKR(d.refundsCents)}` : '—'}
+                            {d.refundsCents > 0 ? `-${(d.refundsCents / 100).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '—'}
                           </td>
                           <td className="py-2.5 px-3 text-right font-bold text-emerald-700">
-                            {formatLKR(d.netRevenueCents)}
+                            {(d.netRevenueCents / 100).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
                           <td className="py-2.5 px-3 text-center text-slate-700">{d.paidOrderCount}</td>
                           <td className="py-2.5 px-3 text-center text-slate-500">{d.orderCount}</td>
                           <td className="py-2.5 px-3 text-right text-slate-700">
-                            {formatLKR(d.averageOrderValueCents)}
+                            {(d.averageOrderValueCents / 100).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
                         </tr>
                       ))}
@@ -934,7 +934,7 @@ export default function AdminReportsPage() {
                         <th className="py-2.5 px-3">Date</th>
                         <th className="py-2.5 px-3">Customer</th>
                         <th className="py-2.5 px-3">District</th>
-                        <th className="py-2.5 px-3 text-right">Total Amount</th>
+                        <th className="py-2.5 px-3 text-right">Total Amount (Rs.)</th>
                         <th className="py-2.5 px-3 text-center">Payment Status</th>
                         <th className="py-2.5 px-3 text-center">Order Status</th>
                       </tr>
@@ -955,7 +955,7 @@ export default function AdminReportsPage() {
                           </td>
                           <td className="py-2.5 px-3 text-slate-600">{ord.district}</td>
                           <td className="py-2.5 px-3 text-right font-black text-slate-900">
-                            {formatLKR(ord.totalCents)}
+                            {(ord.totalCents / 100).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
                           <td className="py-2.5 px-3 text-center">
                             <span

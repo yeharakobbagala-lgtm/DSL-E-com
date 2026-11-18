@@ -236,6 +236,20 @@ exports.Prisma.ProductVariantScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.ProductCustomizationConfigScalarFieldEnum = {
+  id: 'id',
+  productId: 'productId',
+  isCustomizable: 'isCustomizable',
+  maxCharacters: 'maxCharacters',
+  baseFeeCents: 'baseFeeCents',
+  allowedPositions: 'allowedPositions',
+  allowedFonts: 'allowedFonts',
+  bulkRules: 'bulkRules',
+  previewConfig: 'previewConfig',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.InventoryMovementScalarFieldEnum = {
   id: 'id',
   productId: 'productId',
@@ -332,6 +346,7 @@ exports.Prisma.OrderItemScalarFieldEnum = {
   unitPriceCents: 'unitPriceCents',
   quantity: 'quantity',
   totalPriceCents: 'totalPriceCents',
+  customization: 'customization',
   createdAt: 'createdAt'
 };
 
@@ -429,6 +444,7 @@ exports.Prisma.StockReservationItemScalarFieldEnum = {
   variantId: 'variantId',
   quantity: 'quantity',
   unitPriceCents: 'unitPriceCents',
+  customization: 'customization',
   createdAt: 'createdAt'
 };
 
@@ -650,6 +666,7 @@ exports.Prisma.CartItemScalarFieldEnum = {
   productId: 'productId',
   variantId: 'variantId',
   quantity: 'quantity',
+  customization: 'customization',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -1062,6 +1079,7 @@ exports.Prisma.ModelName = {
   Brand: 'Brand',
   Product: 'Product',
   ProductVariant: 'ProductVariant',
+  ProductCustomizationConfig: 'ProductCustomizationConfig',
   InventoryMovement: 'InventoryMovement',
   SchoolPack: 'SchoolPack',
   SchoolPackItem: 'SchoolPackItem',

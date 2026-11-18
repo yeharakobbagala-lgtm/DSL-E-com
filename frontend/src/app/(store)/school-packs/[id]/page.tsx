@@ -449,10 +449,11 @@ function SchoolPackCustomizerContent() {
 
         <div className="bg-[#F7FAFF] border border-[#EAF4FF] rounded-2xl p-5 text-center shrink-0">
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-            Customized Total (LKR)
+            Customized Total
           </span>
           <span className="text-2xl sm:text-3xl font-black text-[#0866E8] block mt-0.5">
-            {formatLKR(serverTotalCents)}
+            <span className="text-sm font-semibold opacity-60 mr-1 select-none">Rs.</span>
+            {(serverTotalCents / 100).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </span>
           <span className="text-[11px] font-bold text-emerald-600 block mt-1">
             Includes {pack.savingsPercentage}% Bundle Savings (-{formatLKR(serverSavingsCents)})

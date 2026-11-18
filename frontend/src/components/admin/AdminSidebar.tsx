@@ -28,6 +28,7 @@ import {
   CreditCard,
   FileCheck,
   X,
+  PenTool,
 } from 'lucide-react';
 import { useUserStore } from '@/services/userStore';
 
@@ -71,6 +72,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
         { href: '/admin/inventory', label: 'Inventory & Stock Control', icon: Boxes, permission: 'inventory.view' },
         { href: '/admin/brands', label: 'Brands & Manufacturers', icon: Award, permission: 'brands.view' },
         { href: '/admin/school-packs', label: 'School Packs & Bundles', icon: GraduationCap, permission: 'school_packs.view' },
+        { href: '/admin/customize-pen', label: 'Pen Customization', icon: PenTool, permission: 'products.view' },
         { href: '/admin/find-my-stationery', label: 'Find My Stationery AI', icon: Sparkles, permission: 'recommendations.view' },
       ],
     },

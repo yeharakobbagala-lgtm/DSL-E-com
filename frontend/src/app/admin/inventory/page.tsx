@@ -228,9 +228,6 @@ export default function AdminInventoryPage() {
     const unsubInv = inventoryService.subscribe(() => {
       setMovements(inventoryService.getMovements());
     });
-    const unsubProd = productService.subscribe(() => {
-      loadProducts();
-    });
     const unsubSocket = inventorySocketService.subscribeAdmin((update) => {
       setProducts((prev) =>
         prev.map((p) => {
@@ -256,7 +253,6 @@ export default function AdminInventoryPage() {
 
     return () => {
       unsubInv();
-      unsubProd();
       unsubSocket();
       unsubReconnect();
     };
@@ -602,7 +598,7 @@ export default function AdminInventoryPage() {
                 <tr className="bg-slate-50 text-slate-500 border-y border-slate-200">
                   <th className="py-3 px-4 font-bold">Product</th>
                   <th className="py-3 px-4 font-bold">SKU</th>
-                  <th className="py-3 px-4 font-bold">Price</th>
+                  <th className="py-3 px-4 font-bold">Price (Rs.)</th>
                   <th className="py-3 px-4 font-bold text-center">Physical Stock</th>
                   <th className="py-3 px-4 font-bold text-center">Reserved Stock</th>
                   <th className="py-3 px-4 font-bold text-center">Available Stock</th>
@@ -611,8 +607,8 @@ export default function AdminInventoryPage() {
                   <th className="py-3 px-4 font-bold text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
-                {isLoadingProducts ? (
+              <tbody className={`divide-y divide-slate-100 ${isLoadingProducts ? 'opacity-60 transition-opacity' : ''}`}>
+                {isLoadingProducts && products.length === 0 ? (
                   <tr>
                     <td colSpan={9} className="py-12 text-center text-slate-400">
                       <Loader2 className="w-6 h-6 animate-spin mx-auto text-[#08275E] mb-2" />
@@ -653,8 +649,8 @@ export default function AdminInventoryPage() {
                           </div>
                         </td>
                         <td className="py-3.5 px-4 font-mono text-slate-500">{p.sku}</td>
-                        <td className="py-3.5 px-4 font-black text-[#08275E]">
-                          {formatLKR(p.priceCents)}
+                        <td className="py-3.5 px-4 font-bold text-slate-900">
+                          {(p.priceCents / 100).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </td>
                         <td className="py-3.5 px-4 text-center">
                           <span className="text-sm font-black text-slate-900">
@@ -886,8 +882,8 @@ export default function AdminInventoryPage() {
                   <th className="py-2.5 px-3 font-semibold">Audit Remarks</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
-                {isLoadingMovements ? (
+              <tbody className={`divide-y divide-slate-100 ${isLoadingMovements ? 'opacity-60 transition-opacity' : ''}`}>
+                {isLoadingMovements && movements.length === 0 ? (
                   <tr>
                     <td colSpan={8} className="py-10 text-center text-slate-400">
                       <Loader2 className="w-5 h-5 animate-spin mx-auto text-[#08275E] mb-2" />

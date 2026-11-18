@@ -49,6 +49,11 @@ export type Product = $Result.DefaultSelection<Prisma.$ProductPayload>
  */
 export type ProductVariant = $Result.DefaultSelection<Prisma.$ProductVariantPayload>
 /**
+ * Model ProductCustomizationConfig
+ * 
+ */
+export type ProductCustomizationConfig = $Result.DefaultSelection<Prisma.$ProductCustomizationConfigPayload>
+/**
  * Model InventoryMovement
  * 
  */
@@ -803,6 +808,16 @@ export class PrismaClient<
     * ```
     */
   get productVariant(): Prisma.ProductVariantDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.productCustomizationConfig`: Exposes CRUD operations for the **ProductCustomizationConfig** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ProductCustomizationConfigs
+    * const productCustomizationConfigs = await prisma.productCustomizationConfig.findMany()
+    * ```
+    */
+  get productCustomizationConfig(): Prisma.ProductCustomizationConfigDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.inventoryMovement`: Exposes CRUD operations for the **InventoryMovement** model.
@@ -1717,6 +1732,7 @@ export namespace Prisma {
     Brand: 'Brand',
     Product: 'Product',
     ProductVariant: 'ProductVariant',
+    ProductCustomizationConfig: 'ProductCustomizationConfig',
     InventoryMovement: 'InventoryMovement',
     SchoolPack: 'SchoolPack',
     SchoolPackItem: 'SchoolPackItem',
@@ -1778,7 +1794,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "address" | "refreshToken" | "category" | "brand" | "product" | "productVariant" | "inventoryMovement" | "schoolPack" | "schoolPackItem" | "order" | "orderAddressSnapshot" | "orderItem" | "orderAuditLog" | "orderNote" | "orderReturnRequest" | "orderReturnItem" | "refundRecord" | "stockReservation" | "stockReservationItem" | "paymentAttempt" | "bankDepositSubmission" | "promotion" | "promotionCode" | "promotionProduct" | "promotionCategory" | "promotionRedemption" | "wishlistItem" | "savedStationeryList" | "savedList" | "savedListItem" | "storeBanner" | "homepageBanner" | "auditLog" | "storeSettings" | "cart" | "cartItem" | "backInStockAlert" | "newsletterSubscriber" | "newsletterVerificationToken" | "newsletterConsentEvent" | "adminInvitation" | "role" | "permission" | "rolePermission" | "globalSku" | "skuSequence" | "productImportPreview" | "importExecutionLease" | "productImportBatch" | "productImportRowResult" | "verificationChallenge" | "adminActivityLog"
+      modelProps: "user" | "address" | "refreshToken" | "category" | "brand" | "product" | "productVariant" | "productCustomizationConfig" | "inventoryMovement" | "schoolPack" | "schoolPackItem" | "order" | "orderAddressSnapshot" | "orderItem" | "orderAuditLog" | "orderNote" | "orderReturnRequest" | "orderReturnItem" | "refundRecord" | "stockReservation" | "stockReservationItem" | "paymentAttempt" | "bankDepositSubmission" | "promotion" | "promotionCode" | "promotionProduct" | "promotionCategory" | "promotionRedemption" | "wishlistItem" | "savedStationeryList" | "savedList" | "savedListItem" | "storeBanner" | "homepageBanner" | "auditLog" | "storeSettings" | "cart" | "cartItem" | "backInStockAlert" | "newsletterSubscriber" | "newsletterVerificationToken" | "newsletterConsentEvent" | "adminInvitation" | "role" | "permission" | "rolePermission" | "globalSku" | "skuSequence" | "productImportPreview" | "importExecutionLease" | "productImportBatch" | "productImportRowResult" | "verificationChallenge" | "adminActivityLog"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2297,6 +2313,80 @@ export namespace Prisma {
           count: {
             args: Prisma.ProductVariantCountArgs<ExtArgs>
             result: $Utils.Optional<ProductVariantCountAggregateOutputType> | number
+          }
+        }
+      }
+      ProductCustomizationConfig: {
+        payload: Prisma.$ProductCustomizationConfigPayload<ExtArgs>
+        fields: Prisma.ProductCustomizationConfigFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ProductCustomizationConfigFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProductCustomizationConfigPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ProductCustomizationConfigFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProductCustomizationConfigPayload>
+          }
+          findFirst: {
+            args: Prisma.ProductCustomizationConfigFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProductCustomizationConfigPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ProductCustomizationConfigFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProductCustomizationConfigPayload>
+          }
+          findMany: {
+            args: Prisma.ProductCustomizationConfigFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProductCustomizationConfigPayload>[]
+          }
+          create: {
+            args: Prisma.ProductCustomizationConfigCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProductCustomizationConfigPayload>
+          }
+          createMany: {
+            args: Prisma.ProductCustomizationConfigCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ProductCustomizationConfigCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProductCustomizationConfigPayload>[]
+          }
+          delete: {
+            args: Prisma.ProductCustomizationConfigDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProductCustomizationConfigPayload>
+          }
+          update: {
+            args: Prisma.ProductCustomizationConfigUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProductCustomizationConfigPayload>
+          }
+          deleteMany: {
+            args: Prisma.ProductCustomizationConfigDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ProductCustomizationConfigUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.ProductCustomizationConfigUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProductCustomizationConfigPayload>[]
+          }
+          upsert: {
+            args: Prisma.ProductCustomizationConfigUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProductCustomizationConfigPayload>
+          }
+          aggregate: {
+            args: Prisma.ProductCustomizationConfigAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateProductCustomizationConfig>
+          }
+          groupBy: {
+            args: Prisma.ProductCustomizationConfigGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ProductCustomizationConfigGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ProductCustomizationConfigCountArgs<ExtArgs>
+            result: $Utils.Optional<ProductCustomizationConfigCountAggregateOutputType> | number
           }
         }
       }
@@ -5834,6 +5924,7 @@ export namespace Prisma {
     brand?: BrandOmit
     product?: ProductOmit
     productVariant?: ProductVariantOmit
+    productCustomizationConfig?: ProductCustomizationConfigOmit
     inventoryMovement?: InventoryMovementOmit
     schoolPack?: SchoolPackOmit
     schoolPackItem?: SchoolPackItemOmit
@@ -13912,6 +14003,7 @@ export namespace Prisma {
     reservationItems?: boolean | Product$reservationItemsArgs<ExtArgs>
     backInStockAlerts?: boolean | Product$backInStockAlertsArgs<ExtArgs>
     promotions?: boolean | Product$promotionsArgs<ExtArgs>
+    customizationConfig?: boolean | Product$customizationConfigArgs<ExtArgs>
     _count?: boolean | ProductCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["product"]>
 
@@ -14024,6 +14116,7 @@ export namespace Prisma {
     reservationItems?: boolean | Product$reservationItemsArgs<ExtArgs>
     backInStockAlerts?: boolean | Product$backInStockAlertsArgs<ExtArgs>
     promotions?: boolean | Product$promotionsArgs<ExtArgs>
+    customizationConfig?: boolean | Product$customizationConfigArgs<ExtArgs>
     _count?: boolean | ProductCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type ProductIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -14054,6 +14147,7 @@ export namespace Prisma {
       reservationItems: Prisma.$StockReservationItemPayload<ExtArgs>[]
       backInStockAlerts: Prisma.$BackInStockAlertPayload<ExtArgs>[]
       promotions: Prisma.$PromotionProductPayload<ExtArgs>[]
+      customizationConfig: Prisma.$ProductCustomizationConfigPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -14490,6 +14584,7 @@ export namespace Prisma {
     reservationItems<T extends Product$reservationItemsArgs<ExtArgs> = {}>(args?: Subset<T, Product$reservationItemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StockReservationItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     backInStockAlerts<T extends Product$backInStockAlertsArgs<ExtArgs> = {}>(args?: Subset<T, Product$backInStockAlertsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BackInStockAlertPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     promotions<T extends Product$promotionsArgs<ExtArgs> = {}>(args?: Subset<T, Product$promotionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PromotionProductPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    customizationConfig<T extends Product$customizationConfigArgs<ExtArgs> = {}>(args?: Subset<T, Product$customizationConfigArgs<ExtArgs>>): Prisma__ProductCustomizationConfigClient<$Result.GetResult<Prisma.$ProductCustomizationConfigPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -15221,6 +15316,25 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: PromotionProductScalarFieldEnum | PromotionProductScalarFieldEnum[]
+  }
+
+  /**
+   * Product.customizationConfig
+   */
+  export type Product$customizationConfigArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductCustomizationConfig
+     */
+    select?: ProductCustomizationConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductCustomizationConfig
+     */
+    omit?: ProductCustomizationConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductCustomizationConfigInclude<ExtArgs> | null
+    where?: ProductCustomizationConfigWhereInput
   }
 
   /**
@@ -16555,6 +16669,1169 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: ProductVariantInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model ProductCustomizationConfig
+   */
+
+  export type AggregateProductCustomizationConfig = {
+    _count: ProductCustomizationConfigCountAggregateOutputType | null
+    _avg: ProductCustomizationConfigAvgAggregateOutputType | null
+    _sum: ProductCustomizationConfigSumAggregateOutputType | null
+    _min: ProductCustomizationConfigMinAggregateOutputType | null
+    _max: ProductCustomizationConfigMaxAggregateOutputType | null
+  }
+
+  export type ProductCustomizationConfigAvgAggregateOutputType = {
+    maxCharacters: number | null
+    baseFeeCents: number | null
+  }
+
+  export type ProductCustomizationConfigSumAggregateOutputType = {
+    maxCharacters: number | null
+    baseFeeCents: number | null
+  }
+
+  export type ProductCustomizationConfigMinAggregateOutputType = {
+    id: string | null
+    productId: string | null
+    isCustomizable: boolean | null
+    maxCharacters: number | null
+    baseFeeCents: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ProductCustomizationConfigMaxAggregateOutputType = {
+    id: string | null
+    productId: string | null
+    isCustomizable: boolean | null
+    maxCharacters: number | null
+    baseFeeCents: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ProductCustomizationConfigCountAggregateOutputType = {
+    id: number
+    productId: number
+    isCustomizable: number
+    maxCharacters: number
+    baseFeeCents: number
+    allowedPositions: number
+    allowedFonts: number
+    bulkRules: number
+    previewConfig: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type ProductCustomizationConfigAvgAggregateInputType = {
+    maxCharacters?: true
+    baseFeeCents?: true
+  }
+
+  export type ProductCustomizationConfigSumAggregateInputType = {
+    maxCharacters?: true
+    baseFeeCents?: true
+  }
+
+  export type ProductCustomizationConfigMinAggregateInputType = {
+    id?: true
+    productId?: true
+    isCustomizable?: true
+    maxCharacters?: true
+    baseFeeCents?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ProductCustomizationConfigMaxAggregateInputType = {
+    id?: true
+    productId?: true
+    isCustomizable?: true
+    maxCharacters?: true
+    baseFeeCents?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ProductCustomizationConfigCountAggregateInputType = {
+    id?: true
+    productId?: true
+    isCustomizable?: true
+    maxCharacters?: true
+    baseFeeCents?: true
+    allowedPositions?: true
+    allowedFonts?: true
+    bulkRules?: true
+    previewConfig?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type ProductCustomizationConfigAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ProductCustomizationConfig to aggregate.
+     */
+    where?: ProductCustomizationConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ProductCustomizationConfigs to fetch.
+     */
+    orderBy?: ProductCustomizationConfigOrderByWithRelationInput | ProductCustomizationConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ProductCustomizationConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ProductCustomizationConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ProductCustomizationConfigs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ProductCustomizationConfigs
+    **/
+    _count?: true | ProductCustomizationConfigCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: ProductCustomizationConfigAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ProductCustomizationConfigSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ProductCustomizationConfigMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ProductCustomizationConfigMaxAggregateInputType
+  }
+
+  export type GetProductCustomizationConfigAggregateType<T extends ProductCustomizationConfigAggregateArgs> = {
+        [P in keyof T & keyof AggregateProductCustomizationConfig]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateProductCustomizationConfig[P]>
+      : GetScalarType<T[P], AggregateProductCustomizationConfig[P]>
+  }
+
+
+
+
+  export type ProductCustomizationConfigGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ProductCustomizationConfigWhereInput
+    orderBy?: ProductCustomizationConfigOrderByWithAggregationInput | ProductCustomizationConfigOrderByWithAggregationInput[]
+    by: ProductCustomizationConfigScalarFieldEnum[] | ProductCustomizationConfigScalarFieldEnum
+    having?: ProductCustomizationConfigScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ProductCustomizationConfigCountAggregateInputType | true
+    _avg?: ProductCustomizationConfigAvgAggregateInputType
+    _sum?: ProductCustomizationConfigSumAggregateInputType
+    _min?: ProductCustomizationConfigMinAggregateInputType
+    _max?: ProductCustomizationConfigMaxAggregateInputType
+  }
+
+  export type ProductCustomizationConfigGroupByOutputType = {
+    id: string
+    productId: string
+    isCustomizable: boolean
+    maxCharacters: number
+    baseFeeCents: number
+    allowedPositions: string[]
+    allowedFonts: string[]
+    bulkRules: JsonValue
+    previewConfig: JsonValue
+    createdAt: Date
+    updatedAt: Date
+    _count: ProductCustomizationConfigCountAggregateOutputType | null
+    _avg: ProductCustomizationConfigAvgAggregateOutputType | null
+    _sum: ProductCustomizationConfigSumAggregateOutputType | null
+    _min: ProductCustomizationConfigMinAggregateOutputType | null
+    _max: ProductCustomizationConfigMaxAggregateOutputType | null
+  }
+
+  type GetProductCustomizationConfigGroupByPayload<T extends ProductCustomizationConfigGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ProductCustomizationConfigGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ProductCustomizationConfigGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ProductCustomizationConfigGroupByOutputType[P]>
+            : GetScalarType<T[P], ProductCustomizationConfigGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ProductCustomizationConfigSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    productId?: boolean
+    isCustomizable?: boolean
+    maxCharacters?: boolean
+    baseFeeCents?: boolean
+    allowedPositions?: boolean
+    allowedFonts?: boolean
+    bulkRules?: boolean
+    previewConfig?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    product?: boolean | ProductDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["productCustomizationConfig"]>
+
+  export type ProductCustomizationConfigSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    productId?: boolean
+    isCustomizable?: boolean
+    maxCharacters?: boolean
+    baseFeeCents?: boolean
+    allowedPositions?: boolean
+    allowedFonts?: boolean
+    bulkRules?: boolean
+    previewConfig?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    product?: boolean | ProductDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["productCustomizationConfig"]>
+
+  export type ProductCustomizationConfigSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    productId?: boolean
+    isCustomizable?: boolean
+    maxCharacters?: boolean
+    baseFeeCents?: boolean
+    allowedPositions?: boolean
+    allowedFonts?: boolean
+    bulkRules?: boolean
+    previewConfig?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    product?: boolean | ProductDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["productCustomizationConfig"]>
+
+  export type ProductCustomizationConfigSelectScalar = {
+    id?: boolean
+    productId?: boolean
+    isCustomizable?: boolean
+    maxCharacters?: boolean
+    baseFeeCents?: boolean
+    allowedPositions?: boolean
+    allowedFonts?: boolean
+    bulkRules?: boolean
+    previewConfig?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type ProductCustomizationConfigOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "productId" | "isCustomizable" | "maxCharacters" | "baseFeeCents" | "allowedPositions" | "allowedFonts" | "bulkRules" | "previewConfig" | "createdAt" | "updatedAt", ExtArgs["result"]["productCustomizationConfig"]>
+  export type ProductCustomizationConfigInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    product?: boolean | ProductDefaultArgs<ExtArgs>
+  }
+  export type ProductCustomizationConfigIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    product?: boolean | ProductDefaultArgs<ExtArgs>
+  }
+  export type ProductCustomizationConfigIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    product?: boolean | ProductDefaultArgs<ExtArgs>
+  }
+
+  export type $ProductCustomizationConfigPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ProductCustomizationConfig"
+    objects: {
+      product: Prisma.$ProductPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      productId: string
+      isCustomizable: boolean
+      maxCharacters: number
+      baseFeeCents: number
+      allowedPositions: string[]
+      allowedFonts: string[]
+      bulkRules: Prisma.JsonValue
+      previewConfig: Prisma.JsonValue
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["productCustomizationConfig"]>
+    composites: {}
+  }
+
+  type ProductCustomizationConfigGetPayload<S extends boolean | null | undefined | ProductCustomizationConfigDefaultArgs> = $Result.GetResult<Prisma.$ProductCustomizationConfigPayload, S>
+
+  type ProductCustomizationConfigCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ProductCustomizationConfigFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ProductCustomizationConfigCountAggregateInputType | true
+    }
+
+  export interface ProductCustomizationConfigDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ProductCustomizationConfig'], meta: { name: 'ProductCustomizationConfig' } }
+    /**
+     * Find zero or one ProductCustomizationConfig that matches the filter.
+     * @param {ProductCustomizationConfigFindUniqueArgs} args - Arguments to find a ProductCustomizationConfig
+     * @example
+     * // Get one ProductCustomizationConfig
+     * const productCustomizationConfig = await prisma.productCustomizationConfig.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ProductCustomizationConfigFindUniqueArgs>(args: SelectSubset<T, ProductCustomizationConfigFindUniqueArgs<ExtArgs>>): Prisma__ProductCustomizationConfigClient<$Result.GetResult<Prisma.$ProductCustomizationConfigPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ProductCustomizationConfig that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ProductCustomizationConfigFindUniqueOrThrowArgs} args - Arguments to find a ProductCustomizationConfig
+     * @example
+     * // Get one ProductCustomizationConfig
+     * const productCustomizationConfig = await prisma.productCustomizationConfig.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ProductCustomizationConfigFindUniqueOrThrowArgs>(args: SelectSubset<T, ProductCustomizationConfigFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ProductCustomizationConfigClient<$Result.GetResult<Prisma.$ProductCustomizationConfigPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ProductCustomizationConfig that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProductCustomizationConfigFindFirstArgs} args - Arguments to find a ProductCustomizationConfig
+     * @example
+     * // Get one ProductCustomizationConfig
+     * const productCustomizationConfig = await prisma.productCustomizationConfig.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ProductCustomizationConfigFindFirstArgs>(args?: SelectSubset<T, ProductCustomizationConfigFindFirstArgs<ExtArgs>>): Prisma__ProductCustomizationConfigClient<$Result.GetResult<Prisma.$ProductCustomizationConfigPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ProductCustomizationConfig that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProductCustomizationConfigFindFirstOrThrowArgs} args - Arguments to find a ProductCustomizationConfig
+     * @example
+     * // Get one ProductCustomizationConfig
+     * const productCustomizationConfig = await prisma.productCustomizationConfig.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ProductCustomizationConfigFindFirstOrThrowArgs>(args?: SelectSubset<T, ProductCustomizationConfigFindFirstOrThrowArgs<ExtArgs>>): Prisma__ProductCustomizationConfigClient<$Result.GetResult<Prisma.$ProductCustomizationConfigPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ProductCustomizationConfigs that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProductCustomizationConfigFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ProductCustomizationConfigs
+     * const productCustomizationConfigs = await prisma.productCustomizationConfig.findMany()
+     * 
+     * // Get first 10 ProductCustomizationConfigs
+     * const productCustomizationConfigs = await prisma.productCustomizationConfig.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const productCustomizationConfigWithIdOnly = await prisma.productCustomizationConfig.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ProductCustomizationConfigFindManyArgs>(args?: SelectSubset<T, ProductCustomizationConfigFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProductCustomizationConfigPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ProductCustomizationConfig.
+     * @param {ProductCustomizationConfigCreateArgs} args - Arguments to create a ProductCustomizationConfig.
+     * @example
+     * // Create one ProductCustomizationConfig
+     * const ProductCustomizationConfig = await prisma.productCustomizationConfig.create({
+     *   data: {
+     *     // ... data to create a ProductCustomizationConfig
+     *   }
+     * })
+     * 
+     */
+    create<T extends ProductCustomizationConfigCreateArgs>(args: SelectSubset<T, ProductCustomizationConfigCreateArgs<ExtArgs>>): Prisma__ProductCustomizationConfigClient<$Result.GetResult<Prisma.$ProductCustomizationConfigPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ProductCustomizationConfigs.
+     * @param {ProductCustomizationConfigCreateManyArgs} args - Arguments to create many ProductCustomizationConfigs.
+     * @example
+     * // Create many ProductCustomizationConfigs
+     * const productCustomizationConfig = await prisma.productCustomizationConfig.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ProductCustomizationConfigCreateManyArgs>(args?: SelectSubset<T, ProductCustomizationConfigCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many ProductCustomizationConfigs and returns the data saved in the database.
+     * @param {ProductCustomizationConfigCreateManyAndReturnArgs} args - Arguments to create many ProductCustomizationConfigs.
+     * @example
+     * // Create many ProductCustomizationConfigs
+     * const productCustomizationConfig = await prisma.productCustomizationConfig.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many ProductCustomizationConfigs and only return the `id`
+     * const productCustomizationConfigWithIdOnly = await prisma.productCustomizationConfig.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ProductCustomizationConfigCreateManyAndReturnArgs>(args?: SelectSubset<T, ProductCustomizationConfigCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProductCustomizationConfigPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a ProductCustomizationConfig.
+     * @param {ProductCustomizationConfigDeleteArgs} args - Arguments to delete one ProductCustomizationConfig.
+     * @example
+     * // Delete one ProductCustomizationConfig
+     * const ProductCustomizationConfig = await prisma.productCustomizationConfig.delete({
+     *   where: {
+     *     // ... filter to delete one ProductCustomizationConfig
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ProductCustomizationConfigDeleteArgs>(args: SelectSubset<T, ProductCustomizationConfigDeleteArgs<ExtArgs>>): Prisma__ProductCustomizationConfigClient<$Result.GetResult<Prisma.$ProductCustomizationConfigPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ProductCustomizationConfig.
+     * @param {ProductCustomizationConfigUpdateArgs} args - Arguments to update one ProductCustomizationConfig.
+     * @example
+     * // Update one ProductCustomizationConfig
+     * const productCustomizationConfig = await prisma.productCustomizationConfig.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ProductCustomizationConfigUpdateArgs>(args: SelectSubset<T, ProductCustomizationConfigUpdateArgs<ExtArgs>>): Prisma__ProductCustomizationConfigClient<$Result.GetResult<Prisma.$ProductCustomizationConfigPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ProductCustomizationConfigs.
+     * @param {ProductCustomizationConfigDeleteManyArgs} args - Arguments to filter ProductCustomizationConfigs to delete.
+     * @example
+     * // Delete a few ProductCustomizationConfigs
+     * const { count } = await prisma.productCustomizationConfig.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ProductCustomizationConfigDeleteManyArgs>(args?: SelectSubset<T, ProductCustomizationConfigDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ProductCustomizationConfigs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProductCustomizationConfigUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ProductCustomizationConfigs
+     * const productCustomizationConfig = await prisma.productCustomizationConfig.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ProductCustomizationConfigUpdateManyArgs>(args: SelectSubset<T, ProductCustomizationConfigUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ProductCustomizationConfigs and returns the data updated in the database.
+     * @param {ProductCustomizationConfigUpdateManyAndReturnArgs} args - Arguments to update many ProductCustomizationConfigs.
+     * @example
+     * // Update many ProductCustomizationConfigs
+     * const productCustomizationConfig = await prisma.productCustomizationConfig.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more ProductCustomizationConfigs and only return the `id`
+     * const productCustomizationConfigWithIdOnly = await prisma.productCustomizationConfig.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends ProductCustomizationConfigUpdateManyAndReturnArgs>(args: SelectSubset<T, ProductCustomizationConfigUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProductCustomizationConfigPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one ProductCustomizationConfig.
+     * @param {ProductCustomizationConfigUpsertArgs} args - Arguments to update or create a ProductCustomizationConfig.
+     * @example
+     * // Update or create a ProductCustomizationConfig
+     * const productCustomizationConfig = await prisma.productCustomizationConfig.upsert({
+     *   create: {
+     *     // ... data to create a ProductCustomizationConfig
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ProductCustomizationConfig we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ProductCustomizationConfigUpsertArgs>(args: SelectSubset<T, ProductCustomizationConfigUpsertArgs<ExtArgs>>): Prisma__ProductCustomizationConfigClient<$Result.GetResult<Prisma.$ProductCustomizationConfigPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of ProductCustomizationConfigs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProductCustomizationConfigCountArgs} args - Arguments to filter ProductCustomizationConfigs to count.
+     * @example
+     * // Count the number of ProductCustomizationConfigs
+     * const count = await prisma.productCustomizationConfig.count({
+     *   where: {
+     *     // ... the filter for the ProductCustomizationConfigs we want to count
+     *   }
+     * })
+    **/
+    count<T extends ProductCustomizationConfigCountArgs>(
+      args?: Subset<T, ProductCustomizationConfigCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ProductCustomizationConfigCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ProductCustomizationConfig.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProductCustomizationConfigAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ProductCustomizationConfigAggregateArgs>(args: Subset<T, ProductCustomizationConfigAggregateArgs>): Prisma.PrismaPromise<GetProductCustomizationConfigAggregateType<T>>
+
+    /**
+     * Group by ProductCustomizationConfig.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProductCustomizationConfigGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ProductCustomizationConfigGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ProductCustomizationConfigGroupByArgs['orderBy'] }
+        : { orderBy?: ProductCustomizationConfigGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ProductCustomizationConfigGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetProductCustomizationConfigGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ProductCustomizationConfig model
+   */
+  readonly fields: ProductCustomizationConfigFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ProductCustomizationConfig.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ProductCustomizationConfigClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    product<T extends ProductDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ProductDefaultArgs<ExtArgs>>): Prisma__ProductClient<$Result.GetResult<Prisma.$ProductPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ProductCustomizationConfig model
+   */
+  interface ProductCustomizationConfigFieldRefs {
+    readonly id: FieldRef<"ProductCustomizationConfig", 'String'>
+    readonly productId: FieldRef<"ProductCustomizationConfig", 'String'>
+    readonly isCustomizable: FieldRef<"ProductCustomizationConfig", 'Boolean'>
+    readonly maxCharacters: FieldRef<"ProductCustomizationConfig", 'Int'>
+    readonly baseFeeCents: FieldRef<"ProductCustomizationConfig", 'Int'>
+    readonly allowedPositions: FieldRef<"ProductCustomizationConfig", 'String[]'>
+    readonly allowedFonts: FieldRef<"ProductCustomizationConfig", 'String[]'>
+    readonly bulkRules: FieldRef<"ProductCustomizationConfig", 'Json'>
+    readonly previewConfig: FieldRef<"ProductCustomizationConfig", 'Json'>
+    readonly createdAt: FieldRef<"ProductCustomizationConfig", 'DateTime'>
+    readonly updatedAt: FieldRef<"ProductCustomizationConfig", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ProductCustomizationConfig findUnique
+   */
+  export type ProductCustomizationConfigFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductCustomizationConfig
+     */
+    select?: ProductCustomizationConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductCustomizationConfig
+     */
+    omit?: ProductCustomizationConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductCustomizationConfigInclude<ExtArgs> | null
+    /**
+     * Filter, which ProductCustomizationConfig to fetch.
+     */
+    where: ProductCustomizationConfigWhereUniqueInput
+  }
+
+  /**
+   * ProductCustomizationConfig findUniqueOrThrow
+   */
+  export type ProductCustomizationConfigFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductCustomizationConfig
+     */
+    select?: ProductCustomizationConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductCustomizationConfig
+     */
+    omit?: ProductCustomizationConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductCustomizationConfigInclude<ExtArgs> | null
+    /**
+     * Filter, which ProductCustomizationConfig to fetch.
+     */
+    where: ProductCustomizationConfigWhereUniqueInput
+  }
+
+  /**
+   * ProductCustomizationConfig findFirst
+   */
+  export type ProductCustomizationConfigFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductCustomizationConfig
+     */
+    select?: ProductCustomizationConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductCustomizationConfig
+     */
+    omit?: ProductCustomizationConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductCustomizationConfigInclude<ExtArgs> | null
+    /**
+     * Filter, which ProductCustomizationConfig to fetch.
+     */
+    where?: ProductCustomizationConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ProductCustomizationConfigs to fetch.
+     */
+    orderBy?: ProductCustomizationConfigOrderByWithRelationInput | ProductCustomizationConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ProductCustomizationConfigs.
+     */
+    cursor?: ProductCustomizationConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ProductCustomizationConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ProductCustomizationConfigs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ProductCustomizationConfigs.
+     */
+    distinct?: ProductCustomizationConfigScalarFieldEnum | ProductCustomizationConfigScalarFieldEnum[]
+  }
+
+  /**
+   * ProductCustomizationConfig findFirstOrThrow
+   */
+  export type ProductCustomizationConfigFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductCustomizationConfig
+     */
+    select?: ProductCustomizationConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductCustomizationConfig
+     */
+    omit?: ProductCustomizationConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductCustomizationConfigInclude<ExtArgs> | null
+    /**
+     * Filter, which ProductCustomizationConfig to fetch.
+     */
+    where?: ProductCustomizationConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ProductCustomizationConfigs to fetch.
+     */
+    orderBy?: ProductCustomizationConfigOrderByWithRelationInput | ProductCustomizationConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ProductCustomizationConfigs.
+     */
+    cursor?: ProductCustomizationConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ProductCustomizationConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ProductCustomizationConfigs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ProductCustomizationConfigs.
+     */
+    distinct?: ProductCustomizationConfigScalarFieldEnum | ProductCustomizationConfigScalarFieldEnum[]
+  }
+
+  /**
+   * ProductCustomizationConfig findMany
+   */
+  export type ProductCustomizationConfigFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductCustomizationConfig
+     */
+    select?: ProductCustomizationConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductCustomizationConfig
+     */
+    omit?: ProductCustomizationConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductCustomizationConfigInclude<ExtArgs> | null
+    /**
+     * Filter, which ProductCustomizationConfigs to fetch.
+     */
+    where?: ProductCustomizationConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ProductCustomizationConfigs to fetch.
+     */
+    orderBy?: ProductCustomizationConfigOrderByWithRelationInput | ProductCustomizationConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ProductCustomizationConfigs.
+     */
+    cursor?: ProductCustomizationConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ProductCustomizationConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ProductCustomizationConfigs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ProductCustomizationConfigs.
+     */
+    distinct?: ProductCustomizationConfigScalarFieldEnum | ProductCustomizationConfigScalarFieldEnum[]
+  }
+
+  /**
+   * ProductCustomizationConfig create
+   */
+  export type ProductCustomizationConfigCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductCustomizationConfig
+     */
+    select?: ProductCustomizationConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductCustomizationConfig
+     */
+    omit?: ProductCustomizationConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductCustomizationConfigInclude<ExtArgs> | null
+    /**
+     * The data needed to create a ProductCustomizationConfig.
+     */
+    data: XOR<ProductCustomizationConfigCreateInput, ProductCustomizationConfigUncheckedCreateInput>
+  }
+
+  /**
+   * ProductCustomizationConfig createMany
+   */
+  export type ProductCustomizationConfigCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ProductCustomizationConfigs.
+     */
+    data: ProductCustomizationConfigCreateManyInput | ProductCustomizationConfigCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ProductCustomizationConfig createManyAndReturn
+   */
+  export type ProductCustomizationConfigCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductCustomizationConfig
+     */
+    select?: ProductCustomizationConfigSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductCustomizationConfig
+     */
+    omit?: ProductCustomizationConfigOmit<ExtArgs> | null
+    /**
+     * The data used to create many ProductCustomizationConfigs.
+     */
+    data: ProductCustomizationConfigCreateManyInput | ProductCustomizationConfigCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductCustomizationConfigIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ProductCustomizationConfig update
+   */
+  export type ProductCustomizationConfigUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductCustomizationConfig
+     */
+    select?: ProductCustomizationConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductCustomizationConfig
+     */
+    omit?: ProductCustomizationConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductCustomizationConfigInclude<ExtArgs> | null
+    /**
+     * The data needed to update a ProductCustomizationConfig.
+     */
+    data: XOR<ProductCustomizationConfigUpdateInput, ProductCustomizationConfigUncheckedUpdateInput>
+    /**
+     * Choose, which ProductCustomizationConfig to update.
+     */
+    where: ProductCustomizationConfigWhereUniqueInput
+  }
+
+  /**
+   * ProductCustomizationConfig updateMany
+   */
+  export type ProductCustomizationConfigUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ProductCustomizationConfigs.
+     */
+    data: XOR<ProductCustomizationConfigUpdateManyMutationInput, ProductCustomizationConfigUncheckedUpdateManyInput>
+    /**
+     * Filter which ProductCustomizationConfigs to update
+     */
+    where?: ProductCustomizationConfigWhereInput
+    /**
+     * Limit how many ProductCustomizationConfigs to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ProductCustomizationConfig updateManyAndReturn
+   */
+  export type ProductCustomizationConfigUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductCustomizationConfig
+     */
+    select?: ProductCustomizationConfigSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductCustomizationConfig
+     */
+    omit?: ProductCustomizationConfigOmit<ExtArgs> | null
+    /**
+     * The data used to update ProductCustomizationConfigs.
+     */
+    data: XOR<ProductCustomizationConfigUpdateManyMutationInput, ProductCustomizationConfigUncheckedUpdateManyInput>
+    /**
+     * Filter which ProductCustomizationConfigs to update
+     */
+    where?: ProductCustomizationConfigWhereInput
+    /**
+     * Limit how many ProductCustomizationConfigs to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductCustomizationConfigIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ProductCustomizationConfig upsert
+   */
+  export type ProductCustomizationConfigUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductCustomizationConfig
+     */
+    select?: ProductCustomizationConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductCustomizationConfig
+     */
+    omit?: ProductCustomizationConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductCustomizationConfigInclude<ExtArgs> | null
+    /**
+     * The filter to search for the ProductCustomizationConfig to update in case it exists.
+     */
+    where: ProductCustomizationConfigWhereUniqueInput
+    /**
+     * In case the ProductCustomizationConfig found by the `where` argument doesn't exist, create a new ProductCustomizationConfig with this data.
+     */
+    create: XOR<ProductCustomizationConfigCreateInput, ProductCustomizationConfigUncheckedCreateInput>
+    /**
+     * In case the ProductCustomizationConfig was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ProductCustomizationConfigUpdateInput, ProductCustomizationConfigUncheckedUpdateInput>
+  }
+
+  /**
+   * ProductCustomizationConfig delete
+   */
+  export type ProductCustomizationConfigDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductCustomizationConfig
+     */
+    select?: ProductCustomizationConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductCustomizationConfig
+     */
+    omit?: ProductCustomizationConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductCustomizationConfigInclude<ExtArgs> | null
+    /**
+     * Filter which ProductCustomizationConfig to delete.
+     */
+    where: ProductCustomizationConfigWhereUniqueInput
+  }
+
+  /**
+   * ProductCustomizationConfig deleteMany
+   */
+  export type ProductCustomizationConfigDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ProductCustomizationConfigs to delete
+     */
+    where?: ProductCustomizationConfigWhereInput
+    /**
+     * Limit how many ProductCustomizationConfigs to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ProductCustomizationConfig without action
+   */
+  export type ProductCustomizationConfigDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductCustomizationConfig
+     */
+    select?: ProductCustomizationConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductCustomizationConfig
+     */
+    omit?: ProductCustomizationConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductCustomizationConfigInclude<ExtArgs> | null
   }
 
 
@@ -23088,6 +24365,7 @@ export namespace Prisma {
     unitPriceCents: number
     quantity: number
     totalPriceCents: number
+    customization: number
     createdAt: number
     _all: number
   }
@@ -23144,6 +24422,7 @@ export namespace Prisma {
     unitPriceCents?: true
     quantity?: true
     totalPriceCents?: true
+    customization?: true
     createdAt?: true
     _all?: true
   }
@@ -23245,6 +24524,7 @@ export namespace Prisma {
     unitPriceCents: number
     quantity: number
     totalPriceCents: number
+    customization: JsonValue | null
     createdAt: Date
     _count: OrderItemCountAggregateOutputType | null
     _avg: OrderItemAvgAggregateOutputType | null
@@ -23278,6 +24558,7 @@ export namespace Prisma {
     unitPriceCents?: boolean
     quantity?: boolean
     totalPriceCents?: boolean
+    customization?: boolean
     createdAt?: boolean
     order?: boolean | OrderDefaultArgs<ExtArgs>
     product?: boolean | ProductDefaultArgs<ExtArgs>
@@ -23297,6 +24578,7 @@ export namespace Prisma {
     unitPriceCents?: boolean
     quantity?: boolean
     totalPriceCents?: boolean
+    customization?: boolean
     createdAt?: boolean
     order?: boolean | OrderDefaultArgs<ExtArgs>
     product?: boolean | ProductDefaultArgs<ExtArgs>
@@ -23314,6 +24596,7 @@ export namespace Prisma {
     unitPriceCents?: boolean
     quantity?: boolean
     totalPriceCents?: boolean
+    customization?: boolean
     createdAt?: boolean
     order?: boolean | OrderDefaultArgs<ExtArgs>
     product?: boolean | ProductDefaultArgs<ExtArgs>
@@ -23331,10 +24614,11 @@ export namespace Prisma {
     unitPriceCents?: boolean
     quantity?: boolean
     totalPriceCents?: boolean
+    customization?: boolean
     createdAt?: boolean
   }
 
-  export type OrderItemOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "orderId" | "productId" | "variantId" | "productName" | "variantName" | "sku" | "unitPriceCents" | "quantity" | "totalPriceCents" | "createdAt", ExtArgs["result"]["orderItem"]>
+  export type OrderItemOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "orderId" | "productId" | "variantId" | "productName" | "variantName" | "sku" | "unitPriceCents" | "quantity" | "totalPriceCents" | "customization" | "createdAt", ExtArgs["result"]["orderItem"]>
   export type OrderItemInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     order?: boolean | OrderDefaultArgs<ExtArgs>
     product?: boolean | ProductDefaultArgs<ExtArgs>
@@ -23372,6 +24656,7 @@ export namespace Prisma {
       unitPriceCents: number
       quantity: number
       totalPriceCents: number
+      customization: Prisma.JsonValue | null
       createdAt: Date
     }, ExtArgs["result"]["orderItem"]>
     composites: {}
@@ -23810,6 +25095,7 @@ export namespace Prisma {
     readonly unitPriceCents: FieldRef<"OrderItem", 'Int'>
     readonly quantity: FieldRef<"OrderItem", 'Int'>
     readonly totalPriceCents: FieldRef<"OrderItem", 'Int'>
+    readonly customization: FieldRef<"OrderItem", 'Json'>
     readonly createdAt: FieldRef<"OrderItem", 'DateTime'>
   }
     
@@ -31468,6 +32754,7 @@ export namespace Prisma {
     variantId: number
     quantity: number
     unitPriceCents: number
+    customization: number
     createdAt: number
     _all: number
   }
@@ -31510,6 +32797,7 @@ export namespace Prisma {
     variantId?: true
     quantity?: true
     unitPriceCents?: true
+    customization?: true
     createdAt?: true
     _all?: true
   }
@@ -31607,6 +32895,7 @@ export namespace Prisma {
     variantId: string | null
     quantity: number
     unitPriceCents: number
+    customization: JsonValue | null
     createdAt: Date
     _count: StockReservationItemCountAggregateOutputType | null
     _avg: StockReservationItemAvgAggregateOutputType | null
@@ -31636,6 +32925,7 @@ export namespace Prisma {
     variantId?: boolean
     quantity?: boolean
     unitPriceCents?: boolean
+    customization?: boolean
     createdAt?: boolean
     reservation?: boolean | StockReservationDefaultArgs<ExtArgs>
     product?: boolean | ProductDefaultArgs<ExtArgs>
@@ -31649,6 +32939,7 @@ export namespace Prisma {
     variantId?: boolean
     quantity?: boolean
     unitPriceCents?: boolean
+    customization?: boolean
     createdAt?: boolean
     reservation?: boolean | StockReservationDefaultArgs<ExtArgs>
     product?: boolean | ProductDefaultArgs<ExtArgs>
@@ -31662,6 +32953,7 @@ export namespace Prisma {
     variantId?: boolean
     quantity?: boolean
     unitPriceCents?: boolean
+    customization?: boolean
     createdAt?: boolean
     reservation?: boolean | StockReservationDefaultArgs<ExtArgs>
     product?: boolean | ProductDefaultArgs<ExtArgs>
@@ -31675,10 +32967,11 @@ export namespace Prisma {
     variantId?: boolean
     quantity?: boolean
     unitPriceCents?: boolean
+    customization?: boolean
     createdAt?: boolean
   }
 
-  export type StockReservationItemOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "reservationId" | "productId" | "variantId" | "quantity" | "unitPriceCents" | "createdAt", ExtArgs["result"]["stockReservationItem"]>
+  export type StockReservationItemOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "reservationId" | "productId" | "variantId" | "quantity" | "unitPriceCents" | "customization" | "createdAt", ExtArgs["result"]["stockReservationItem"]>
   export type StockReservationItemInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     reservation?: boolean | StockReservationDefaultArgs<ExtArgs>
     product?: boolean | ProductDefaultArgs<ExtArgs>
@@ -31709,6 +33002,7 @@ export namespace Prisma {
       variantId: string | null
       quantity: number
       unitPriceCents: number
+      customization: Prisma.JsonValue | null
       createdAt: Date
     }, ExtArgs["result"]["stockReservationItem"]>
     composites: {}
@@ -32142,6 +33436,7 @@ export namespace Prisma {
     readonly variantId: FieldRef<"StockReservationItem", 'String'>
     readonly quantity: FieldRef<"StockReservationItem", 'Int'>
     readonly unitPriceCents: FieldRef<"StockReservationItem", 'Int'>
+    readonly customization: FieldRef<"StockReservationItem", 'Json'>
     readonly createdAt: FieldRef<"StockReservationItem", 'DateTime'>
   }
     
@@ -51465,6 +52760,7 @@ export namespace Prisma {
     productId: number
     variantId: number
     quantity: number
+    customization: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -51505,6 +52801,7 @@ export namespace Prisma {
     productId?: true
     variantId?: true
     quantity?: true
+    customization?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -51602,6 +52899,7 @@ export namespace Prisma {
     productId: string
     variantId: string | null
     quantity: number
+    customization: JsonValue | null
     createdAt: Date
     updatedAt: Date
     _count: CartItemCountAggregateOutputType | null
@@ -51631,6 +52929,7 @@ export namespace Prisma {
     productId?: boolean
     variantId?: boolean
     quantity?: boolean
+    customization?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     cart?: boolean | CartDefaultArgs<ExtArgs>
@@ -51644,6 +52943,7 @@ export namespace Prisma {
     productId?: boolean
     variantId?: boolean
     quantity?: boolean
+    customization?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     cart?: boolean | CartDefaultArgs<ExtArgs>
@@ -51657,6 +52957,7 @@ export namespace Prisma {
     productId?: boolean
     variantId?: boolean
     quantity?: boolean
+    customization?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     cart?: boolean | CartDefaultArgs<ExtArgs>
@@ -51670,11 +52971,12 @@ export namespace Prisma {
     productId?: boolean
     variantId?: boolean
     quantity?: boolean
+    customization?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type CartItemOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "cartId" | "productId" | "variantId" | "quantity" | "createdAt" | "updatedAt", ExtArgs["result"]["cartItem"]>
+  export type CartItemOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "cartId" | "productId" | "variantId" | "quantity" | "customization" | "createdAt" | "updatedAt", ExtArgs["result"]["cartItem"]>
   export type CartItemInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     cart?: boolean | CartDefaultArgs<ExtArgs>
     product?: boolean | ProductDefaultArgs<ExtArgs>
@@ -51704,6 +53006,7 @@ export namespace Prisma {
       productId: string
       variantId: string | null
       quantity: number
+      customization: Prisma.JsonValue | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["cartItem"]>
@@ -52137,6 +53440,7 @@ export namespace Prisma {
     readonly productId: FieldRef<"CartItem", 'String'>
     readonly variantId: FieldRef<"CartItem", 'String'>
     readonly quantity: FieldRef<"CartItem", 'Int'>
+    readonly customization: FieldRef<"CartItem", 'Json'>
     readonly createdAt: FieldRef<"CartItem", 'DateTime'>
     readonly updatedAt: FieldRef<"CartItem", 'DateTime'>
   }
@@ -71119,6 +72423,23 @@ export namespace Prisma {
   export type ProductVariantScalarFieldEnum = (typeof ProductVariantScalarFieldEnum)[keyof typeof ProductVariantScalarFieldEnum]
 
 
+  export const ProductCustomizationConfigScalarFieldEnum: {
+    id: 'id',
+    productId: 'productId',
+    isCustomizable: 'isCustomizable',
+    maxCharacters: 'maxCharacters',
+    baseFeeCents: 'baseFeeCents',
+    allowedPositions: 'allowedPositions',
+    allowedFonts: 'allowedFonts',
+    bulkRules: 'bulkRules',
+    previewConfig: 'previewConfig',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type ProductCustomizationConfigScalarFieldEnum = (typeof ProductCustomizationConfigScalarFieldEnum)[keyof typeof ProductCustomizationConfigScalarFieldEnum]
+
+
   export const InventoryMovementScalarFieldEnum: {
     id: 'id',
     productId: 'productId',
@@ -71230,6 +72551,7 @@ export namespace Prisma {
     unitPriceCents: 'unitPriceCents',
     quantity: 'quantity',
     totalPriceCents: 'totalPriceCents',
+    customization: 'customization',
     createdAt: 'createdAt'
   };
 
@@ -71348,6 +72670,7 @@ export namespace Prisma {
     variantId: 'variantId',
     quantity: 'quantity',
     unitPriceCents: 'unitPriceCents',
+    customization: 'customization',
     createdAt: 'createdAt'
   };
 
@@ -71620,6 +72943,7 @@ export namespace Prisma {
     productId: 'productId',
     variantId: 'variantId',
     quantity: 'quantity',
+    customization: 'customization',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -72890,6 +74214,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemListRelationFilter
     backInStockAlerts?: BackInStockAlertListRelationFilter
     promotions?: PromotionProductListRelationFilter
+    customizationConfig?: XOR<ProductCustomizationConfigNullableScalarRelationFilter, ProductCustomizationConfigWhereInput> | null
   }
 
   export type ProductOrderByWithRelationInput = {
@@ -72933,6 +74258,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemOrderByRelationAggregateInput
     backInStockAlerts?: BackInStockAlertOrderByRelationAggregateInput
     promotions?: PromotionProductOrderByRelationAggregateInput
+    customizationConfig?: ProductCustomizationConfigOrderByWithRelationInput
   }
 
   export type ProductWhereUniqueInput = Prisma.AtLeast<{
@@ -72979,6 +74305,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemListRelationFilter
     backInStockAlerts?: BackInStockAlertListRelationFilter
     promotions?: PromotionProductListRelationFilter
+    customizationConfig?: XOR<ProductCustomizationConfigNullableScalarRelationFilter, ProductCustomizationConfigWhereInput> | null
   }, "id" | "slug" | "sku" | "barcode">
 
   export type ProductOrderByWithAggregationInput = {
@@ -73147,6 +74474,93 @@ export namespace Prisma {
     isActive?: BoolWithAggregatesFilter<"ProductVariant"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"ProductVariant"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"ProductVariant"> | Date | string
+  }
+
+  export type ProductCustomizationConfigWhereInput = {
+    AND?: ProductCustomizationConfigWhereInput | ProductCustomizationConfigWhereInput[]
+    OR?: ProductCustomizationConfigWhereInput[]
+    NOT?: ProductCustomizationConfigWhereInput | ProductCustomizationConfigWhereInput[]
+    id?: StringFilter<"ProductCustomizationConfig"> | string
+    productId?: StringFilter<"ProductCustomizationConfig"> | string
+    isCustomizable?: BoolFilter<"ProductCustomizationConfig"> | boolean
+    maxCharacters?: IntFilter<"ProductCustomizationConfig"> | number
+    baseFeeCents?: IntFilter<"ProductCustomizationConfig"> | number
+    allowedPositions?: StringNullableListFilter<"ProductCustomizationConfig">
+    allowedFonts?: StringNullableListFilter<"ProductCustomizationConfig">
+    bulkRules?: JsonFilter<"ProductCustomizationConfig">
+    previewConfig?: JsonFilter<"ProductCustomizationConfig">
+    createdAt?: DateTimeFilter<"ProductCustomizationConfig"> | Date | string
+    updatedAt?: DateTimeFilter<"ProductCustomizationConfig"> | Date | string
+    product?: XOR<ProductScalarRelationFilter, ProductWhereInput>
+  }
+
+  export type ProductCustomizationConfigOrderByWithRelationInput = {
+    id?: SortOrder
+    productId?: SortOrder
+    isCustomizable?: SortOrder
+    maxCharacters?: SortOrder
+    baseFeeCents?: SortOrder
+    allowedPositions?: SortOrder
+    allowedFonts?: SortOrder
+    bulkRules?: SortOrder
+    previewConfig?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    product?: ProductOrderByWithRelationInput
+  }
+
+  export type ProductCustomizationConfigWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    productId?: string
+    AND?: ProductCustomizationConfigWhereInput | ProductCustomizationConfigWhereInput[]
+    OR?: ProductCustomizationConfigWhereInput[]
+    NOT?: ProductCustomizationConfigWhereInput | ProductCustomizationConfigWhereInput[]
+    isCustomizable?: BoolFilter<"ProductCustomizationConfig"> | boolean
+    maxCharacters?: IntFilter<"ProductCustomizationConfig"> | number
+    baseFeeCents?: IntFilter<"ProductCustomizationConfig"> | number
+    allowedPositions?: StringNullableListFilter<"ProductCustomizationConfig">
+    allowedFonts?: StringNullableListFilter<"ProductCustomizationConfig">
+    bulkRules?: JsonFilter<"ProductCustomizationConfig">
+    previewConfig?: JsonFilter<"ProductCustomizationConfig">
+    createdAt?: DateTimeFilter<"ProductCustomizationConfig"> | Date | string
+    updatedAt?: DateTimeFilter<"ProductCustomizationConfig"> | Date | string
+    product?: XOR<ProductScalarRelationFilter, ProductWhereInput>
+  }, "id" | "productId">
+
+  export type ProductCustomizationConfigOrderByWithAggregationInput = {
+    id?: SortOrder
+    productId?: SortOrder
+    isCustomizable?: SortOrder
+    maxCharacters?: SortOrder
+    baseFeeCents?: SortOrder
+    allowedPositions?: SortOrder
+    allowedFonts?: SortOrder
+    bulkRules?: SortOrder
+    previewConfig?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: ProductCustomizationConfigCountOrderByAggregateInput
+    _avg?: ProductCustomizationConfigAvgOrderByAggregateInput
+    _max?: ProductCustomizationConfigMaxOrderByAggregateInput
+    _min?: ProductCustomizationConfigMinOrderByAggregateInput
+    _sum?: ProductCustomizationConfigSumOrderByAggregateInput
+  }
+
+  export type ProductCustomizationConfigScalarWhereWithAggregatesInput = {
+    AND?: ProductCustomizationConfigScalarWhereWithAggregatesInput | ProductCustomizationConfigScalarWhereWithAggregatesInput[]
+    OR?: ProductCustomizationConfigScalarWhereWithAggregatesInput[]
+    NOT?: ProductCustomizationConfigScalarWhereWithAggregatesInput | ProductCustomizationConfigScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"ProductCustomizationConfig"> | string
+    productId?: StringWithAggregatesFilter<"ProductCustomizationConfig"> | string
+    isCustomizable?: BoolWithAggregatesFilter<"ProductCustomizationConfig"> | boolean
+    maxCharacters?: IntWithAggregatesFilter<"ProductCustomizationConfig"> | number
+    baseFeeCents?: IntWithAggregatesFilter<"ProductCustomizationConfig"> | number
+    allowedPositions?: StringNullableListFilter<"ProductCustomizationConfig">
+    allowedFonts?: StringNullableListFilter<"ProductCustomizationConfig">
+    bulkRules?: JsonWithAggregatesFilter<"ProductCustomizationConfig">
+    previewConfig?: JsonWithAggregatesFilter<"ProductCustomizationConfig">
+    createdAt?: DateTimeWithAggregatesFilter<"ProductCustomizationConfig"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"ProductCustomizationConfig"> | Date | string
   }
 
   export type InventoryMovementWhereInput = {
@@ -73712,6 +75126,7 @@ export namespace Prisma {
     unitPriceCents?: IntFilter<"OrderItem"> | number
     quantity?: IntFilter<"OrderItem"> | number
     totalPriceCents?: IntFilter<"OrderItem"> | number
+    customization?: JsonNullableFilter<"OrderItem">
     createdAt?: DateTimeFilter<"OrderItem"> | Date | string
     order?: XOR<OrderScalarRelationFilter, OrderWhereInput>
     product?: XOR<ProductScalarRelationFilter, ProductWhereInput>
@@ -73730,6 +75145,7 @@ export namespace Prisma {
     unitPriceCents?: SortOrder
     quantity?: SortOrder
     totalPriceCents?: SortOrder
+    customization?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     order?: OrderOrderByWithRelationInput
     product?: ProductOrderByWithRelationInput
@@ -73751,6 +75167,7 @@ export namespace Prisma {
     unitPriceCents?: IntFilter<"OrderItem"> | number
     quantity?: IntFilter<"OrderItem"> | number
     totalPriceCents?: IntFilter<"OrderItem"> | number
+    customization?: JsonNullableFilter<"OrderItem">
     createdAt?: DateTimeFilter<"OrderItem"> | Date | string
     order?: XOR<OrderScalarRelationFilter, OrderWhereInput>
     product?: XOR<ProductScalarRelationFilter, ProductWhereInput>
@@ -73769,6 +75186,7 @@ export namespace Prisma {
     unitPriceCents?: SortOrder
     quantity?: SortOrder
     totalPriceCents?: SortOrder
+    customization?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     _count?: OrderItemCountOrderByAggregateInput
     _avg?: OrderItemAvgOrderByAggregateInput
@@ -73791,6 +75209,7 @@ export namespace Prisma {
     unitPriceCents?: IntWithAggregatesFilter<"OrderItem"> | number
     quantity?: IntWithAggregatesFilter<"OrderItem"> | number
     totalPriceCents?: IntWithAggregatesFilter<"OrderItem"> | number
+    customization?: JsonNullableWithAggregatesFilter<"OrderItem">
     createdAt?: DateTimeWithAggregatesFilter<"OrderItem"> | Date | string
   }
 
@@ -74355,6 +75774,7 @@ export namespace Prisma {
     variantId?: StringNullableFilter<"StockReservationItem"> | string | null
     quantity?: IntFilter<"StockReservationItem"> | number
     unitPriceCents?: IntFilter<"StockReservationItem"> | number
+    customization?: JsonNullableFilter<"StockReservationItem">
     createdAt?: DateTimeFilter<"StockReservationItem"> | Date | string
     reservation?: XOR<StockReservationScalarRelationFilter, StockReservationWhereInput>
     product?: XOR<ProductScalarRelationFilter, ProductWhereInput>
@@ -74368,6 +75788,7 @@ export namespace Prisma {
     variantId?: SortOrderInput | SortOrder
     quantity?: SortOrder
     unitPriceCents?: SortOrder
+    customization?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     reservation?: StockReservationOrderByWithRelationInput
     product?: ProductOrderByWithRelationInput
@@ -74384,6 +75805,7 @@ export namespace Prisma {
     variantId?: StringNullableFilter<"StockReservationItem"> | string | null
     quantity?: IntFilter<"StockReservationItem"> | number
     unitPriceCents?: IntFilter<"StockReservationItem"> | number
+    customization?: JsonNullableFilter<"StockReservationItem">
     createdAt?: DateTimeFilter<"StockReservationItem"> | Date | string
     reservation?: XOR<StockReservationScalarRelationFilter, StockReservationWhereInput>
     product?: XOR<ProductScalarRelationFilter, ProductWhereInput>
@@ -74397,6 +75819,7 @@ export namespace Prisma {
     variantId?: SortOrderInput | SortOrder
     quantity?: SortOrder
     unitPriceCents?: SortOrder
+    customization?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     _count?: StockReservationItemCountOrderByAggregateInput
     _avg?: StockReservationItemAvgOrderByAggregateInput
@@ -74415,6 +75838,7 @@ export namespace Prisma {
     variantId?: StringNullableWithAggregatesFilter<"StockReservationItem"> | string | null
     quantity?: IntWithAggregatesFilter<"StockReservationItem"> | number
     unitPriceCents?: IntWithAggregatesFilter<"StockReservationItem"> | number
+    customization?: JsonNullableWithAggregatesFilter<"StockReservationItem">
     createdAt?: DateTimeWithAggregatesFilter<"StockReservationItem"> | Date | string
   }
 
@@ -75801,6 +77225,7 @@ export namespace Prisma {
     productId?: StringFilter<"CartItem"> | string
     variantId?: StringNullableFilter<"CartItem"> | string | null
     quantity?: IntFilter<"CartItem"> | number
+    customization?: JsonNullableFilter<"CartItem">
     createdAt?: DateTimeFilter<"CartItem"> | Date | string
     updatedAt?: DateTimeFilter<"CartItem"> | Date | string
     cart?: XOR<CartScalarRelationFilter, CartWhereInput>
@@ -75814,6 +77239,7 @@ export namespace Prisma {
     productId?: SortOrder
     variantId?: SortOrderInput | SortOrder
     quantity?: SortOrder
+    customization?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     cart?: CartOrderByWithRelationInput
@@ -75830,6 +77256,7 @@ export namespace Prisma {
     productId?: StringFilter<"CartItem"> | string
     variantId?: StringNullableFilter<"CartItem"> | string | null
     quantity?: IntFilter<"CartItem"> | number
+    customization?: JsonNullableFilter<"CartItem">
     createdAt?: DateTimeFilter<"CartItem"> | Date | string
     updatedAt?: DateTimeFilter<"CartItem"> | Date | string
     cart?: XOR<CartScalarRelationFilter, CartWhereInput>
@@ -75843,6 +77270,7 @@ export namespace Prisma {
     productId?: SortOrder
     variantId?: SortOrderInput | SortOrder
     quantity?: SortOrder
+    customization?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: CartItemCountOrderByAggregateInput
@@ -75861,6 +77289,7 @@ export namespace Prisma {
     productId?: StringWithAggregatesFilter<"CartItem"> | string
     variantId?: StringNullableWithAggregatesFilter<"CartItem"> | string | null
     quantity?: IntWithAggregatesFilter<"CartItem"> | number
+    customization?: JsonNullableWithAggregatesFilter<"CartItem">
     createdAt?: DateTimeWithAggregatesFilter<"CartItem"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"CartItem"> | Date | string
   }
@@ -77800,6 +79229,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemCreateNestedManyWithoutProductInput
     backInStockAlerts?: BackInStockAlertCreateNestedManyWithoutProductInput
     promotions?: PromotionProductCreateNestedManyWithoutProductInput
+    customizationConfig?: ProductCustomizationConfigCreateNestedOneWithoutProductInput
   }
 
   export type ProductUncheckedCreateInput = {
@@ -77840,6 +79270,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemUncheckedCreateNestedManyWithoutProductInput
     backInStockAlerts?: BackInStockAlertUncheckedCreateNestedManyWithoutProductInput
     promotions?: PromotionProductUncheckedCreateNestedManyWithoutProductInput
+    customizationConfig?: ProductCustomizationConfigUncheckedCreateNestedOneWithoutProductInput
   }
 
   export type ProductUpdateInput = {
@@ -77880,6 +79311,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemUpdateManyWithoutProductNestedInput
     backInStockAlerts?: BackInStockAlertUpdateManyWithoutProductNestedInput
     promotions?: PromotionProductUpdateManyWithoutProductNestedInput
+    customizationConfig?: ProductCustomizationConfigUpdateOneWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateInput = {
@@ -77920,6 +79352,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemUncheckedUpdateManyWithoutProductNestedInput
     backInStockAlerts?: BackInStockAlertUncheckedUpdateManyWithoutProductNestedInput
     promotions?: PromotionProductUncheckedUpdateManyWithoutProductNestedInput
+    customizationConfig?: ProductCustomizationConfigUncheckedUpdateOneWithoutProductNestedInput
   }
 
   export type ProductCreateManyInput = {
@@ -78119,6 +79552,103 @@ export namespace Prisma {
     stockQuantity?: IntFieldUpdateOperationsInput | number
     attributes?: JsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ProductCustomizationConfigCreateInput = {
+    id?: string
+    isCustomizable?: boolean
+    maxCharacters?: number
+    baseFeeCents?: number
+    allowedPositions?: ProductCustomizationConfigCreateallowedPositionsInput | string[]
+    allowedFonts?: ProductCustomizationConfigCreateallowedFontsInput | string[]
+    bulkRules?: JsonNullValueInput | InputJsonValue
+    previewConfig?: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    product: ProductCreateNestedOneWithoutCustomizationConfigInput
+  }
+
+  export type ProductCustomizationConfigUncheckedCreateInput = {
+    id?: string
+    productId: string
+    isCustomizable?: boolean
+    maxCharacters?: number
+    baseFeeCents?: number
+    allowedPositions?: ProductCustomizationConfigCreateallowedPositionsInput | string[]
+    allowedFonts?: ProductCustomizationConfigCreateallowedFontsInput | string[]
+    bulkRules?: JsonNullValueInput | InputJsonValue
+    previewConfig?: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ProductCustomizationConfigUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    isCustomizable?: BoolFieldUpdateOperationsInput | boolean
+    maxCharacters?: IntFieldUpdateOperationsInput | number
+    baseFeeCents?: IntFieldUpdateOperationsInput | number
+    allowedPositions?: ProductCustomizationConfigUpdateallowedPositionsInput | string[]
+    allowedFonts?: ProductCustomizationConfigUpdateallowedFontsInput | string[]
+    bulkRules?: JsonNullValueInput | InputJsonValue
+    previewConfig?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    product?: ProductUpdateOneRequiredWithoutCustomizationConfigNestedInput
+  }
+
+  export type ProductCustomizationConfigUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    productId?: StringFieldUpdateOperationsInput | string
+    isCustomizable?: BoolFieldUpdateOperationsInput | boolean
+    maxCharacters?: IntFieldUpdateOperationsInput | number
+    baseFeeCents?: IntFieldUpdateOperationsInput | number
+    allowedPositions?: ProductCustomizationConfigUpdateallowedPositionsInput | string[]
+    allowedFonts?: ProductCustomizationConfigUpdateallowedFontsInput | string[]
+    bulkRules?: JsonNullValueInput | InputJsonValue
+    previewConfig?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ProductCustomizationConfigCreateManyInput = {
+    id?: string
+    productId: string
+    isCustomizable?: boolean
+    maxCharacters?: number
+    baseFeeCents?: number
+    allowedPositions?: ProductCustomizationConfigCreateallowedPositionsInput | string[]
+    allowedFonts?: ProductCustomizationConfigCreateallowedFontsInput | string[]
+    bulkRules?: JsonNullValueInput | InputJsonValue
+    previewConfig?: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ProductCustomizationConfigUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    isCustomizable?: BoolFieldUpdateOperationsInput | boolean
+    maxCharacters?: IntFieldUpdateOperationsInput | number
+    baseFeeCents?: IntFieldUpdateOperationsInput | number
+    allowedPositions?: ProductCustomizationConfigUpdateallowedPositionsInput | string[]
+    allowedFonts?: ProductCustomizationConfigUpdateallowedFontsInput | string[]
+    bulkRules?: JsonNullValueInput | InputJsonValue
+    previewConfig?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ProductCustomizationConfigUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    productId?: StringFieldUpdateOperationsInput | string
+    isCustomizable?: BoolFieldUpdateOperationsInput | boolean
+    maxCharacters?: IntFieldUpdateOperationsInput | number
+    baseFeeCents?: IntFieldUpdateOperationsInput | number
+    allowedPositions?: ProductCustomizationConfigUpdateallowedPositionsInput | string[]
+    allowedFonts?: ProductCustomizationConfigUpdateallowedFontsInput | string[]
+    bulkRules?: JsonNullValueInput | InputJsonValue
+    previewConfig?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -78763,6 +80293,7 @@ export namespace Prisma {
     unitPriceCents: number
     quantity: number
     totalPriceCents: number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     order: OrderCreateNestedOneWithoutItemsInput
     product: ProductCreateNestedOneWithoutOrderItemsInput
@@ -78781,6 +80312,7 @@ export namespace Prisma {
     unitPriceCents: number
     quantity: number
     totalPriceCents: number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     returnItems?: OrderReturnItemUncheckedCreateNestedManyWithoutOrderItemInput
   }
@@ -78793,6 +80325,7 @@ export namespace Prisma {
     unitPriceCents?: IntFieldUpdateOperationsInput | number
     quantity?: IntFieldUpdateOperationsInput | number
     totalPriceCents?: IntFieldUpdateOperationsInput | number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     order?: OrderUpdateOneRequiredWithoutItemsNestedInput
     product?: ProductUpdateOneRequiredWithoutOrderItemsNestedInput
@@ -78811,6 +80344,7 @@ export namespace Prisma {
     unitPriceCents?: IntFieldUpdateOperationsInput | number
     quantity?: IntFieldUpdateOperationsInput | number
     totalPriceCents?: IntFieldUpdateOperationsInput | number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     returnItems?: OrderReturnItemUncheckedUpdateManyWithoutOrderItemNestedInput
   }
@@ -78826,6 +80360,7 @@ export namespace Prisma {
     unitPriceCents: number
     quantity: number
     totalPriceCents: number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
   }
 
@@ -78837,6 +80372,7 @@ export namespace Prisma {
     unitPriceCents?: IntFieldUpdateOperationsInput | number
     quantity?: IntFieldUpdateOperationsInput | number
     totalPriceCents?: IntFieldUpdateOperationsInput | number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -78851,6 +80387,7 @@ export namespace Prisma {
     unitPriceCents?: IntFieldUpdateOperationsInput | number
     quantity?: IntFieldUpdateOperationsInput | number
     totalPriceCents?: IntFieldUpdateOperationsInput | number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -79474,6 +81011,7 @@ export namespace Prisma {
     id?: string
     quantity: number
     unitPriceCents: number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     reservation: StockReservationCreateNestedOneWithoutItemsInput
     product: ProductCreateNestedOneWithoutReservationItemsInput
@@ -79487,6 +81025,7 @@ export namespace Prisma {
     variantId?: string | null
     quantity: number
     unitPriceCents: number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
   }
 
@@ -79494,6 +81033,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     quantity?: IntFieldUpdateOperationsInput | number
     unitPriceCents?: IntFieldUpdateOperationsInput | number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     reservation?: StockReservationUpdateOneRequiredWithoutItemsNestedInput
     product?: ProductUpdateOneRequiredWithoutReservationItemsNestedInput
@@ -79507,6 +81047,7 @@ export namespace Prisma {
     variantId?: NullableStringFieldUpdateOperationsInput | string | null
     quantity?: IntFieldUpdateOperationsInput | number
     unitPriceCents?: IntFieldUpdateOperationsInput | number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -79517,6 +81058,7 @@ export namespace Prisma {
     variantId?: string | null
     quantity: number
     unitPriceCents: number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
   }
 
@@ -79524,6 +81066,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     quantity?: IntFieldUpdateOperationsInput | number
     unitPriceCents?: IntFieldUpdateOperationsInput | number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -79534,6 +81077,7 @@ export namespace Prisma {
     variantId?: NullableStringFieldUpdateOperationsInput | string | null
     quantity?: IntFieldUpdateOperationsInput | number
     unitPriceCents?: IntFieldUpdateOperationsInput | number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -81036,6 +82580,7 @@ export namespace Prisma {
   export type CartItemCreateInput = {
     id?: string
     quantity?: number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     cart: CartCreateNestedOneWithoutItemsInput
@@ -81049,6 +82594,7 @@ export namespace Prisma {
     productId: string
     variantId?: string | null
     quantity?: number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -81056,6 +82602,7 @@ export namespace Prisma {
   export type CartItemUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     quantity?: IntFieldUpdateOperationsInput | number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     cart?: CartUpdateOneRequiredWithoutItemsNestedInput
@@ -81069,6 +82616,7 @@ export namespace Prisma {
     productId?: StringFieldUpdateOperationsInput | string
     variantId?: NullableStringFieldUpdateOperationsInput | string | null
     quantity?: IntFieldUpdateOperationsInput | number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -81079,6 +82627,7 @@ export namespace Prisma {
     productId: string
     variantId?: string | null
     quantity?: number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -81086,6 +82635,7 @@ export namespace Prisma {
   export type CartItemUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     quantity?: IntFieldUpdateOperationsInput | number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -81096,6 +82646,7 @@ export namespace Prisma {
     productId?: StringFieldUpdateOperationsInput | string
     variantId?: NullableStringFieldUpdateOperationsInput | string | null
     quantity?: IntFieldUpdateOperationsInput | number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -83288,6 +84839,11 @@ export namespace Prisma {
     none?: PromotionProductWhereInput
   }
 
+  export type ProductCustomizationConfigNullableScalarRelationFilter = {
+    is?: ProductCustomizationConfigWhereInput | null
+    isNot?: ProductCustomizationConfigWhereInput | null
+  }
+
   export type ProductVariantOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -83534,6 +85090,50 @@ export namespace Prisma {
     priceCents?: SortOrder
     compareAtPriceCents?: SortOrder
     stockQuantity?: SortOrder
+  }
+
+  export type ProductCustomizationConfigCountOrderByAggregateInput = {
+    id?: SortOrder
+    productId?: SortOrder
+    isCustomizable?: SortOrder
+    maxCharacters?: SortOrder
+    baseFeeCents?: SortOrder
+    allowedPositions?: SortOrder
+    allowedFonts?: SortOrder
+    bulkRules?: SortOrder
+    previewConfig?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ProductCustomizationConfigAvgOrderByAggregateInput = {
+    maxCharacters?: SortOrder
+    baseFeeCents?: SortOrder
+  }
+
+  export type ProductCustomizationConfigMaxOrderByAggregateInput = {
+    id?: SortOrder
+    productId?: SortOrder
+    isCustomizable?: SortOrder
+    maxCharacters?: SortOrder
+    baseFeeCents?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ProductCustomizationConfigMinOrderByAggregateInput = {
+    id?: SortOrder
+    productId?: SortOrder
+    isCustomizable?: SortOrder
+    maxCharacters?: SortOrder
+    baseFeeCents?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ProductCustomizationConfigSumOrderByAggregateInput = {
+    maxCharacters?: SortOrder
+    baseFeeCents?: SortOrder
   }
 
   export type EnumInventoryChangeReasonFilter<$PrismaModel = never> = {
@@ -84026,6 +85626,29 @@ export namespace Prisma {
     _min?: NestedFloatNullableFilter<$PrismaModel>
     _max?: NestedFloatNullableFilter<$PrismaModel>
   }
+  export type JsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
 
   export type OrderReturnItemListRelationFilter = {
     every?: OrderReturnItemWhereInput
@@ -84048,6 +85671,7 @@ export namespace Prisma {
     unitPriceCents?: SortOrder
     quantity?: SortOrder
     totalPriceCents?: SortOrder
+    customization?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -84089,6 +85713,32 @@ export namespace Prisma {
     unitPriceCents?: SortOrder
     quantity?: SortOrder
     totalPriceCents?: SortOrder
+  }
+  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedJsonNullableFilter<$PrismaModel>
+    _max?: NestedJsonNullableFilter<$PrismaModel>
   }
 
   export type OrderAuditLogCountOrderByAggregateInput = {
@@ -84290,29 +85940,6 @@ export namespace Prisma {
     notIn?: $Enums.RefundStatus[] | ListEnumRefundStatusFieldRefInput<$PrismaModel>
     not?: NestedEnumRefundStatusFilter<$PrismaModel> | $Enums.RefundStatus
   }
-  export type JsonNullableFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonNullableFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonNullableFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-  }
 
   export type OrderReturnRequestNullableScalarRelationFilter = {
     is?: OrderReturnRequestWhereInput | null
@@ -84423,32 +86050,6 @@ export namespace Prisma {
     _min?: NestedEnumRefundStatusFilter<$PrismaModel>
     _max?: NestedEnumRefundStatusFilter<$PrismaModel>
   }
-  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedJsonNullableFilter<$PrismaModel>
-    _max?: NestedJsonNullableFilter<$PrismaModel>
-  }
 
   export type EnumReservationStatusFilter<$PrismaModel = never> = {
     equals?: $Enums.ReservationStatus | EnumReservationStatusFieldRefInput<$PrismaModel>
@@ -84520,6 +86121,7 @@ export namespace Prisma {
     variantId?: SortOrder
     quantity?: SortOrder
     unitPriceCents?: SortOrder
+    customization?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -85447,6 +87049,7 @@ export namespace Prisma {
     productId?: SortOrder
     variantId?: SortOrder
     quantity?: SortOrder
+    customization?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -87557,6 +89160,12 @@ export namespace Prisma {
     connect?: PromotionProductWhereUniqueInput | PromotionProductWhereUniqueInput[]
   }
 
+  export type ProductCustomizationConfigCreateNestedOneWithoutProductInput = {
+    create?: XOR<ProductCustomizationConfigCreateWithoutProductInput, ProductCustomizationConfigUncheckedCreateWithoutProductInput>
+    connectOrCreate?: ProductCustomizationConfigCreateOrConnectWithoutProductInput
+    connect?: ProductCustomizationConfigWhereUniqueInput
+  }
+
   export type ProductVariantUncheckedCreateNestedManyWithoutProductInput = {
     create?: XOR<ProductVariantCreateWithoutProductInput, ProductVariantUncheckedCreateWithoutProductInput> | ProductVariantCreateWithoutProductInput[] | ProductVariantUncheckedCreateWithoutProductInput[]
     connectOrCreate?: ProductVariantCreateOrConnectWithoutProductInput | ProductVariantCreateOrConnectWithoutProductInput[]
@@ -87631,6 +89240,12 @@ export namespace Prisma {
     connectOrCreate?: PromotionProductCreateOrConnectWithoutProductInput | PromotionProductCreateOrConnectWithoutProductInput[]
     createMany?: PromotionProductCreateManyProductInputEnvelope
     connect?: PromotionProductWhereUniqueInput | PromotionProductWhereUniqueInput[]
+  }
+
+  export type ProductCustomizationConfigUncheckedCreateNestedOneWithoutProductInput = {
+    create?: XOR<ProductCustomizationConfigCreateWithoutProductInput, ProductCustomizationConfigUncheckedCreateWithoutProductInput>
+    connectOrCreate?: ProductCustomizationConfigCreateOrConnectWithoutProductInput
+    connect?: ProductCustomizationConfigWhereUniqueInput
   }
 
   export type NullableIntFieldUpdateOperationsInput = {
@@ -87835,6 +89450,16 @@ export namespace Prisma {
     deleteMany?: PromotionProductScalarWhereInput | PromotionProductScalarWhereInput[]
   }
 
+  export type ProductCustomizationConfigUpdateOneWithoutProductNestedInput = {
+    create?: XOR<ProductCustomizationConfigCreateWithoutProductInput, ProductCustomizationConfigUncheckedCreateWithoutProductInput>
+    connectOrCreate?: ProductCustomizationConfigCreateOrConnectWithoutProductInput
+    upsert?: ProductCustomizationConfigUpsertWithoutProductInput
+    disconnect?: ProductCustomizationConfigWhereInput | boolean
+    delete?: ProductCustomizationConfigWhereInput | boolean
+    connect?: ProductCustomizationConfigWhereUniqueInput
+    update?: XOR<XOR<ProductCustomizationConfigUpdateToOneWithWhereWithoutProductInput, ProductCustomizationConfigUpdateWithoutProductInput>, ProductCustomizationConfigUncheckedUpdateWithoutProductInput>
+  }
+
   export type ProductVariantUncheckedUpdateManyWithoutProductNestedInput = {
     create?: XOR<ProductVariantCreateWithoutProductInput, ProductVariantUncheckedCreateWithoutProductInput> | ProductVariantCreateWithoutProductInput[] | ProductVariantUncheckedCreateWithoutProductInput[]
     connectOrCreate?: ProductVariantCreateOrConnectWithoutProductInput | ProductVariantCreateOrConnectWithoutProductInput[]
@@ -87983,6 +89608,16 @@ export namespace Prisma {
     update?: PromotionProductUpdateWithWhereUniqueWithoutProductInput | PromotionProductUpdateWithWhereUniqueWithoutProductInput[]
     updateMany?: PromotionProductUpdateManyWithWhereWithoutProductInput | PromotionProductUpdateManyWithWhereWithoutProductInput[]
     deleteMany?: PromotionProductScalarWhereInput | PromotionProductScalarWhereInput[]
+  }
+
+  export type ProductCustomizationConfigUncheckedUpdateOneWithoutProductNestedInput = {
+    create?: XOR<ProductCustomizationConfigCreateWithoutProductInput, ProductCustomizationConfigUncheckedCreateWithoutProductInput>
+    connectOrCreate?: ProductCustomizationConfigCreateOrConnectWithoutProductInput
+    upsert?: ProductCustomizationConfigUpsertWithoutProductInput
+    disconnect?: ProductCustomizationConfigWhereInput | boolean
+    delete?: ProductCustomizationConfigWhereInput | boolean
+    connect?: ProductCustomizationConfigWhereUniqueInput
+    update?: XOR<XOR<ProductCustomizationConfigUpdateToOneWithWhereWithoutProductInput, ProductCustomizationConfigUpdateWithoutProductInput>, ProductCustomizationConfigUncheckedUpdateWithoutProductInput>
   }
 
   export type ProductCreateNestedOneWithoutVariantsInput = {
@@ -88197,6 +89832,38 @@ export namespace Prisma {
     update?: StockReservationItemUpdateWithWhereUniqueWithoutVariantInput | StockReservationItemUpdateWithWhereUniqueWithoutVariantInput[]
     updateMany?: StockReservationItemUpdateManyWithWhereWithoutVariantInput | StockReservationItemUpdateManyWithWhereWithoutVariantInput[]
     deleteMany?: StockReservationItemScalarWhereInput | StockReservationItemScalarWhereInput[]
+  }
+
+  export type ProductCustomizationConfigCreateallowedPositionsInput = {
+    set: string[]
+  }
+
+  export type ProductCustomizationConfigCreateallowedFontsInput = {
+    set: string[]
+  }
+
+  export type ProductCreateNestedOneWithoutCustomizationConfigInput = {
+    create?: XOR<ProductCreateWithoutCustomizationConfigInput, ProductUncheckedCreateWithoutCustomizationConfigInput>
+    connectOrCreate?: ProductCreateOrConnectWithoutCustomizationConfigInput
+    connect?: ProductWhereUniqueInput
+  }
+
+  export type ProductCustomizationConfigUpdateallowedPositionsInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type ProductCustomizationConfigUpdateallowedFontsInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type ProductUpdateOneRequiredWithoutCustomizationConfigNestedInput = {
+    create?: XOR<ProductCreateWithoutCustomizationConfigInput, ProductUncheckedCreateWithoutCustomizationConfigInput>
+    connectOrCreate?: ProductCreateOrConnectWithoutCustomizationConfigInput
+    upsert?: ProductUpsertWithoutCustomizationConfigInput
+    connect?: ProductWhereUniqueInput
+    update?: XOR<XOR<ProductUpdateToOneWithWhereWithoutCustomizationConfigInput, ProductUpdateWithoutCustomizationConfigInput>, ProductUncheckedUpdateWithoutCustomizationConfigInput>
   }
 
   export type ProductCreateNestedOneWithoutMovementsInput = {
@@ -90975,6 +92642,29 @@ export namespace Prisma {
     _min?: NestedFloatNullableFilter<$PrismaModel>
     _max?: NestedFloatNullableFilter<$PrismaModel>
   }
+  export type NestedJsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
 
   export type NestedEnumReturnStatusFilter<$PrismaModel = never> = {
     equals?: $Enums.ReturnStatus | EnumReturnStatusFieldRefInput<$PrismaModel>
@@ -91025,29 +92715,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumRefundStatusFilter<$PrismaModel>
     _max?: NestedEnumRefundStatusFilter<$PrismaModel>
-  }
-  export type NestedJsonNullableFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
-        Required<NestedJsonNullableFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>
-
-  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
   }
 
   export type NestedEnumReservationStatusFilter<$PrismaModel = never> = {
@@ -93213,6 +94880,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemCreateNestedManyWithoutProductInput
     backInStockAlerts?: BackInStockAlertCreateNestedManyWithoutProductInput
     promotions?: PromotionProductCreateNestedManyWithoutProductInput
+    customizationConfig?: ProductCustomizationConfigCreateNestedOneWithoutProductInput
   }
 
   export type ProductUncheckedCreateWithoutCategoryInput = {
@@ -93252,6 +94920,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemUncheckedCreateNestedManyWithoutProductInput
     backInStockAlerts?: BackInStockAlertUncheckedCreateNestedManyWithoutProductInput
     promotions?: PromotionProductUncheckedCreateNestedManyWithoutProductInput
+    customizationConfig?: ProductCustomizationConfigUncheckedCreateNestedOneWithoutProductInput
   }
 
   export type ProductCreateOrConnectWithoutCategoryInput = {
@@ -93301,6 +94970,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemCreateNestedManyWithoutProductInput
     backInStockAlerts?: BackInStockAlertCreateNestedManyWithoutProductInput
     promotions?: PromotionProductCreateNestedManyWithoutProductInput
+    customizationConfig?: ProductCustomizationConfigCreateNestedOneWithoutProductInput
   }
 
   export type ProductUncheckedCreateWithoutSubcategoryInput = {
@@ -93340,6 +95010,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemUncheckedCreateNestedManyWithoutProductInput
     backInStockAlerts?: BackInStockAlertUncheckedCreateNestedManyWithoutProductInput
     promotions?: PromotionProductUncheckedCreateNestedManyWithoutProductInput
+    customizationConfig?: ProductCustomizationConfigUncheckedCreateNestedOneWithoutProductInput
   }
 
   export type ProductCreateOrConnectWithoutSubcategoryInput = {
@@ -93579,6 +95250,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemCreateNestedManyWithoutProductInput
     backInStockAlerts?: BackInStockAlertCreateNestedManyWithoutProductInput
     promotions?: PromotionProductCreateNestedManyWithoutProductInput
+    customizationConfig?: ProductCustomizationConfigCreateNestedOneWithoutProductInput
   }
 
   export type ProductUncheckedCreateWithoutBrandInput = {
@@ -93618,6 +95290,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemUncheckedCreateNestedManyWithoutProductInput
     backInStockAlerts?: BackInStockAlertUncheckedCreateNestedManyWithoutProductInput
     promotions?: PromotionProductUncheckedCreateNestedManyWithoutProductInput
+    customizationConfig?: ProductCustomizationConfigUncheckedCreateNestedOneWithoutProductInput
   }
 
   export type ProductCreateOrConnectWithoutBrandInput = {
@@ -93860,6 +95533,7 @@ export namespace Prisma {
     unitPriceCents: number
     quantity: number
     totalPriceCents: number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     order: OrderCreateNestedOneWithoutItemsInput
     variant?: ProductVariantCreateNestedOneWithoutOrderItemsInput
@@ -93876,6 +95550,7 @@ export namespace Prisma {
     unitPriceCents: number
     quantity: number
     totalPriceCents: number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     returnItems?: OrderReturnItemUncheckedCreateNestedManyWithoutOrderItemInput
   }
@@ -93969,6 +95644,7 @@ export namespace Prisma {
   export type CartItemCreateWithoutProductInput = {
     id?: string
     quantity?: number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     cart: CartCreateNestedOneWithoutItemsInput
@@ -93980,6 +95656,7 @@ export namespace Prisma {
     cartId: string
     variantId?: string | null
     quantity?: number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -93998,6 +95675,7 @@ export namespace Prisma {
     id?: string
     quantity: number
     unitPriceCents: number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     reservation: StockReservationCreateNestedOneWithoutItemsInput
     variant?: ProductVariantCreateNestedOneWithoutReservationItemsInput
@@ -94009,6 +95687,7 @@ export namespace Prisma {
     variantId?: string | null
     quantity: number
     unitPriceCents: number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
   }
 
@@ -94084,6 +95763,37 @@ export namespace Prisma {
   export type PromotionProductCreateManyProductInputEnvelope = {
     data: PromotionProductCreateManyProductInput | PromotionProductCreateManyProductInput[]
     skipDuplicates?: boolean
+  }
+
+  export type ProductCustomizationConfigCreateWithoutProductInput = {
+    id?: string
+    isCustomizable?: boolean
+    maxCharacters?: number
+    baseFeeCents?: number
+    allowedPositions?: ProductCustomizationConfigCreateallowedPositionsInput | string[]
+    allowedFonts?: ProductCustomizationConfigCreateallowedFontsInput | string[]
+    bulkRules?: JsonNullValueInput | InputJsonValue
+    previewConfig?: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ProductCustomizationConfigUncheckedCreateWithoutProductInput = {
+    id?: string
+    isCustomizable?: boolean
+    maxCharacters?: number
+    baseFeeCents?: number
+    allowedPositions?: ProductCustomizationConfigCreateallowedPositionsInput | string[]
+    allowedFonts?: ProductCustomizationConfigCreateallowedFontsInput | string[]
+    bulkRules?: JsonNullValueInput | InputJsonValue
+    previewConfig?: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ProductCustomizationConfigCreateOrConnectWithoutProductInput = {
+    where: ProductCustomizationConfigWhereUniqueInput
+    create: XOR<ProductCustomizationConfigCreateWithoutProductInput, ProductCustomizationConfigUncheckedCreateWithoutProductInput>
   }
 
   export type CategoryUpsertWithoutProductsInput = {
@@ -94331,6 +96041,7 @@ export namespace Prisma {
     unitPriceCents?: IntFilter<"OrderItem"> | number
     quantity?: IntFilter<"OrderItem"> | number
     totalPriceCents?: IntFilter<"OrderItem"> | number
+    customization?: JsonNullableFilter<"OrderItem">
     createdAt?: DateTimeFilter<"OrderItem"> | Date | string
   }
 
@@ -94432,6 +96143,7 @@ export namespace Prisma {
     productId?: StringFilter<"CartItem"> | string
     variantId?: StringNullableFilter<"CartItem"> | string | null
     quantity?: IntFilter<"CartItem"> | number
+    customization?: JsonNullableFilter<"CartItem">
     createdAt?: DateTimeFilter<"CartItem"> | Date | string
     updatedAt?: DateTimeFilter<"CartItem"> | Date | string
   }
@@ -94462,6 +96174,7 @@ export namespace Prisma {
     variantId?: StringNullableFilter<"StockReservationItem"> | string | null
     quantity?: IntFilter<"StockReservationItem"> | number
     unitPriceCents?: IntFilter<"StockReservationItem"> | number
+    customization?: JsonNullableFilter<"StockReservationItem">
     createdAt?: DateTimeFilter<"StockReservationItem"> | Date | string
   }
 
@@ -94507,6 +96220,43 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"PromotionProduct"> | Date | string
   }
 
+  export type ProductCustomizationConfigUpsertWithoutProductInput = {
+    update: XOR<ProductCustomizationConfigUpdateWithoutProductInput, ProductCustomizationConfigUncheckedUpdateWithoutProductInput>
+    create: XOR<ProductCustomizationConfigCreateWithoutProductInput, ProductCustomizationConfigUncheckedCreateWithoutProductInput>
+    where?: ProductCustomizationConfigWhereInput
+  }
+
+  export type ProductCustomizationConfigUpdateToOneWithWhereWithoutProductInput = {
+    where?: ProductCustomizationConfigWhereInput
+    data: XOR<ProductCustomizationConfigUpdateWithoutProductInput, ProductCustomizationConfigUncheckedUpdateWithoutProductInput>
+  }
+
+  export type ProductCustomizationConfigUpdateWithoutProductInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    isCustomizable?: BoolFieldUpdateOperationsInput | boolean
+    maxCharacters?: IntFieldUpdateOperationsInput | number
+    baseFeeCents?: IntFieldUpdateOperationsInput | number
+    allowedPositions?: ProductCustomizationConfigUpdateallowedPositionsInput | string[]
+    allowedFonts?: ProductCustomizationConfigUpdateallowedFontsInput | string[]
+    bulkRules?: JsonNullValueInput | InputJsonValue
+    previewConfig?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ProductCustomizationConfigUncheckedUpdateWithoutProductInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    isCustomizable?: BoolFieldUpdateOperationsInput | boolean
+    maxCharacters?: IntFieldUpdateOperationsInput | number
+    baseFeeCents?: IntFieldUpdateOperationsInput | number
+    allowedPositions?: ProductCustomizationConfigUpdateallowedPositionsInput | string[]
+    allowedFonts?: ProductCustomizationConfigUpdateallowedFontsInput | string[]
+    bulkRules?: JsonNullValueInput | InputJsonValue
+    previewConfig?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type ProductCreateWithoutVariantsInput = {
     id?: string
     name: string
@@ -94544,6 +96294,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemCreateNestedManyWithoutProductInput
     backInStockAlerts?: BackInStockAlertCreateNestedManyWithoutProductInput
     promotions?: PromotionProductCreateNestedManyWithoutProductInput
+    customizationConfig?: ProductCustomizationConfigCreateNestedOneWithoutProductInput
   }
 
   export type ProductUncheckedCreateWithoutVariantsInput = {
@@ -94583,6 +96334,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemUncheckedCreateNestedManyWithoutProductInput
     backInStockAlerts?: BackInStockAlertUncheckedCreateNestedManyWithoutProductInput
     promotions?: PromotionProductUncheckedCreateNestedManyWithoutProductInput
+    customizationConfig?: ProductCustomizationConfigUncheckedCreateNestedOneWithoutProductInput
   }
 
   export type ProductCreateOrConnectWithoutVariantsInput = {
@@ -94598,6 +96350,7 @@ export namespace Prisma {
     unitPriceCents: number
     quantity: number
     totalPriceCents: number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     order: OrderCreateNestedOneWithoutItemsInput
     product: ProductCreateNestedOneWithoutOrderItemsInput
@@ -94614,6 +96367,7 @@ export namespace Prisma {
     unitPriceCents: number
     quantity: number
     totalPriceCents: number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     returnItems?: OrderReturnItemUncheckedCreateNestedManyWithoutOrderItemInput
   }
@@ -94684,6 +96438,7 @@ export namespace Prisma {
   export type CartItemCreateWithoutVariantInput = {
     id?: string
     quantity?: number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     cart: CartCreateNestedOneWithoutItemsInput
@@ -94695,6 +96450,7 @@ export namespace Prisma {
     cartId: string
     productId: string
     quantity?: number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -94713,6 +96469,7 @@ export namespace Prisma {
     id?: string
     quantity: number
     unitPriceCents: number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     reservation: StockReservationCreateNestedOneWithoutItemsInput
     product: ProductCreateNestedOneWithoutReservationItemsInput
@@ -94724,6 +96481,7 @@ export namespace Prisma {
     productId: string
     quantity: number
     unitPriceCents: number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
   }
 
@@ -94785,6 +96543,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemUpdateManyWithoutProductNestedInput
     backInStockAlerts?: BackInStockAlertUpdateManyWithoutProductNestedInput
     promotions?: PromotionProductUpdateManyWithoutProductNestedInput
+    customizationConfig?: ProductCustomizationConfigUpdateOneWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateWithoutVariantsInput = {
@@ -94824,6 +96583,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemUncheckedUpdateManyWithoutProductNestedInput
     backInStockAlerts?: BackInStockAlertUncheckedUpdateManyWithoutProductNestedInput
     promotions?: PromotionProductUncheckedUpdateManyWithoutProductNestedInput
+    customizationConfig?: ProductCustomizationConfigUncheckedUpdateOneWithoutProductNestedInput
   }
 
   export type OrderItemUpsertWithWhereUniqueWithoutVariantInput = {
@@ -94915,6 +96675,182 @@ export namespace Prisma {
     data: XOR<StockReservationItemUpdateManyMutationInput, StockReservationItemUncheckedUpdateManyWithoutVariantInput>
   }
 
+  export type ProductCreateWithoutCustomizationConfigInput = {
+    id?: string
+    name: string
+    slug: string
+    sku: string
+    barcode?: string | null
+    description: string
+    shortDescription: string
+    priceCents: number
+    compareAtPriceCents?: number | null
+    costPriceCents?: number | null
+    stockQuantity?: number
+    lowStockThreshold?: number
+    isActive?: boolean
+    isFeatured?: boolean
+    isNewArrival?: boolean
+    isBestSeller?: boolean
+    images?: ProductCreateimagesInput | string[]
+    tags?: ProductCreatetagsInput | string[]
+    rating?: number
+    reviewCount?: number
+    specifications?: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    category: CategoryCreateNestedOneWithoutProductsInput
+    subcategory?: CategoryCreateNestedOneWithoutSubProductsInput
+    brand: BrandCreateNestedOneWithoutProductsInput
+    variants?: ProductVariantCreateNestedManyWithoutProductInput
+    globalSku?: GlobalSkuCreateNestedOneWithoutProductInput
+    movements?: InventoryMovementCreateNestedManyWithoutProductInput
+    orderItems?: OrderItemCreateNestedManyWithoutProductInput
+    packItems?: SchoolPackItemCreateNestedManyWithoutProductInput
+    wishlistItems?: WishlistItemCreateNestedManyWithoutProductInput
+    savedListItems?: SavedListItemCreateNestedManyWithoutProductInput
+    cartItems?: CartItemCreateNestedManyWithoutProductInput
+    reservationItems?: StockReservationItemCreateNestedManyWithoutProductInput
+    backInStockAlerts?: BackInStockAlertCreateNestedManyWithoutProductInput
+    promotions?: PromotionProductCreateNestedManyWithoutProductInput
+  }
+
+  export type ProductUncheckedCreateWithoutCustomizationConfigInput = {
+    id?: string
+    name: string
+    slug: string
+    sku: string
+    barcode?: string | null
+    description: string
+    shortDescription: string
+    categoryId: string
+    subcategoryId?: string | null
+    brandId: string
+    priceCents: number
+    compareAtPriceCents?: number | null
+    costPriceCents?: number | null
+    stockQuantity?: number
+    lowStockThreshold?: number
+    isActive?: boolean
+    isFeatured?: boolean
+    isNewArrival?: boolean
+    isBestSeller?: boolean
+    images?: ProductCreateimagesInput | string[]
+    tags?: ProductCreatetagsInput | string[]
+    rating?: number
+    reviewCount?: number
+    specifications?: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    variants?: ProductVariantUncheckedCreateNestedManyWithoutProductInput
+    globalSku?: GlobalSkuUncheckedCreateNestedOneWithoutProductInput
+    movements?: InventoryMovementUncheckedCreateNestedManyWithoutProductInput
+    orderItems?: OrderItemUncheckedCreateNestedManyWithoutProductInput
+    packItems?: SchoolPackItemUncheckedCreateNestedManyWithoutProductInput
+    wishlistItems?: WishlistItemUncheckedCreateNestedManyWithoutProductInput
+    savedListItems?: SavedListItemUncheckedCreateNestedManyWithoutProductInput
+    cartItems?: CartItemUncheckedCreateNestedManyWithoutProductInput
+    reservationItems?: StockReservationItemUncheckedCreateNestedManyWithoutProductInput
+    backInStockAlerts?: BackInStockAlertUncheckedCreateNestedManyWithoutProductInput
+    promotions?: PromotionProductUncheckedCreateNestedManyWithoutProductInput
+  }
+
+  export type ProductCreateOrConnectWithoutCustomizationConfigInput = {
+    where: ProductWhereUniqueInput
+    create: XOR<ProductCreateWithoutCustomizationConfigInput, ProductUncheckedCreateWithoutCustomizationConfigInput>
+  }
+
+  export type ProductUpsertWithoutCustomizationConfigInput = {
+    update: XOR<ProductUpdateWithoutCustomizationConfigInput, ProductUncheckedUpdateWithoutCustomizationConfigInput>
+    create: XOR<ProductCreateWithoutCustomizationConfigInput, ProductUncheckedCreateWithoutCustomizationConfigInput>
+    where?: ProductWhereInput
+  }
+
+  export type ProductUpdateToOneWithWhereWithoutCustomizationConfigInput = {
+    where?: ProductWhereInput
+    data: XOR<ProductUpdateWithoutCustomizationConfigInput, ProductUncheckedUpdateWithoutCustomizationConfigInput>
+  }
+
+  export type ProductUpdateWithoutCustomizationConfigInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    sku?: StringFieldUpdateOperationsInput | string
+    barcode?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: StringFieldUpdateOperationsInput | string
+    shortDescription?: StringFieldUpdateOperationsInput | string
+    priceCents?: IntFieldUpdateOperationsInput | number
+    compareAtPriceCents?: NullableIntFieldUpdateOperationsInput | number | null
+    costPriceCents?: NullableIntFieldUpdateOperationsInput | number | null
+    stockQuantity?: IntFieldUpdateOperationsInput | number
+    lowStockThreshold?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isFeatured?: BoolFieldUpdateOperationsInput | boolean
+    isNewArrival?: BoolFieldUpdateOperationsInput | boolean
+    isBestSeller?: BoolFieldUpdateOperationsInput | boolean
+    images?: ProductUpdateimagesInput | string[]
+    tags?: ProductUpdatetagsInput | string[]
+    rating?: FloatFieldUpdateOperationsInput | number
+    reviewCount?: IntFieldUpdateOperationsInput | number
+    specifications?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    category?: CategoryUpdateOneRequiredWithoutProductsNestedInput
+    subcategory?: CategoryUpdateOneWithoutSubProductsNestedInput
+    brand?: BrandUpdateOneRequiredWithoutProductsNestedInput
+    variants?: ProductVariantUpdateManyWithoutProductNestedInput
+    globalSku?: GlobalSkuUpdateOneWithoutProductNestedInput
+    movements?: InventoryMovementUpdateManyWithoutProductNestedInput
+    orderItems?: OrderItemUpdateManyWithoutProductNestedInput
+    packItems?: SchoolPackItemUpdateManyWithoutProductNestedInput
+    wishlistItems?: WishlistItemUpdateManyWithoutProductNestedInput
+    savedListItems?: SavedListItemUpdateManyWithoutProductNestedInput
+    cartItems?: CartItemUpdateManyWithoutProductNestedInput
+    reservationItems?: StockReservationItemUpdateManyWithoutProductNestedInput
+    backInStockAlerts?: BackInStockAlertUpdateManyWithoutProductNestedInput
+    promotions?: PromotionProductUpdateManyWithoutProductNestedInput
+  }
+
+  export type ProductUncheckedUpdateWithoutCustomizationConfigInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    sku?: StringFieldUpdateOperationsInput | string
+    barcode?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: StringFieldUpdateOperationsInput | string
+    shortDescription?: StringFieldUpdateOperationsInput | string
+    categoryId?: StringFieldUpdateOperationsInput | string
+    subcategoryId?: NullableStringFieldUpdateOperationsInput | string | null
+    brandId?: StringFieldUpdateOperationsInput | string
+    priceCents?: IntFieldUpdateOperationsInput | number
+    compareAtPriceCents?: NullableIntFieldUpdateOperationsInput | number | null
+    costPriceCents?: NullableIntFieldUpdateOperationsInput | number | null
+    stockQuantity?: IntFieldUpdateOperationsInput | number
+    lowStockThreshold?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isFeatured?: BoolFieldUpdateOperationsInput | boolean
+    isNewArrival?: BoolFieldUpdateOperationsInput | boolean
+    isBestSeller?: BoolFieldUpdateOperationsInput | boolean
+    images?: ProductUpdateimagesInput | string[]
+    tags?: ProductUpdatetagsInput | string[]
+    rating?: FloatFieldUpdateOperationsInput | number
+    reviewCount?: IntFieldUpdateOperationsInput | number
+    specifications?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    variants?: ProductVariantUncheckedUpdateManyWithoutProductNestedInput
+    globalSku?: GlobalSkuUncheckedUpdateOneWithoutProductNestedInput
+    movements?: InventoryMovementUncheckedUpdateManyWithoutProductNestedInput
+    orderItems?: OrderItemUncheckedUpdateManyWithoutProductNestedInput
+    packItems?: SchoolPackItemUncheckedUpdateManyWithoutProductNestedInput
+    wishlistItems?: WishlistItemUncheckedUpdateManyWithoutProductNestedInput
+    savedListItems?: SavedListItemUncheckedUpdateManyWithoutProductNestedInput
+    cartItems?: CartItemUncheckedUpdateManyWithoutProductNestedInput
+    reservationItems?: StockReservationItemUncheckedUpdateManyWithoutProductNestedInput
+    backInStockAlerts?: BackInStockAlertUncheckedUpdateManyWithoutProductNestedInput
+    promotions?: PromotionProductUncheckedUpdateManyWithoutProductNestedInput
+  }
+
   export type ProductCreateWithoutMovementsInput = {
     id?: string
     name: string
@@ -94952,6 +96888,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemCreateNestedManyWithoutProductInput
     backInStockAlerts?: BackInStockAlertCreateNestedManyWithoutProductInput
     promotions?: PromotionProductCreateNestedManyWithoutProductInput
+    customizationConfig?: ProductCustomizationConfigCreateNestedOneWithoutProductInput
   }
 
   export type ProductUncheckedCreateWithoutMovementsInput = {
@@ -94991,6 +96928,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemUncheckedCreateNestedManyWithoutProductInput
     backInStockAlerts?: BackInStockAlertUncheckedCreateNestedManyWithoutProductInput
     promotions?: PromotionProductUncheckedCreateNestedManyWithoutProductInput
+    customizationConfig?: ProductCustomizationConfigUncheckedCreateNestedOneWithoutProductInput
   }
 
   export type ProductCreateOrConnectWithoutMovementsInput = {
@@ -95087,6 +97025,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemUpdateManyWithoutProductNestedInput
     backInStockAlerts?: BackInStockAlertUpdateManyWithoutProductNestedInput
     promotions?: PromotionProductUpdateManyWithoutProductNestedInput
+    customizationConfig?: ProductCustomizationConfigUpdateOneWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateWithoutMovementsInput = {
@@ -95126,6 +97065,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemUncheckedUpdateManyWithoutProductNestedInput
     backInStockAlerts?: BackInStockAlertUncheckedUpdateManyWithoutProductNestedInput
     promotions?: PromotionProductUncheckedUpdateManyWithoutProductNestedInput
+    customizationConfig?: ProductCustomizationConfigUncheckedUpdateOneWithoutProductNestedInput
   }
 
   export type ProductVariantUpsertWithoutMovementsInput = {
@@ -95289,6 +97229,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemCreateNestedManyWithoutProductInput
     backInStockAlerts?: BackInStockAlertCreateNestedManyWithoutProductInput
     promotions?: PromotionProductCreateNestedManyWithoutProductInput
+    customizationConfig?: ProductCustomizationConfigCreateNestedOneWithoutProductInput
   }
 
   export type ProductUncheckedCreateWithoutPackItemsInput = {
@@ -95328,6 +97269,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemUncheckedCreateNestedManyWithoutProductInput
     backInStockAlerts?: BackInStockAlertUncheckedCreateNestedManyWithoutProductInput
     promotions?: PromotionProductUncheckedCreateNestedManyWithoutProductInput
+    customizationConfig?: ProductCustomizationConfigUncheckedCreateNestedOneWithoutProductInput
   }
 
   export type ProductCreateOrConnectWithoutPackItemsInput = {
@@ -95422,6 +97364,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemUpdateManyWithoutProductNestedInput
     backInStockAlerts?: BackInStockAlertUpdateManyWithoutProductNestedInput
     promotions?: PromotionProductUpdateManyWithoutProductNestedInput
+    customizationConfig?: ProductCustomizationConfigUpdateOneWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateWithoutPackItemsInput = {
@@ -95461,6 +97404,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemUncheckedUpdateManyWithoutProductNestedInput
     backInStockAlerts?: BackInStockAlertUncheckedUpdateManyWithoutProductNestedInput
     promotions?: PromotionProductUncheckedUpdateManyWithoutProductNestedInput
+    customizationConfig?: ProductCustomizationConfigUncheckedUpdateOneWithoutProductNestedInput
   }
 
   export type UserCreateWithoutOrdersInput = {
@@ -95698,6 +97642,7 @@ export namespace Prisma {
     unitPriceCents: number
     quantity: number
     totalPriceCents: number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     product: ProductCreateNestedOneWithoutOrderItemsInput
     variant?: ProductVariantCreateNestedOneWithoutOrderItemsInput
@@ -95714,6 +97659,7 @@ export namespace Prisma {
     unitPriceCents: number
     quantity: number
     totalPriceCents: number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     returnItems?: OrderReturnItemUncheckedCreateNestedManyWithoutOrderItemInput
   }
@@ -96758,6 +98704,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemCreateNestedManyWithoutProductInput
     backInStockAlerts?: BackInStockAlertCreateNestedManyWithoutProductInput
     promotions?: PromotionProductCreateNestedManyWithoutProductInput
+    customizationConfig?: ProductCustomizationConfigCreateNestedOneWithoutProductInput
   }
 
   export type ProductUncheckedCreateWithoutOrderItemsInput = {
@@ -96797,6 +98744,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemUncheckedCreateNestedManyWithoutProductInput
     backInStockAlerts?: BackInStockAlertUncheckedCreateNestedManyWithoutProductInput
     promotions?: PromotionProductUncheckedCreateNestedManyWithoutProductInput
+    customizationConfig?: ProductCustomizationConfigUncheckedCreateNestedOneWithoutProductInput
   }
 
   export type ProductCreateOrConnectWithoutOrderItemsInput = {
@@ -97010,6 +98958,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemUpdateManyWithoutProductNestedInput
     backInStockAlerts?: BackInStockAlertUpdateManyWithoutProductNestedInput
     promotions?: PromotionProductUpdateManyWithoutProductNestedInput
+    customizationConfig?: ProductCustomizationConfigUpdateOneWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateWithoutOrderItemsInput = {
@@ -97049,6 +98998,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemUncheckedUpdateManyWithoutProductNestedInput
     backInStockAlerts?: BackInStockAlertUncheckedUpdateManyWithoutProductNestedInput
     promotions?: PromotionProductUncheckedUpdateManyWithoutProductNestedInput
+    customizationConfig?: ProductCustomizationConfigUncheckedUpdateOneWithoutProductNestedInput
   }
 
   export type ProductVariantUpsertWithoutOrderItemsInput = {
@@ -97777,6 +99727,7 @@ export namespace Prisma {
     unitPriceCents: number
     quantity: number
     totalPriceCents: number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     order: OrderCreateNestedOneWithoutItemsInput
     product: ProductCreateNestedOneWithoutOrderItemsInput
@@ -97794,6 +99745,7 @@ export namespace Prisma {
     unitPriceCents: number
     quantity: number
     totalPriceCents: number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
   }
 
@@ -97856,6 +99808,7 @@ export namespace Prisma {
     unitPriceCents?: IntFieldUpdateOperationsInput | number
     quantity?: IntFieldUpdateOperationsInput | number
     totalPriceCents?: IntFieldUpdateOperationsInput | number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     order?: OrderUpdateOneRequiredWithoutItemsNestedInput
     product?: ProductUpdateOneRequiredWithoutOrderItemsNestedInput
@@ -97873,6 +99826,7 @@ export namespace Prisma {
     unitPriceCents?: IntFieldUpdateOperationsInput | number
     quantity?: IntFieldUpdateOperationsInput | number
     totalPriceCents?: IntFieldUpdateOperationsInput | number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -98266,6 +100220,7 @@ export namespace Prisma {
     id?: string
     quantity: number
     unitPriceCents: number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     product: ProductCreateNestedOneWithoutReservationItemsInput
     variant?: ProductVariantCreateNestedOneWithoutReservationItemsInput
@@ -98277,6 +100232,7 @@ export namespace Prisma {
     variantId?: string | null
     quantity: number
     unitPriceCents: number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
   }
 
@@ -98606,6 +100562,7 @@ export namespace Prisma {
     cartItems?: CartItemCreateNestedManyWithoutProductInput
     backInStockAlerts?: BackInStockAlertCreateNestedManyWithoutProductInput
     promotions?: PromotionProductCreateNestedManyWithoutProductInput
+    customizationConfig?: ProductCustomizationConfigCreateNestedOneWithoutProductInput
   }
 
   export type ProductUncheckedCreateWithoutReservationItemsInput = {
@@ -98645,6 +100602,7 @@ export namespace Prisma {
     cartItems?: CartItemUncheckedCreateNestedManyWithoutProductInput
     backInStockAlerts?: BackInStockAlertUncheckedCreateNestedManyWithoutProductInput
     promotions?: PromotionProductUncheckedCreateNestedManyWithoutProductInput
+    customizationConfig?: ProductCustomizationConfigUncheckedCreateNestedOneWithoutProductInput
   }
 
   export type ProductCreateOrConnectWithoutReservationItemsInput = {
@@ -98778,6 +100736,7 @@ export namespace Prisma {
     cartItems?: CartItemUpdateManyWithoutProductNestedInput
     backInStockAlerts?: BackInStockAlertUpdateManyWithoutProductNestedInput
     promotions?: PromotionProductUpdateManyWithoutProductNestedInput
+    customizationConfig?: ProductCustomizationConfigUpdateOneWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateWithoutReservationItemsInput = {
@@ -98817,6 +100776,7 @@ export namespace Prisma {
     cartItems?: CartItemUncheckedUpdateManyWithoutProductNestedInput
     backInStockAlerts?: BackInStockAlertUncheckedUpdateManyWithoutProductNestedInput
     promotions?: PromotionProductUncheckedUpdateManyWithoutProductNestedInput
+    customizationConfig?: ProductCustomizationConfigUncheckedUpdateOneWithoutProductNestedInput
   }
 
   export type ProductVariantUpsertWithoutReservationItemsInput = {
@@ -100151,6 +102111,7 @@ export namespace Prisma {
     cartItems?: CartItemCreateNestedManyWithoutProductInput
     reservationItems?: StockReservationItemCreateNestedManyWithoutProductInput
     backInStockAlerts?: BackInStockAlertCreateNestedManyWithoutProductInput
+    customizationConfig?: ProductCustomizationConfigCreateNestedOneWithoutProductInput
   }
 
   export type ProductUncheckedCreateWithoutPromotionsInput = {
@@ -100190,6 +102151,7 @@ export namespace Prisma {
     cartItems?: CartItemUncheckedCreateNestedManyWithoutProductInput
     reservationItems?: StockReservationItemUncheckedCreateNestedManyWithoutProductInput
     backInStockAlerts?: BackInStockAlertUncheckedCreateNestedManyWithoutProductInput
+    customizationConfig?: ProductCustomizationConfigUncheckedCreateNestedOneWithoutProductInput
   }
 
   export type ProductCreateOrConnectWithoutPromotionsInput = {
@@ -100318,6 +102280,7 @@ export namespace Prisma {
     cartItems?: CartItemUpdateManyWithoutProductNestedInput
     reservationItems?: StockReservationItemUpdateManyWithoutProductNestedInput
     backInStockAlerts?: BackInStockAlertUpdateManyWithoutProductNestedInput
+    customizationConfig?: ProductCustomizationConfigUpdateOneWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateWithoutPromotionsInput = {
@@ -100357,6 +102320,7 @@ export namespace Prisma {
     cartItems?: CartItemUncheckedUpdateManyWithoutProductNestedInput
     reservationItems?: StockReservationItemUncheckedUpdateManyWithoutProductNestedInput
     backInStockAlerts?: BackInStockAlertUncheckedUpdateManyWithoutProductNestedInput
+    customizationConfig?: ProductCustomizationConfigUncheckedUpdateOneWithoutProductNestedInput
   }
 
   export type PromotionCreateWithoutEligibleCategoriesInput = {
@@ -101245,6 +103209,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemCreateNestedManyWithoutProductInput
     backInStockAlerts?: BackInStockAlertCreateNestedManyWithoutProductInput
     promotions?: PromotionProductCreateNestedManyWithoutProductInput
+    customizationConfig?: ProductCustomizationConfigCreateNestedOneWithoutProductInput
   }
 
   export type ProductUncheckedCreateWithoutWishlistItemsInput = {
@@ -101284,6 +103249,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemUncheckedCreateNestedManyWithoutProductInput
     backInStockAlerts?: BackInStockAlertUncheckedCreateNestedManyWithoutProductInput
     promotions?: PromotionProductUncheckedCreateNestedManyWithoutProductInput
+    customizationConfig?: ProductCustomizationConfigUncheckedCreateNestedOneWithoutProductInput
   }
 
   export type ProductCreateOrConnectWithoutWishlistItemsInput = {
@@ -101430,6 +103396,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemUpdateManyWithoutProductNestedInput
     backInStockAlerts?: BackInStockAlertUpdateManyWithoutProductNestedInput
     promotions?: PromotionProductUpdateManyWithoutProductNestedInput
+    customizationConfig?: ProductCustomizationConfigUpdateOneWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateWithoutWishlistItemsInput = {
@@ -101469,6 +103436,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemUncheckedUpdateManyWithoutProductNestedInput
     backInStockAlerts?: BackInStockAlertUncheckedUpdateManyWithoutProductNestedInput
     promotions?: PromotionProductUncheckedUpdateManyWithoutProductNestedInput
+    customizationConfig?: ProductCustomizationConfigUncheckedUpdateOneWithoutProductNestedInput
   }
 
   export type UserCreateWithoutSavedStationeryListsInput = {
@@ -101923,6 +103891,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemCreateNestedManyWithoutProductInput
     backInStockAlerts?: BackInStockAlertCreateNestedManyWithoutProductInput
     promotions?: PromotionProductCreateNestedManyWithoutProductInput
+    customizationConfig?: ProductCustomizationConfigCreateNestedOneWithoutProductInput
   }
 
   export type ProductUncheckedCreateWithoutSavedListItemsInput = {
@@ -101962,6 +103931,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemUncheckedCreateNestedManyWithoutProductInput
     backInStockAlerts?: BackInStockAlertUncheckedCreateNestedManyWithoutProductInput
     promotions?: PromotionProductUncheckedCreateNestedManyWithoutProductInput
+    customizationConfig?: ProductCustomizationConfigUncheckedCreateNestedOneWithoutProductInput
   }
 
   export type ProductCreateOrConnectWithoutSavedListItemsInput = {
@@ -102044,6 +104014,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemUpdateManyWithoutProductNestedInput
     backInStockAlerts?: BackInStockAlertUpdateManyWithoutProductNestedInput
     promotions?: PromotionProductUpdateManyWithoutProductNestedInput
+    customizationConfig?: ProductCustomizationConfigUpdateOneWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateWithoutSavedListItemsInput = {
@@ -102083,6 +104054,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemUncheckedUpdateManyWithoutProductNestedInput
     backInStockAlerts?: BackInStockAlertUncheckedUpdateManyWithoutProductNestedInput
     promotions?: PromotionProductUncheckedUpdateManyWithoutProductNestedInput
+    customizationConfig?: ProductCustomizationConfigUncheckedUpdateOneWithoutProductNestedInput
   }
 
   export type UserCreateWithoutCreatedBannersInput = {
@@ -102701,6 +104673,7 @@ export namespace Prisma {
   export type CartItemCreateWithoutCartInput = {
     id?: string
     quantity?: number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     product: ProductCreateNestedOneWithoutCartItemsInput
@@ -102712,6 +104685,7 @@ export namespace Prisma {
     productId: string
     variantId?: string | null
     quantity?: number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -102891,6 +104865,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemCreateNestedManyWithoutProductInput
     backInStockAlerts?: BackInStockAlertCreateNestedManyWithoutProductInput
     promotions?: PromotionProductCreateNestedManyWithoutProductInput
+    customizationConfig?: ProductCustomizationConfigCreateNestedOneWithoutProductInput
   }
 
   export type ProductUncheckedCreateWithoutCartItemsInput = {
@@ -102930,6 +104905,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemUncheckedCreateNestedManyWithoutProductInput
     backInStockAlerts?: BackInStockAlertUncheckedCreateNestedManyWithoutProductInput
     promotions?: PromotionProductUncheckedCreateNestedManyWithoutProductInput
+    customizationConfig?: ProductCustomizationConfigUncheckedCreateNestedOneWithoutProductInput
   }
 
   export type ProductCreateOrConnectWithoutCartItemsInput = {
@@ -103053,6 +105029,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemUpdateManyWithoutProductNestedInput
     backInStockAlerts?: BackInStockAlertUpdateManyWithoutProductNestedInput
     promotions?: PromotionProductUpdateManyWithoutProductNestedInput
+    customizationConfig?: ProductCustomizationConfigUpdateOneWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateWithoutCartItemsInput = {
@@ -103092,6 +105069,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemUncheckedUpdateManyWithoutProductNestedInput
     backInStockAlerts?: BackInStockAlertUncheckedUpdateManyWithoutProductNestedInput
     promotions?: PromotionProductUncheckedUpdateManyWithoutProductNestedInput
+    customizationConfig?: ProductCustomizationConfigUncheckedUpdateOneWithoutProductNestedInput
   }
 
   export type ProductVariantUpsertWithoutCartItemsInput = {
@@ -103263,6 +105241,7 @@ export namespace Prisma {
     cartItems?: CartItemCreateNestedManyWithoutProductInput
     reservationItems?: StockReservationItemCreateNestedManyWithoutProductInput
     promotions?: PromotionProductCreateNestedManyWithoutProductInput
+    customizationConfig?: ProductCustomizationConfigCreateNestedOneWithoutProductInput
   }
 
   export type ProductUncheckedCreateWithoutBackInStockAlertsInput = {
@@ -103302,6 +105281,7 @@ export namespace Prisma {
     cartItems?: CartItemUncheckedCreateNestedManyWithoutProductInput
     reservationItems?: StockReservationItemUncheckedCreateNestedManyWithoutProductInput
     promotions?: PromotionProductUncheckedCreateNestedManyWithoutProductInput
+    customizationConfig?: ProductCustomizationConfigUncheckedCreateNestedOneWithoutProductInput
   }
 
   export type ProductCreateOrConnectWithoutBackInStockAlertsInput = {
@@ -103448,6 +105428,7 @@ export namespace Prisma {
     cartItems?: CartItemUpdateManyWithoutProductNestedInput
     reservationItems?: StockReservationItemUpdateManyWithoutProductNestedInput
     promotions?: PromotionProductUpdateManyWithoutProductNestedInput
+    customizationConfig?: ProductCustomizationConfigUpdateOneWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateWithoutBackInStockAlertsInput = {
@@ -103487,6 +105468,7 @@ export namespace Prisma {
     cartItems?: CartItemUncheckedUpdateManyWithoutProductNestedInput
     reservationItems?: StockReservationItemUncheckedUpdateManyWithoutProductNestedInput
     promotions?: PromotionProductUncheckedUpdateManyWithoutProductNestedInput
+    customizationConfig?: ProductCustomizationConfigUncheckedUpdateOneWithoutProductNestedInput
   }
 
   export type NewsletterVerificationTokenCreateWithoutSubscriberInput = {
@@ -104423,6 +106405,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemCreateNestedManyWithoutProductInput
     backInStockAlerts?: BackInStockAlertCreateNestedManyWithoutProductInput
     promotions?: PromotionProductCreateNestedManyWithoutProductInput
+    customizationConfig?: ProductCustomizationConfigCreateNestedOneWithoutProductInput
   }
 
   export type ProductUncheckedCreateWithoutGlobalSkuInput = {
@@ -104462,6 +106445,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemUncheckedCreateNestedManyWithoutProductInput
     backInStockAlerts?: BackInStockAlertUncheckedCreateNestedManyWithoutProductInput
     promotions?: PromotionProductUncheckedCreateNestedManyWithoutProductInput
+    customizationConfig?: ProductCustomizationConfigUncheckedCreateNestedOneWithoutProductInput
   }
 
   export type ProductCreateOrConnectWithoutGlobalSkuInput = {
@@ -104558,6 +106542,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemUpdateManyWithoutProductNestedInput
     backInStockAlerts?: BackInStockAlertUpdateManyWithoutProductNestedInput
     promotions?: PromotionProductUpdateManyWithoutProductNestedInput
+    customizationConfig?: ProductCustomizationConfigUpdateOneWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateWithoutGlobalSkuInput = {
@@ -104597,6 +106582,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemUncheckedUpdateManyWithoutProductNestedInput
     backInStockAlerts?: BackInStockAlertUncheckedUpdateManyWithoutProductNestedInput
     promotions?: PromotionProductUncheckedUpdateManyWithoutProductNestedInput
+    customizationConfig?: ProductCustomizationConfigUncheckedUpdateOneWithoutProductNestedInput
   }
 
   export type ProductVariantUpsertWithoutGlobalSkuInput = {
@@ -106876,6 +108862,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemUpdateManyWithoutProductNestedInput
     backInStockAlerts?: BackInStockAlertUpdateManyWithoutProductNestedInput
     promotions?: PromotionProductUpdateManyWithoutProductNestedInput
+    customizationConfig?: ProductCustomizationConfigUpdateOneWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateWithoutCategoryInput = {
@@ -106915,6 +108902,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemUncheckedUpdateManyWithoutProductNestedInput
     backInStockAlerts?: BackInStockAlertUncheckedUpdateManyWithoutProductNestedInput
     promotions?: PromotionProductUncheckedUpdateManyWithoutProductNestedInput
+    customizationConfig?: ProductCustomizationConfigUncheckedUpdateOneWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateManyWithoutCategoryInput = {
@@ -106982,6 +108970,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemUpdateManyWithoutProductNestedInput
     backInStockAlerts?: BackInStockAlertUpdateManyWithoutProductNestedInput
     promotions?: PromotionProductUpdateManyWithoutProductNestedInput
+    customizationConfig?: ProductCustomizationConfigUpdateOneWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateWithoutSubcategoryInput = {
@@ -107021,6 +109010,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemUncheckedUpdateManyWithoutProductNestedInput
     backInStockAlerts?: BackInStockAlertUncheckedUpdateManyWithoutProductNestedInput
     promotions?: PromotionProductUncheckedUpdateManyWithoutProductNestedInput
+    customizationConfig?: ProductCustomizationConfigUncheckedUpdateOneWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateManyWithoutSubcategoryInput = {
@@ -107134,6 +109124,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemUpdateManyWithoutProductNestedInput
     backInStockAlerts?: BackInStockAlertUpdateManyWithoutProductNestedInput
     promotions?: PromotionProductUpdateManyWithoutProductNestedInput
+    customizationConfig?: ProductCustomizationConfigUpdateOneWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateWithoutBrandInput = {
@@ -107173,6 +109164,7 @@ export namespace Prisma {
     reservationItems?: StockReservationItemUncheckedUpdateManyWithoutProductNestedInput
     backInStockAlerts?: BackInStockAlertUncheckedUpdateManyWithoutProductNestedInput
     promotions?: PromotionProductUncheckedUpdateManyWithoutProductNestedInput
+    customizationConfig?: ProductCustomizationConfigUncheckedUpdateOneWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateManyWithoutBrandInput = {
@@ -107238,6 +109230,7 @@ export namespace Prisma {
     unitPriceCents: number
     quantity: number
     totalPriceCents: number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
   }
 
@@ -107269,6 +109262,7 @@ export namespace Prisma {
     cartId: string
     variantId?: string | null
     quantity?: number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -107279,6 +109273,7 @@ export namespace Prisma {
     variantId?: string | null
     quantity: number
     unitPriceCents: number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
   }
 
@@ -107397,6 +109392,7 @@ export namespace Prisma {
     unitPriceCents?: IntFieldUpdateOperationsInput | number
     quantity?: IntFieldUpdateOperationsInput | number
     totalPriceCents?: IntFieldUpdateOperationsInput | number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     order?: OrderUpdateOneRequiredWithoutItemsNestedInput
     variant?: ProductVariantUpdateOneWithoutOrderItemsNestedInput
@@ -107413,6 +109409,7 @@ export namespace Prisma {
     unitPriceCents?: IntFieldUpdateOperationsInput | number
     quantity?: IntFieldUpdateOperationsInput | number
     totalPriceCents?: IntFieldUpdateOperationsInput | number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     returnItems?: OrderReturnItemUncheckedUpdateManyWithoutOrderItemNestedInput
   }
@@ -107427,6 +109424,7 @@ export namespace Prisma {
     unitPriceCents?: IntFieldUpdateOperationsInput | number
     quantity?: IntFieldUpdateOperationsInput | number
     totalPriceCents?: IntFieldUpdateOperationsInput | number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -107502,6 +109500,7 @@ export namespace Prisma {
   export type CartItemUpdateWithoutProductInput = {
     id?: StringFieldUpdateOperationsInput | string
     quantity?: IntFieldUpdateOperationsInput | number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     cart?: CartUpdateOneRequiredWithoutItemsNestedInput
@@ -107513,6 +109512,7 @@ export namespace Prisma {
     cartId?: StringFieldUpdateOperationsInput | string
     variantId?: NullableStringFieldUpdateOperationsInput | string | null
     quantity?: IntFieldUpdateOperationsInput | number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -107522,6 +109522,7 @@ export namespace Prisma {
     cartId?: StringFieldUpdateOperationsInput | string
     variantId?: NullableStringFieldUpdateOperationsInput | string | null
     quantity?: IntFieldUpdateOperationsInput | number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -107530,6 +109531,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     quantity?: IntFieldUpdateOperationsInput | number
     unitPriceCents?: IntFieldUpdateOperationsInput | number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     reservation?: StockReservationUpdateOneRequiredWithoutItemsNestedInput
     variant?: ProductVariantUpdateOneWithoutReservationItemsNestedInput
@@ -107541,6 +109543,7 @@ export namespace Prisma {
     variantId?: NullableStringFieldUpdateOperationsInput | string | null
     quantity?: IntFieldUpdateOperationsInput | number
     unitPriceCents?: IntFieldUpdateOperationsInput | number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -107550,6 +109553,7 @@ export namespace Prisma {
     variantId?: NullableStringFieldUpdateOperationsInput | string | null
     quantity?: IntFieldUpdateOperationsInput | number
     unitPriceCents?: IntFieldUpdateOperationsInput | number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -107629,6 +109633,7 @@ export namespace Prisma {
     unitPriceCents: number
     quantity: number
     totalPriceCents: number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
   }
 
@@ -107649,6 +109654,7 @@ export namespace Prisma {
     cartId: string
     productId: string
     quantity?: number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -107659,6 +109665,7 @@ export namespace Prisma {
     productId: string
     quantity: number
     unitPriceCents: number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
   }
 
@@ -107670,6 +109677,7 @@ export namespace Prisma {
     unitPriceCents?: IntFieldUpdateOperationsInput | number
     quantity?: IntFieldUpdateOperationsInput | number
     totalPriceCents?: IntFieldUpdateOperationsInput | number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     order?: OrderUpdateOneRequiredWithoutItemsNestedInput
     product?: ProductUpdateOneRequiredWithoutOrderItemsNestedInput
@@ -107686,6 +109694,7 @@ export namespace Prisma {
     unitPriceCents?: IntFieldUpdateOperationsInput | number
     quantity?: IntFieldUpdateOperationsInput | number
     totalPriceCents?: IntFieldUpdateOperationsInput | number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     returnItems?: OrderReturnItemUncheckedUpdateManyWithoutOrderItemNestedInput
   }
@@ -107700,6 +109709,7 @@ export namespace Prisma {
     unitPriceCents?: IntFieldUpdateOperationsInput | number
     quantity?: IntFieldUpdateOperationsInput | number
     totalPriceCents?: IntFieldUpdateOperationsInput | number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -107742,6 +109752,7 @@ export namespace Prisma {
   export type CartItemUpdateWithoutVariantInput = {
     id?: StringFieldUpdateOperationsInput | string
     quantity?: IntFieldUpdateOperationsInput | number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     cart?: CartUpdateOneRequiredWithoutItemsNestedInput
@@ -107753,6 +109764,7 @@ export namespace Prisma {
     cartId?: StringFieldUpdateOperationsInput | string
     productId?: StringFieldUpdateOperationsInput | string
     quantity?: IntFieldUpdateOperationsInput | number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -107762,6 +109774,7 @@ export namespace Prisma {
     cartId?: StringFieldUpdateOperationsInput | string
     productId?: StringFieldUpdateOperationsInput | string
     quantity?: IntFieldUpdateOperationsInput | number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -107770,6 +109783,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     quantity?: IntFieldUpdateOperationsInput | number
     unitPriceCents?: IntFieldUpdateOperationsInput | number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     reservation?: StockReservationUpdateOneRequiredWithoutItemsNestedInput
     product?: ProductUpdateOneRequiredWithoutReservationItemsNestedInput
@@ -107781,6 +109795,7 @@ export namespace Prisma {
     productId?: StringFieldUpdateOperationsInput | string
     quantity?: IntFieldUpdateOperationsInput | number
     unitPriceCents?: IntFieldUpdateOperationsInput | number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -107790,6 +109805,7 @@ export namespace Prisma {
     productId?: StringFieldUpdateOperationsInput | string
     quantity?: IntFieldUpdateOperationsInput | number
     unitPriceCents?: IntFieldUpdateOperationsInput | number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -107849,6 +109865,7 @@ export namespace Prisma {
     unitPriceCents: number
     quantity: number
     totalPriceCents: number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
   }
 
@@ -107983,6 +110000,7 @@ export namespace Prisma {
     unitPriceCents?: IntFieldUpdateOperationsInput | number
     quantity?: IntFieldUpdateOperationsInput | number
     totalPriceCents?: IntFieldUpdateOperationsInput | number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     product?: ProductUpdateOneRequiredWithoutOrderItemsNestedInput
     variant?: ProductVariantUpdateOneWithoutOrderItemsNestedInput
@@ -107999,6 +110017,7 @@ export namespace Prisma {
     unitPriceCents?: IntFieldUpdateOperationsInput | number
     quantity?: IntFieldUpdateOperationsInput | number
     totalPriceCents?: IntFieldUpdateOperationsInput | number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     returnItems?: OrderReturnItemUncheckedUpdateManyWithoutOrderItemNestedInput
   }
@@ -108013,6 +110032,7 @@ export namespace Prisma {
     unitPriceCents?: IntFieldUpdateOperationsInput | number
     quantity?: IntFieldUpdateOperationsInput | number
     totalPriceCents?: IntFieldUpdateOperationsInput | number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -108511,6 +110531,7 @@ export namespace Prisma {
     variantId?: string | null
     quantity: number
     unitPriceCents: number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
   }
 
@@ -108533,6 +110554,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     quantity?: IntFieldUpdateOperationsInput | number
     unitPriceCents?: IntFieldUpdateOperationsInput | number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     product?: ProductUpdateOneRequiredWithoutReservationItemsNestedInput
     variant?: ProductVariantUpdateOneWithoutReservationItemsNestedInput
@@ -108544,6 +110566,7 @@ export namespace Prisma {
     variantId?: NullableStringFieldUpdateOperationsInput | string | null
     quantity?: IntFieldUpdateOperationsInput | number
     unitPriceCents?: IntFieldUpdateOperationsInput | number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -108553,6 +110576,7 @@ export namespace Prisma {
     variantId?: NullableStringFieldUpdateOperationsInput | string | null
     quantity?: IntFieldUpdateOperationsInput | number
     unitPriceCents?: IntFieldUpdateOperationsInput | number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -109018,6 +111042,7 @@ export namespace Prisma {
     productId: string
     variantId?: string | null
     quantity?: number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -109025,6 +111050,7 @@ export namespace Prisma {
   export type CartItemUpdateWithoutCartInput = {
     id?: StringFieldUpdateOperationsInput | string
     quantity?: IntFieldUpdateOperationsInput | number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     product?: ProductUpdateOneRequiredWithoutCartItemsNestedInput
@@ -109036,6 +111062,7 @@ export namespace Prisma {
     productId?: StringFieldUpdateOperationsInput | string
     variantId?: NullableStringFieldUpdateOperationsInput | string | null
     quantity?: IntFieldUpdateOperationsInput | number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -109045,6 +111072,7 @@ export namespace Prisma {
     productId?: StringFieldUpdateOperationsInput | string
     variantId?: NullableStringFieldUpdateOperationsInput | string | null
     quantity?: IntFieldUpdateOperationsInput | number
+    customization?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

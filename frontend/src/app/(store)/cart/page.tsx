@@ -3,11 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ShoppingBag, Plus, Minus, Trash2, ArrowRight, Tag, Truck, ShieldCheck, Check, MessageCircle } from 'lucide-react';
+import { ShoppingBag, Plus, Minus, Trash2, ArrowRight, Tag, Truck, ShieldCheck, Check, MessageCircle, PenTool } from 'lucide-react';
 import { useCartStore } from '@/services/cartStore';
 import { formatLKR, FREE_DELIVERY_THRESHOLD_CENTS } from '@/lib/currency';
 import { WhatsAppOrderButton } from '@/components/cart/WhatsAppOrderButton';
 import { getWhatsAppBusinessNumber, validateAndCleanWhatsAppNumber } from '@/lib/whatsapp';
+import { ProductThumbnail } from '@/components/common/ProductThumbnail';
 
 export default function CartPage() {
   const router = useRouter();
@@ -214,13 +215,12 @@ export default function CartPage() {
                         aria-label={`Select ${item.product.name}`}
                         className="w-4 h-4 rounded text-[#0866E8] focus:ring-[#0866E8] cursor-pointer shrink-0 mt-1 sm:mt-0"
                       />
-                      <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#F7FAFF] border border-slate-200 flex items-center justify-center text-[#0866E8] font-black text-xl shrink-0 p-1">
-                        {item.product.images && item.product.images.length > 0 && typeof item.product.images[0] === 'string' && item.product.images[0].startsWith('http') ? (
-                          <img src={item.product.images[0]} alt={item.product.name} className="w-full h-full object-contain" />
-                        ) : (
-                          <span>{item.product.name.charAt(0)}</span>
-                        )}
-                      </div>
+                      <ProductThumbnail
+                        src={item.product.images?.[0]}
+                        alt={item.product.name}
+                        brandName={item.product.brandName}
+                        className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl shrink-0 p-1"
+                      />
                       <div className="min-w-0">
                         <Link
                           href={`/products/${item.product.slug}`}
@@ -230,6 +230,21 @@ export default function CartPage() {
                         </Link>
                         {item.variant && (
                           <p className="text-[11px] text-[#64748B] mt-0.5">{item.variant.name}</p>
+                        )}
+                        {item.customization && (
+                          <div className="mt-2 p-2.5 bg-[#F8FAFC] border border-slate-200/90 rounded-xl text-xs space-y-1">
+                            <div className="flex items-center gap-1.5 font-bold text-[#09285C]">
+                              <PenTool className="w-3.5 h-3.5 text-[#0066CC] shrink-0" />
+                              <span className="truncate">Engraved: &ldquo;{item.customization.engravingText}&rdquo;</span>
+                            </div>
+                            <div className="text-[11px] text-slate-500 flex flex-wrap items-center gap-3">
+                              <span>Font: <strong className="text-slate-800">{item.customization.font}</strong></span>
+                              <span>Position: <strong className="text-slate-800">{item.customization.position}</strong></span>
+                              {item.customization.customizationFeeCents > 0 && (
+                                <span className="text-blue-700 font-bold">Fee: {formatLKR(item.customization.customizationFeeCents)}</span>
+                              )}
+                            </div>
+                          </div>
                         )}
                         {item.bundleInfo && (
                           <div className="mt-1">

@@ -29,6 +29,7 @@ export interface BackendCartItem {
   quantity: number;
   unitPriceCents: number;
   totalPriceCents: number;
+  customization?: any | null;
   isAvailable: boolean;
   isOutOfStock: boolean;
   exceedsStock: boolean;
@@ -98,7 +99,8 @@ class CartService {
   public async addItem(
     productId: string,
     quantity = 1,
-    variantId?: string | null
+    variantId?: string | null,
+    customization?: any | null
   ): Promise<BackendCartResponse> {
     const res = await apiClient.post<{ success: boolean; data: BackendCartResponse }>(
       '/cart/items',
@@ -106,6 +108,7 @@ class CartService {
         productId,
         quantity,
         variantId: variantId || null,
+        customization: customization || undefined,
       },
       {
         headers: this.getHeaders(),
@@ -267,6 +270,7 @@ class CartService {
       quantity: item.quantity,
       unitPriceCents: item.unitPriceCents,
       totalPriceCents: item.totalPriceCents,
+      customization: item.customization || undefined,
       isAvailable: item.isAvailable,
       isOutOfStock: item.isOutOfStock,
       exceedsStock: item.exceedsStock,

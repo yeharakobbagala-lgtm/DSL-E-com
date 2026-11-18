@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { formatLKR, FREE_DELIVERY_THRESHOLD_CENTS } from '@/lib/currency';
 import { useCartStore } from '@/services/cartStore';
+import { ProductThumbnail } from '@/components/common/ProductThumbnail';
 import {
   bulkOrderService,
   BulkOrderSearchResult,
@@ -484,17 +485,11 @@ export default function BulkOrderPage() {
                       className="w-full p-3 sm:p-3.5 text-left flex items-center justify-between gap-3 hover:bg-[#F0F7FE] transition-colors cursor-pointer group"
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-12 h-12 rounded-xl bg-[#F8FAFC] border border-slate-100 flex items-center justify-center shrink-0 overflow-hidden p-1">
-                          {item.images?.[0] ? (
-                            <img
-                              src={item.images[0]}
-                              alt={item.name}
-                              className="w-full h-full object-contain"
-                            />
-                          ) : (
-                            <Package className="w-5 h-5 text-slate-300" />
-                          )}
-                        </div>
+                        <ProductThumbnail
+                          src={item.images?.[0]}
+                          alt={item.name}
+                          className="w-12 h-12 rounded-xl shrink-0 p-1"
+                        />
                         <div className="min-w-0">
                           <p className="text-xs sm:text-sm font-bold text-[#102C60] group-hover:text-[#087BFF] truncate transition-colors">
                             {item.name}

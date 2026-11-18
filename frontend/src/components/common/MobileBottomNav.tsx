@@ -11,6 +11,7 @@ import {
   ShoppingCart,
   X,
   ArrowRight,
+  PenTool,
 } from 'lucide-react';
 import { useCartStore } from '@/services/cartStore';
 import { useWishlistStore } from '@/services/wishlistStore';
@@ -122,13 +123,21 @@ export const MobileBottomNav: React.FC = () => {
               </div>
             )}
 
-            <div className="pt-2 flex justify-between items-center text-xs text-slate-500">
+            <div className="pt-2 flex flex-wrap justify-between items-center gap-2 text-xs text-slate-500">
               <Link
                 href="/shop"
                 onClick={() => setIsSearchSheetOpen(false)}
                 className="text-[#0866E8] font-bold hover:underline"
               >
                 Browse All Catalogue
+              </Link>
+              <Link
+                href="/customize-pen"
+                onClick={() => setIsSearchSheetOpen(false)}
+                className="text-[#0866E8] font-bold hover:underline flex items-center gap-1 bg-amber-50 text-amber-900 border border-amber-200 px-2.5 py-1 rounded-full"
+              >
+                <PenTool className="w-3.5 h-3.5 text-amber-700" />
+                <span>Customize Pen</span>
               </Link>
               <Link
                 href="/find-my-stationery"

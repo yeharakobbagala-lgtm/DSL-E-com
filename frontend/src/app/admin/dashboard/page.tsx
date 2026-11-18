@@ -411,7 +411,7 @@ export default function AdminDashboardPage() {
         {/* Four Hero KPI Cards with Sparklines */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <KpiAnalyticsCard
-            title="Sales This Month (LKR)"
+            title="Sales This Month"
             value={data?.financial ? formatLKR(data.financial.grossSalesCents) : 'Rs. 15,420.00'}
             colorTheme="blue"
             icon={<DollarSign className="w-5 h-5 text-white" />}
@@ -558,7 +558,7 @@ export default function AdminDashboardPage() {
                       <th className="pb-2.5 px-3 font-bold uppercase tracking-wider">Customer</th>
                       <th className="pb-2.5 px-3 font-bold uppercase tracking-wider">Fulfillment</th>
                       <th className="pb-2.5 px-3 font-bold uppercase tracking-wider">Payment</th>
-                      {hasFinancial && <th className="pb-2.5 px-3 font-bold uppercase tracking-wider text-right">Total</th>}
+                      {hasFinancial && <th className="pb-2.5 px-3 font-bold uppercase tracking-wider text-right">Total (Rs.)</th>}
                       <th className="pb-2.5 px-3 font-bold uppercase tracking-wider text-right">Date</th>
                       <th className="pb-2.5 pr-5 sm:pr-0 pl-3 font-bold uppercase tracking-wider text-right">Action</th>
                     </tr>
@@ -582,7 +582,9 @@ export default function AdminDashboardPage() {
                         </td>
                         {hasFinancial && (
                           <td className="py-3 px-3 text-right font-black text-slate-900 whitespace-nowrap">
-                            {order.totalCents !== undefined ? formatLKR(order.totalCents) : '—'}
+                            {order.totalCents !== undefined
+                              ? (order.totalCents / 100).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                              : '—'}
                           </td>
                         )}
                         <td className="py-3 px-3 text-right text-[11px] text-slate-500 whitespace-nowrap">

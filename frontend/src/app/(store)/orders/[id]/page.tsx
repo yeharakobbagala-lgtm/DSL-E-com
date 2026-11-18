@@ -22,6 +22,7 @@ import {
   Building2,
   PhoneCall,
   AlertTriangle,
+  PenTool,
 } from 'lucide-react';
 import { orderService } from '@/services/orderService';
 import { useCartStore } from '@/services/cartStore';
@@ -617,6 +618,21 @@ function OrderTrackingContent() {
                   {item.variantName && (
                     <div className="text-[#0866E8] font-semibold text-[11px] mt-0.5">
                       {item.variantName}
+                    </div>
+                  )}
+                  {item.customization && (
+                    <div className="mt-1 p-2 bg-[#F8FAFC] border border-slate-200/80 rounded-xl text-[11px] space-y-0.5">
+                      <div className="flex items-center gap-1.5 font-bold text-[#09285C]">
+                        <PenTool className="w-3 h-3 text-[#0066CC] shrink-0" />
+                        <span>Engraved: &ldquo;{item.customization.engravingText}&rdquo;</span>
+                      </div>
+                      <div className="text-[10px] text-slate-500 flex gap-2">
+                        <span>Font: {item.customization.font}</span>
+                        <span>Pos: {item.customization.position}</span>
+                        {item.customization.customizationFeeCents > 0 && (
+                          <span className="text-blue-700 font-semibold">Fee: {formatLKR(item.customization.customizationFeeCents)}</span>
+                        )}
+                      </div>
                     </div>
                   )}
                   <div className="text-slate-400">

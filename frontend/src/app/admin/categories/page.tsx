@@ -22,6 +22,8 @@ import {
   ChevronsUpDown,
   Tag,
   Package,
+  Eye,
+  ExternalLink,
 } from 'lucide-react';
 import { categoryService } from '@/services/categoryService';
 import { ProductCategory } from '@/types/product';
@@ -33,6 +35,7 @@ import {
   CatalogKpiCards,
   KpiCardData,
   CatalogExportModal,
+  CategoryProductsModal,
 } from '@/components/admin/catalog';
 import { AdminPageAccess } from '@/components/admin/AdminPageAccess';
 import { useUserStore } from '@/services/userStore';
@@ -89,6 +92,7 @@ export default function AdminCategoriesPage() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [viewingCategoryProducts, setViewingCategoryProducts] = useState<ProductCategory | null>(null);
   const [editingCategory, setEditingCategory] = useState<ProductCategory | null>(null);
   const [pendingDeleteCategory, setPendingDeleteCategory] = useState<ProductCategory | null>(null);
   const [formData, setFormData] = useState<CategoryFormData>(emptyFormData);
@@ -727,12 +731,25 @@ export default function AdminCategoriesPage() {
                                 <span className="w-6 inline-block" />
                               )}
 
-                              <div className="p-1.5 rounded-lg bg-blue-50 text-blue-700">
+                              <button
+                                type="button"
+                                onClick={() => setViewingCategoryProducts(root)}
+                                className="p-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors cursor-pointer"
+                                title={`View products in ${root.name}`}
+                              >
                                 {isCollapsed ? <Folder className="w-4 h-4" /> : <FolderOpen className="w-4 h-4" />}
-                              </div>
+                              </button>
 
-                              <div>
-                                <span className="font-bold text-slate-900 text-sm">{root.name}</span>
+                              <div className="text-left">
+                                <button
+                                  type="button"
+                                  onClick={() => setViewingCategoryProducts(root)}
+                                  className="font-bold text-slate-900 text-sm hover:text-blue-600 transition-colors cursor-pointer group flex items-center gap-1.5"
+                                  title={`View products in ${root.name}`}
+                                >
+                                  <span>{root.name}</span>
+                                  <Eye className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                                </button>
                                 {root.description && (
                                   <p className="text-[11px] text-slate-400 truncate max-w-xs">
                                     {root.description}
@@ -757,15 +774,28 @@ export default function AdminCategoriesPage() {
 
                         {isColVisible('directProducts') && (
                           <td className="py-3 px-3">
-                            <span className="font-bold text-slate-800">{directCount}</span>
+                            <button
+                              type="button"
+                              onClick={() => setViewingCategoryProducts(root)}
+                              className="font-bold text-slate-800 hover:text-blue-600 hover:underline cursor-pointer transition-colors"
+                              title={`View ${directCount} products in ${root.name}`}
+                            >
+                              {directCount}
+                            </button>
                           </td>
                         )}
 
                         {isColVisible('totalProducts') && (
                           <td className="py-3 px-3">
-                            <span className="inline-flex items-center gap-1 font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full text-xs">
-                              {totalCount}
-                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setViewingCategoryProducts(root)}
+                              className="inline-flex items-center gap-1 font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 px-2.5 py-0.5 rounded-full text-xs transition-colors cursor-pointer"
+                              title={`View all ${totalCount} products in ${root.name}`}
+                            >
+                              <span>{totalCount}</span>
+                              <ExternalLink className="w-2.5 h-2.5 text-blue-500" />
+                            </button>
                           </td>
                         )}
 
@@ -798,6 +828,14 @@ export default function AdminCategoriesPage() {
                         {isColVisible('actions') && (
                           <td className="py-3 px-4 text-right whitespace-nowrap">
                             <div className="flex items-center justify-end gap-1">
+                              <button
+                                type="button"
+                                onClick={() => setViewingCategoryProducts(root)}
+                                className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                                title="View products in this category"
+                              >
+                                <Eye className="w-3.5 h-3.5" />
+                              </button>
                               {hasPermission('categories.create') && (
                                 <button
                                   type="button"
@@ -852,8 +890,16 @@ export default function AdminCategoriesPage() {
                                       {isLast ? '└──' : '├──'}
                                     </span>
                                     <CornerDownRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                                    <div>
-                                      <span className="font-semibold text-slate-800">{child.name}</span>
+                                    <div className="text-left">
+                                      <button
+                                        type="button"
+                                        onClick={() => setViewingCategoryProducts(child)}
+                                        className="font-semibold text-slate-800 hover:text-blue-600 transition-colors cursor-pointer group flex items-center gap-1.5"
+                                        title={`View products in ${child.name}`}
+                                      >
+                                        <span>{child.name}</span>
+                                        <Eye className="w-3 h-3 text-slate-400 group-hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                                      </button>
                                       {child.description && (
                                         <p className="text-[10px] text-slate-400 truncate max-w-xs">
                                           {child.description}
@@ -878,13 +924,28 @@ export default function AdminCategoriesPage() {
 
                               {isColVisible('directProducts') && (
                                 <td className="py-2.5 px-3 font-semibold text-slate-700">
-                                  {childDirect}
+                                  <button
+                                    type="button"
+                                    onClick={() => setViewingCategoryProducts(child)}
+                                    className="font-semibold text-slate-700 hover:text-blue-600 hover:underline cursor-pointer transition-colors"
+                                    title={`View ${childDirect} products in ${child.name}`}
+                                  >
+                                    {childDirect}
+                                  </button>
                                 </td>
                               )}
 
                               {isColVisible('totalProducts') && (
                                 <td className="py-2.5 px-3 font-semibold text-slate-700">
-                                  {childDirect}
+                                  <button
+                                    type="button"
+                                    onClick={() => setViewingCategoryProducts(child)}
+                                    className="inline-flex items-center gap-1 font-semibold text-blue-700 bg-blue-50/70 hover:bg-blue-100 px-2 py-0.5 rounded-full text-[11px] cursor-pointer transition-colors"
+                                    title={`View ${childDirect} products in ${child.name}`}
+                                  >
+                                    <span>{childDirect}</span>
+                                    <ExternalLink className="w-2.5 h-2.5 text-blue-500" />
+                                  </button>
                                 </td>
                               )}
 
@@ -907,6 +968,14 @@ export default function AdminCategoriesPage() {
                               {isColVisible('actions') && (
                                 <td className="py-2.5 px-4 text-right whitespace-nowrap">
                                   <div className="flex items-center justify-end gap-1">
+                                    <button
+                                      type="button"
+                                      onClick={() => setViewingCategoryProducts(child)}
+                                      className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                                      title="View products in this subcategory"
+                                    >
+                                      <Eye className="w-3.5 h-3.5" />
+                                    </button>
                                     {hasPermission('categories.edit') && (
                                       <button
                                         type="button"
@@ -942,6 +1011,13 @@ export default function AdminCategoriesPage() {
           </table>
         </div>
       </div>
+
+      {/* Category Products Modal */}
+      <CategoryProductsModal
+        category={viewingCategoryProducts}
+        onClose={() => setViewingCategoryProducts(null)}
+        allCategories={categories}
+      />
 
       {/* Export Modal */}
       <CatalogExportModal

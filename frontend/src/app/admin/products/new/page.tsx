@@ -10,6 +10,7 @@ import { brandService } from '@/services/brandService';
 import { ProductCategory, Brand } from '@/types/product';
 import { rupeesToCents } from '@/lib/currency';
 import { AdminPageAccess } from '@/components/admin/AdminPageAccess';
+import { resolveImageUrl } from '@/lib/image';
 
 export default function AdminNewProductPage() {
   const router = useRouter();
@@ -192,7 +193,7 @@ export default function AdminNewProductPage() {
               <label className="font-bold text-slate-700 block mb-1">Product Title *</label>
               <input
                 type="text"
-                placeholder="e.g. Atlas Single Line CR Book 200 Pages"
+                placeholder="e.g. Single Line CR Book 200 Pages"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-1 focus:ring-[#08275E]"
@@ -389,7 +390,15 @@ export default function AdminNewProductPage() {
                 className="relative w-20 h-20 rounded-xl border border-slate-200 bg-slate-50 overflow-hidden flex items-center justify-center group"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={imgUrl} alt={`Product ${index + 1}`} className="w-full h-full object-cover" />
+                <img
+                  src={resolveImageUrl(imgUrl)}
+                  alt={`Product ${index + 1}`}
+                  onError={(e) => {
+                    // Fallback to default placeholder if specific image fails
+                    e.currentTarget.src = '/products/default.png';
+                  }}
+                  className="w-full h-full object-cover"
+                />
                 {imgUrl !== '/products/default.png' && (
                   <button
                     type="button"

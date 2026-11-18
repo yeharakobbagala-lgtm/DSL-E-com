@@ -236,7 +236,7 @@ export const CreateRefundModal: React.FC<CreateRefundModalProps> = ({
           {/* Amount Field */}
           <div>
             <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-              Refund Amount (LKR) *
+              Refund Amount (Rs.) *
             </label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">
