@@ -3,8 +3,11 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Mail, Phone, MapPin, ArrowRight, ChevronDown } from 'lucide-react';
+import { useTranslation } from '@/services/languageStore';
+import { LanguageSwitcher } from './LanguageSwitcher';
 
 export const Footer: React.FC = () => {
+  const { t } = useTranslation();
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     catalogue: true,
     services: false,
@@ -359,18 +362,21 @@ export const Footer: React.FC = () => {
           </div>
 
           {/* ------------------------------------------------------------- */}
-          {/* BOTTOM ROW: Copyright & Currency Selector                     */}
+          {/* BOTTOM ROW: Copyright, Language & Currency Selector            */}
           {/* ------------------------------------------------------------- */}
-          <div className="pt-6 mt-8 border-t border-slate-300/40 flex flex-col sm:flex-row items-center justify-between text-xs text-[#092C68]/75 gap-3.5">
+          <div className="pt-6 mt-8 border-t border-slate-300/40 flex flex-col md:flex-row items-center justify-between text-xs text-[#092C68]/75 gap-3.5">
             <p className="font-normal text-center sm:text-left">
-              &copy; {new Date().getFullYear()} DSL Enterprises (Pvt) Ltd. All rights reserved.
+              &copy; {new Date().getFullYear()} {t('footer.rights')}
             </p>
 
-            {/* Currency Pill with Warm-Yellow Indicator */}
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/75 hover:bg-white text-xs font-semibold text-[#092C68] border border-white/90 shadow-2xs backdrop-blur-md transition-all">
-              <span className="w-2 h-2 rounded-full bg-[#EAB308] shadow-[0_0_5px_#EAB308]" />
-              <span>Currency: Sri Lankan Rupees (LKR)</span>
-              <ChevronDown className="w-3.5 h-3.5 text-[#092C68]/60" />
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <LanguageSwitcher variant="footer" />
+
+              {/* Currency Pill with Warm-Yellow Indicator */}
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/75 hover:bg-white text-xs font-semibold text-[#092C68] border border-white/90 shadow-2xs backdrop-blur-md transition-all">
+                <span className="w-2 h-2 rounded-full bg-[#EAB308] shadow-[0_0_5px_#EAB308]" />
+                <span>LKR (Rs.)</span>
+              </div>
             </div>
           </div>
 

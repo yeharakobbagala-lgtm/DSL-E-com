@@ -86,6 +86,10 @@ class ProductService {
         return { sortBy: 'name', sortOrder: 'asc' };
       case 'name_desc':
         return { sortBy: 'name', sortOrder: 'desc' };
+      case 'stock_asc':
+        return { sortBy: 'stockQuantity', sortOrder: 'asc' };
+      case 'stock_desc':
+        return { sortBy: 'stockQuantity', sortOrder: 'desc' };
       case 'rating':
         return { sortBy: 'rating', sortOrder: 'desc' };
       case 'newest':
@@ -144,8 +148,14 @@ class ProductService {
       params.inStockOnly = true;
     }
 
-    if (filters.featured) {
+    if (filters.featured || filters.isFeatured) {
       params.isFeatured = true;
+    }
+    if (filters.isBestSeller) {
+      params.isBestSeller = true;
+    }
+    if (filters.isNewArrival) {
+      params.isNewArrival = true;
     }
 
     if (filters.categoryId) {

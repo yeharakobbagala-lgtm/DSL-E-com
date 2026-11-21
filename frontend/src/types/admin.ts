@@ -16,6 +16,16 @@ export interface InventoryMovementRelation {
   sku: string;
 }
 
+export interface InventoryMovementActor {
+  id?: string | null;
+  name: string;
+  role: string;
+  email?: string | null;
+  phone?: string | null;
+  type?: 'ADMIN' | 'CUSTOMER' | 'SYSTEM' | 'SUPPLIER';
+  reference?: string | null;
+}
+
 export interface InventoryMovement {
   id: string;
   productId: string;
@@ -31,6 +41,7 @@ export interface InventoryMovement {
   timestamp?: string;
   performedById?: string | null;
   performedBy?: string;
+  actor?: InventoryMovementActor;
   product?: InventoryMovementRelation;
   variant?: InventoryMovementRelation | null;
 }

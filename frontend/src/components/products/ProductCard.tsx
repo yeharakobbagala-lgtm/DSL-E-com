@@ -11,12 +11,14 @@ import { useWishlistStore } from '@/services/wishlistStore';
 import { inventorySocketService } from '@/services/inventorySocketService';
 import { SaveToListModal } from './SaveToListModal';
 import { resolveImageUrl } from '@/lib/image';
+import { useTranslation } from '@/services/languageStore';
 
 interface ProductCardProps {
   product: Product;
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+  const { t } = useTranslation();
   const [added, setAdded] = useState(false);
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
   const [quantityInput, setQuantityInput] = useState<string>('1');
@@ -304,7 +306,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                   : 'text-emerald-700 bg-emerald-50/90 border-emerald-200/60'
               }`}
             >
-              {isOutOfStock ? 'Out of stock' : effectiveStock < 10 ? `${effectiveStock} left` : 'In stock'}
+              {isOutOfStock ? t('product.outOfStock') : effectiveStock < 10 ? `${effectiveStock} ${t('product.lowStock', 'left')}` : t('product.inStock')}
             </span>
           </div>
 
@@ -323,7 +325,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 href={`/products/${product.slug}`}
                 className="w-full py-2 sm:py-1.5 rounded-xl text-center text-xs font-bold bg-white text-[#09285C] hover:bg-[#09285C] hover:text-white border border-slate-200 transition-all flex items-center justify-center gap-1.5 touch-target h-[34px]"
               >
-                <span>View Options</span>
+                <span>{t('action.viewDetails', 'View Options')}</span>
               </Link>
               {/* Spacer so height matches cards with bulk row */}
               <div className="hidden sm:block h-[18px]" />
@@ -334,7 +336,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 disabled
                 className="w-full py-2 sm:py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-400 cursor-not-allowed text-center touch-target h-[34px]"
               >
-                Out of Stock
+                {t('product.outOfStock')}
               </button>
               {/* Spacer so height matches cards with bulk row */}
               <div className="hidden sm:block h-[18px]" />
@@ -418,12 +420,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                   {added ? (
                     <>
                       <Check className="w-3.5 h-3.5" />
-                      <span>Added!</span>
+                      <span>{t('action.save', 'Added!')}</span>
                     </>
                   ) : (
                     <>
                       <ShoppingBag className="w-3.5 h-3.5" />
-                      <span>Add to Cart</span>
+                      <span>{t('action.addToCart')}</span>
                     </>
                   )}
                 </button>

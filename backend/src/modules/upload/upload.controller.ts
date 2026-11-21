@@ -43,7 +43,7 @@ export class UploadController {
   @UseInterceptors(
     FileInterceptor('file', {
       limits: {
-        fileSize: 5 * 1024 * 1024, // 5 MB ceiling at Multer level
+        fileSize: 25 * 1024 * 1024, // 25 MB ceiling for images and promotional video clips
       },
     })
   )

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException, Inject } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Inject, OnModuleInit } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { BannerStatus, HomepageBanner, Prisma } from '../../generated/prisma';
 import {
@@ -18,11 +18,78 @@ export interface BannerWithEffectiveStatus extends HomepageBanner {
 }
 
 @Injectable()
-export class BannersService {
+export class BannersService implements OnModuleInit {
+  private hasCheckedDefaults = false;
+
   constructor(
     @Inject(PrismaService)
     private readonly prisma: PrismaService
   ) { }
+
+  async onModuleInit() {
+    await this.seedDefaultBannersIfMissing();
+  }
+
+  public async seedDefaultBannersIfMissing(): Promise<void> {
+    if (this.hasCheckedDefaults) return;
+    try {
+      const defaults = [
+        {
+          title: 'Speed Ball Pen (Write Beyond Limits)',
+          subtitle: 'DISTRIBUTOR SPOTLIGHT',
+          description: 'High-performance writing instruments engineered for ultra-smooth gliding, zero-smudge ink delivery, and prolonged exam endurance.',
+          desktopImage: '/images/hero/test-output/desktop_1920x1080.png',
+          mobileImage: null,
+          imageAltText: 'Speed Ball Pen Series - Write Beyond Limits',
+          buttonText: 'Explore Speed Range',
+          buttonLink: '/shop?brand=Speed',
+          placement: 'HERO',
+          sortOrder: 1,
+          status: BannerStatus.PUBLISHED,
+        },
+        {
+          title: 'Supplies Without Limits',
+          subtitle: 'OFFICIAL STATIONERY DISTRIBUTOR',
+          description: 'Everything you need for classrooms and corporate workspaces with authentic direct-distributor guarantees.',
+          desktopImage: '/images/hero/supplies_without_limits_full.png',
+          mobileImage: null,
+          imageAltText: 'DSL Stationery school essentials and distribution catalogue',
+          buttonText: 'Shop Catalogue',
+          buttonLink: '/shop',
+          placement: 'HERO',
+          sortOrder: 2,
+          status: BannerStatus.PUBLISHED,
+        },
+        {
+          title: 'Find Your School Pack',
+          subtitle: 'GRADE-WISE PACKS & BOOKLISTS',
+          description: 'Curated stationery packages pre-approved by leading schools with fast home delivery and official booklist matching.',
+          desktopImage: '/images/hero/school_pack_full.png',
+          mobileImage: null,
+          imageAltText: 'Grade-wise school packs and stationery packages',
+          buttonText: 'Explore School Packs',
+          buttonLink: '/school-packs',
+          placement: 'HERO',
+          sortOrder: 3,
+          status: BannerStatus.PUBLISHED,
+        },
+      ];
+
+      for (const item of defaults) {
+        const existing = await this.prisma.homepageBanner.findFirst({
+          where: { title: item.title },
+        });
+        if (!existing) {
+          await this.prisma.homepageBanner.create({
+            data: item,
+          });
+        }
+      }
+      this.hasCheckedDefaults = true;
+    } catch (err) {
+      console.warn('Failed to seed default banners:', err);
+    }
+  }
 
   /**
    * Pure calculation of banner's effective status on read.
@@ -62,11 +129,18 @@ export class BannersService {
     placement?: string,
     now: Date = new Date()
   ): Promise<BannerWithEffectiveStatus[]> {
+    await this.seedDefaultBannersIfMissing();
     const where: any = {
       status: {
         in: [BannerStatus.PUBLISHED, BannerStatus.SCHEDULED],
       },
-      ...(placement ? { placement } : {}),
+      ...(placement === 'HERO'
+        ? {
+            OR: [{ placement: 'HERO' }, { placement: null }],
+          }
+        : placement
+          ? { placement }
+          : {}),
       AND: [
         {
           OR: [
@@ -104,6 +178,7 @@ export class BannersService {
     query?: QueryBannersDto,
     now: Date = new Date()
   ): Promise<BannerWithEffectiveStatus[]> {
+    await this.seedDefaultBannersIfMissing();
     const where: any = {};
 
     if (query?.status) {

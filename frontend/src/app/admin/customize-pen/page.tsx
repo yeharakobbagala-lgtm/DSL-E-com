@@ -40,6 +40,7 @@ import { orderService } from '@/services/orderService';
 import { Product, ProductCategory, Brand, BulkPricingRule } from '@/types/product';
 import { Order } from '@/types/order';
 import { formatLKR, rupeesToCents, centsToRupees } from '@/lib/currency';
+import { resolveImageUrl } from '@/lib/image';
 import { AdminPageAccess } from '@/components/admin/AdminPageAccess';
 import { OrderInvoiceModal } from '@/components/admin/orders/OrderInvoiceModal';
 
@@ -77,7 +78,7 @@ function AdminCustomizePenContent() {
   const [newPenCategoryId, setNewPenCategoryId] = useState('');
   const [newPenPriceRupees, setNewPenPriceRupees] = useState<number | ''>(450);
   const [newPenStock, setNewPenStock] = useState<number | ''>(50);
-  const [newPenImage, setNewPenImage] = useState('/products/speed-rim-blue.png');
+  const [newPenImage, setNewPenImage] = useState('');
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [newPenDescription, setNewPenDescription] = useState('Premium smooth writing instrument crafted for personalized engraving.');
 
@@ -121,9 +122,9 @@ function AdminCustomizePenContent() {
       }
     >
   >({
-    BARREL: { left: 45.5, top: 48.5, width: 25.0, height: 9.0, rotation: 0, textAlign: 'center', fontScale: 1.0 },
-    CAP: { left: 74.0, top: 48.5, width: 20.0, height: 9.0, rotation: 0, textAlign: 'center', fontScale: 0.95 },
-    CLIP: { left: 74.0, top: 24.0, width: 17.0, height: 8.0, rotation: 0, textAlign: 'center', fontScale: 0.85 },
+    BARREL: { left: 38.0, top: 61.0, width: 32.0, height: 10.0, rotation: -17.6, textAlign: 'center', fontScale: 1.05 },
+    CAP: { left: 74.0, top: 31.0, width: 25.0, height: 10.0, rotation: -17.6, textAlign: 'center', fontScale: 0.95 },
+    CLIP: { left: 72.0, top: 25.0, width: 18.0, height: 8.0, rotation: -17.6, textAlign: 'center', fontScale: 0.85 },
   });
 
   const handleStartCalibration = (pen: Product) => {
@@ -140,35 +141,42 @@ function AdminCustomizePenContent() {
       return def;
     };
 
+    const parseRot = (val: any, def: number) => {
+      const parsed = parseNum(val, def);
+      return parsed === 0 ? def : parsed;
+    };
+
     const barrel = existingConfig.BARREL || existingConfig.barrel || existingConfig.zones?.BARREL || {};
     const cap = existingConfig.CAP || existingConfig.cap || existingConfig.zones?.CAP || {};
     const clip = existingConfig.CLIP || existingConfig.clip || existingConfig.zones?.CLIP || {};
 
+    const isLegacyBarrel = (barrel.left === 45.5 || barrel.x === 50) && (barrel.top === 48.5 || barrel.y === 55);
+
     setActiveZoneCoordinates({
       BARREL: {
-        left: parseNum(barrel.left ?? barrel.x, 45.5),
-        top: parseNum(barrel.top ?? barrel.y, 48.5),
-        width: parseNum(barrel.width, 25.0),
-        height: parseNum(barrel.height, 9.0),
-        rotation: parseNum(barrel.rotation ?? barrel.angle, 0),
+        left: isLegacyBarrel ? 38.0 : parseNum(barrel.left ?? barrel.x, 38.0),
+        top: isLegacyBarrel ? 61.0 : parseNum(barrel.top ?? barrel.y, 61.0),
+        width: parseNum(barrel.width, 32.0),
+        height: parseNum(barrel.height, 10.0),
+        rotation: parseRot(barrel.rotation ?? barrel.angle, -17.6),
         textAlign: barrel.textAlign || 'center',
-        fontScale: parseNum(barrel.fontScale, 1.0),
+        fontScale: parseNum(barrel.fontScale, 1.05),
       },
       CAP: {
         left: parseNum(cap.left ?? cap.x, 74.0),
-        top: parseNum(cap.top ?? cap.y, 48.5),
-        width: parseNum(cap.width, 20.0),
-        height: parseNum(cap.height, 9.0),
-        rotation: parseNum(cap.rotation ?? cap.angle, 0),
+        top: parseNum(cap.top ?? cap.y, 31.0),
+        width: parseNum(cap.width, 25.0),
+        height: parseNum(cap.height, 10.0),
+        rotation: parseRot(cap.rotation ?? cap.angle, -17.6),
         textAlign: cap.textAlign || 'center',
         fontScale: parseNum(cap.fontScale, 0.95),
       },
       CLIP: {
-        left: parseNum(clip.left ?? clip.x, 74.0),
-        top: parseNum(clip.top ?? clip.y, 24.0),
-        width: parseNum(clip.width, 17.0),
+        left: parseNum(clip.left ?? clip.x, 72.0),
+        top: parseNum(clip.top ?? clip.y, 25.0),
+        width: parseNum(clip.width, 18.0),
         height: parseNum(clip.height, 8.0),
-        rotation: parseNum(clip.rotation ?? clip.angle, 0),
+        rotation: parseRot(clip.rotation ?? clip.angle, -17.6),
         textAlign: clip.textAlign || 'center',
         fontScale: parseNum(clip.fontScale, 0.85),
       },
@@ -315,12 +323,8 @@ function AdminCustomizePenContent() {
     setIsUploadingImage(true);
     setAddModalError(null);
 
-    const formData = new FormData();
-    formData.append('file', file);
-
     try {
-      const res = await apiClient.post<any>('uploads?folder=products', formData);
-      const uploadedUrl = res.data?.url || res.url;
+      const uploadedUrl = await productService.uploadProductImage(file);
       if (uploadedUrl) {
         setNewPenImage(uploadedUrl);
       }
@@ -335,6 +339,7 @@ function AdminCustomizePenContent() {
       reader.readAsDataURL(file);
     } finally {
       setIsUploadingImage(false);
+      e.target.value = '';
     }
   };
 
@@ -355,20 +360,36 @@ function AdminCustomizePenContent() {
         const defaultCat = categories.find((c) => c.slug === 'pens') || categories[0];
         const defaultBrand = brands.find((b) => b.slug === 'speed') || brands[0];
 
-        const created = await productService.createProductApi({
-          name: newPenName.trim(),
-          slug: newPenName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
-          sku: newPenSku.trim() || `DSL-PEN-${Date.now().toString().slice(-5)}`,
-          categoryId: newPenCategoryId || defaultCat?.id || 'cat-pens',
-          brandId: newPenBrandId || defaultBrand?.id || 'brand-speed',
-          priceCents: rupeesToCents(penPrice),
-          stockQuantity: penStock,
-          images: newPenImage.trim() ? [newPenImage.trim()] : ['/products/speed-rim-blue.png'],
-          description: newPenDescription,
-          shortDescription: newPenName.trim(),
-          isActive: true,
-        });
-        targetProductId = created.id;
+        const baseSlug = newPenName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        const existingInCatalog = catalogPens.find(
+          (p) => p.slug === baseSlug || p.name.toLowerCase() === newPenName.trim().toLowerCase()
+        );
+
+        if (existingInCatalog) {
+          // If product already exists in catalog, re-enroll it and update with current inputs
+          targetProductId = existingInCatalog.id;
+          await productService.updateProductApi(existingInCatalog.id, {
+            priceCents: rupeesToCents(penPrice),
+            stockQuantity: penStock,
+            images: newPenImage.trim() ? [newPenImage.trim()] : existingInCatalog.images,
+            isActive: true,
+          }).catch(() => {});
+        } else {
+          const created = await productService.createProductApi({
+            name: newPenName.trim(),
+            slug: baseSlug,
+            sku: newPenSku.trim() || `DSL-PEN-${Date.now().toString().slice(-5)}`,
+            categoryId: newPenCategoryId || defaultCat?.id || 'cat-pens',
+            brandId: newPenBrandId || defaultBrand?.id || 'brand-speed',
+            priceCents: rupeesToCents(penPrice),
+            stockQuantity: penStock,
+            images: newPenImage.trim() ? [newPenImage.trim()] : ['/products/speed-rim-blue.png'],
+            description: newPenDescription,
+            shortDescription: newPenName.trim(),
+            isActive: true,
+          });
+          targetProductId = created.id;
+        }
       }
 
       if (!targetProductId) {
@@ -389,9 +410,12 @@ function AdminCustomizePenContent() {
             feeCents: rupeesToCents(Number(r.feeRupees)),
           })),
         previewConfig: {
-          cap: { x: 50, y: 30, width: 40, rotation: 0 },
-          barrel: { x: 50, y: 55, width: 50, rotation: 0 },
-          clip: { x: 50, y: 20, width: 20, rotation: 90 },
+          barrel: { left: 38, top: 61, width: 32, height: 10, rotation: -17.6, textAlign: 'center', fontScale: 1.05 },
+          BARREL: { left: 38, top: 61, width: 32, height: 10, rotation: -17.6, textAlign: 'center', fontScale: 1.05 },
+          cap: { left: 74, top: 31, width: 25, height: 10, rotation: -17.6, textAlign: 'center', fontScale: 0.95 },
+          CAP: { left: 74, top: 31, width: 25, height: 10, rotation: -17.6, textAlign: 'center', fontScale: 0.95 },
+          clip: { left: 72, top: 25, width: 18, height: 8, rotation: -17.6, textAlign: 'center', fontScale: 0.85 },
+          CLIP: { left: 72, top: 25, width: 18, height: 8, rotation: -17.6, textAlign: 'center', fontScale: 0.85 },
         },
       };
 
@@ -403,6 +427,7 @@ function AdminCustomizePenContent() {
       // Reset form
       setNewPenName('');
       setNewPenSku('');
+      setNewPenImage('');
     } catch (err: any) {
       console.error('Failed to add pen model:', err);
       setAddModalError(err?.message || 'Failed to enroll pen model');
@@ -1036,7 +1061,7 @@ function AdminCustomizePenContent() {
                         <div className="w-20 h-20 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center overflow-hidden shrink-0 relative">
                           {newPenImage ? (
                             <img
-                              src={newPenImage}
+                              src={resolveImageUrl(newPenImage)}
                               alt="Pen preview"
                               className="w-full h-full object-contain p-1"
                             />
@@ -1306,7 +1331,7 @@ function AdminCustomizePenContent() {
                   <img
                     src={
                       calibratingPen.images && calibratingPen.images.length > 0
-                        ? calibratingPen.images[0]
+                        ? resolveImageUrl(calibratingPen.images[0])
                         : '/images/luxury-pen-clean-barrel-silver.png'
                     }
                     alt={calibratingPen.name}
@@ -1597,7 +1622,7 @@ function AdminCustomizePenContent() {
                     type="text"
                     value={calibrationText}
                     onChange={(e) => setCalibrationText(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/20 text-white text-xs font-serif"
+                    className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/20 text-white text-xs font-sans"
                     placeholder="Enter test text..."
                   />
                   <div className="flex flex-wrap gap-1.5">

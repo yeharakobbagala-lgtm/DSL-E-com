@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   LayoutDashboard,
   Package,
@@ -29,6 +29,7 @@ import {
   FileCheck,
   X,
   PenTool,
+  FileText,
 } from 'lucide-react';
 import { useUserStore } from '@/services/userStore';
 
@@ -37,11 +38,12 @@ interface AdminSidebarProps {
   onCloseMobile?: () => void;
 }
 
-export const AdminSidebar: React.FC<AdminSidebarProps> = ({
+const AdminSidebarContent: React.FC<AdminSidebarProps> = ({
   isMobileOpen = false,
   onCloseMobile,
 }) => {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const logoutAdmin = useUserStore((state) => state.logoutAdmin);
   const currentUser = useUserStore((state) => state.currentUser);
@@ -70,6 +72,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
         { href: '/admin/products', label: 'Products Catalogue', icon: Package, permission: 'products.view' },
         { href: '/admin/categories', label: 'Categories Hierarchy', icon: Layers, permission: 'categories.view' },
         { href: '/admin/inventory', label: 'Inventory & Stock Control', icon: Boxes, permission: 'inventory.view' },
+        { href: '/admin/inventory?tab=movements', label: 'Stock Movements Ledger', icon: History, permission: 'inventory.view' },
         { href: '/admin/brands', label: 'Brands & Manufacturers', icon: Award, permission: 'brands.view' },
         { href: '/admin/school-packs', label: 'School Packs & Bundles', icon: GraduationCap, permission: 'school_packs.view' },
         { href: '/admin/customize-pen', label: 'Pen Customization', icon: PenTool, permission: 'products.view' },
@@ -92,6 +95,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
       items: [
         { href: '/admin/promotions', label: 'Promotions & Vouchers', icon: Tag, permission: 'promotions.view' },
         { href: '/admin/banners', label: 'Banners & Promotions', icon: Image, permission: 'banners.view' },
+        { href: '/admin/about', label: 'About Us Page Editor', icon: FileText, permission: 'settings.view' },
         { href: '/admin/newsletter', label: 'Newsletter Subscribers', icon: Mail, permission: 'newsletter.view' },
       ],
     },
@@ -177,10 +181,17 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
               </div>
               {group.items.map((item) => {
                 const Icon = item.icon;
-                const isActive =
-                  item.href === '/admin/payments'
-                    ? pathname === '/admin/payments'
-                    : pathname === item.href || (item.href !== '/admin/dashboard' && pathname.startsWith(item.href));
+                const [itemPath, itemQuery] = item.href.split('?');
+                let isActive = false;
+                if (itemQuery) {
+                  isActive = pathname === itemPath && (searchParams.get('tab') === 'movements' || searchParams.get('tab') === 'ledger');
+                } else if (itemPath === '/admin/inventory') {
+                  isActive = pathname === '/admin/inventory' && !searchParams.get('tab');
+                } else if (itemPath === '/admin/payments') {
+                  isActive = pathname === '/admin/payments';
+                } else {
+                  isActive = pathname === itemPath || (itemPath !== '/admin/dashboard' && pathname.startsWith(itemPath));
+                }
                 return (
                   <Link
                     key={item.href}
@@ -207,8 +218,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
           href="/admin/profile"
           onClick={onCloseMobile}
           className={`flex items-center gap-2.5 px-3 py-2 text-xs font-bold rounded-xl transition ${pathname === '/admin/profile'
-              ? 'bg-[#0066CC] text-white shadow-sm ring-1 ring-sky-400/30'
-              : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+            ? 'bg-[#0066CC] text-white shadow-sm ring-1 ring-sky-400/30'
+            : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
             }`}
         >
           <KeyRound className="w-4 h-4 text-sky-400" />
@@ -253,5 +264,13 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
         </div>
       )}
     </>
+  );
+};
+
+export const AdminSidebar: React.FC<AdminSidebarProps> = (props) => {
+  return (
+    <React.Suspense fallback={<aside className="hidden lg:flex w-64 bg-[#0B1528] text-white shrink-0 h-screen" />}>
+      <AdminSidebarContent {...props} />
+    </React.Suspense>
   );
 };

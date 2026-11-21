@@ -24,93 +24,52 @@ import {
   AlertTriangle,
   PenTool,
 } from 'lucide-react';
-import { orderService } from '@/services/orderService';
+import { orderService, isValidTrackingToken } from '@/services/orderService';
 import { useCartStore } from '@/services/cartStore';
 import { useUserStore } from '@/services/userStore';
+import { useTranslation } from '@/services/languageStore';
 import { Order, OrderStatus, BuyAgainResponse } from '@/types/order';
 import { formatLKR } from '@/lib/currency';
 import { BuyAgainModal } from '@/components/orders/BuyAgainModal';
 
-const STATUS_STEPS: { key: OrderStatus; label: string }[] = [
-  { key: 'confirmed', label: 'Order Confirmed' },
-  { key: 'processing', label: 'Packing in Warehouse' },
-  { key: 'shipped', label: 'Dispatched to Courier' },
-  { key: 'delivered', label: 'Delivered' },
-];
-
 function OrderTrackingContent() {
+  const { t } = useTranslation();
   const params = useParams();
   const searchParams = useSearchParams();
   const id = params.id as string;
   const tokenParam = searchParams.get('token');
+
+  const STATUS_STEPS: { key: OrderStatus; label: string }[] = [
+    { key: 'confirmed', label: t('order.confirmed') },
+    { key: 'processing', label: t('order.processing') },
+    { key: 'shipped', label: t('order.shipped') },
+    { key: 'delivered', label: t('order.delivered') },
+  ];
 
   const currentUser = useUserStore((state) => state.currentUser);
   const addBuyAgainBatch = useCartStore((state) => state.addBuyAgainBatch);
 
   const [order, setOrder] = useState<any | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
-  const [needsEmailVerification, setNeedsEmailVerification] = useState(false);
-  const [verifyStep, setVerifyStep] = useState<'EMAIL' | 'OTP'>('EMAIL');
-  const [enteredEmail, setEnteredEmail] = useState('');
-  const [enteredOtp, setEnteredOtp] = useState('');
-  const [emailVerifyError, setEmailVerifyError] = useState<string | null>(null);
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [resendCooldown, setResendCooldown] = useState(0);
-  const [isResending, setIsResending] = useState(false);
 
   // Buy Again State
   const [isReordering, setIsReordering] = useState(false);
   const [buyAgainResult, setBuyAgainResult] = useState<BuyAgainResponse | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  useEffect(() => {
-    let timer: any;
-    if (resendCooldown > 0) {
-      timer = setInterval(() => {
-        setResendCooldown((prev) => (prev > 0 ? prev - 1 : 0));
-      }, 1000);
+  const loadOrder = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const fetched = await orderService.fetchOrderById(id);
+      if (fetched) {
+        setOrder(fetched);
+      }
+    } catch (err: any) {
+      console.warn(`Could not load order ${id}:`, err);
+    } finally {
+      setIsLoading(false);
     }
-    return () => clearInterval(timer);
-  }, [resendCooldown]);
-
-  const loadOrder = useCallback(
-    async (tokenOrEmail?: string) => {
-      setIsLoading(true);
-      setEmailVerifyError(null);
-
-      // Save token if passed in URL
-      if (tokenParam && typeof window !== 'undefined') {
-        sessionStorage.setItem(`order_token_${id}`, tokenParam);
-        sessionStorage.setItem('last_tracking_token', tokenParam);
-      }
-
-      const activeToken =
-        tokenOrEmail ||
-        tokenParam ||
-        (typeof window !== 'undefined' ? sessionStorage.getItem(`order_token_${id}`) : null) ||
-        (typeof window !== 'undefined' ? sessionStorage.getItem('last_tracking_token') : null);
-
-      try {
-        const fetched = await orderService.fetchOrderById(id, activeToken || undefined);
-        if (fetched) {
-          setOrder(fetched);
-          setNeedsEmailVerification(false);
-        } else {
-          setNeedsEmailVerification(true);
-        }
-      } catch (err: any) {
-        setNeedsEmailVerification(true);
-        if (err?.response?.status === 403 || err?.status === 403) {
-          setEmailVerifyError('Access requires email verification code or valid tracking link.');
-        }
-      } finally {
-        setIsLoading(false);
-        setIsVerifying(false);
-      }
-    },
-    [id, tokenParam]
-  );
+  }, [id]);
 
   useEffect(() => {
     loadOrder();
@@ -122,64 +81,6 @@ function OrderTrackingContent() {
       unsub();
     };
   }, [loadOrder]);
-
-  const handleRequestOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const clean = enteredEmail.trim();
-    if (!clean || !clean.includes('@')) {
-      setEmailVerifyError('Please enter a valid email address.');
-      return;
-    }
-    setIsVerifying(true);
-    setEmailVerifyError(null);
-    setSuccessMsg(null);
-    try {
-      await orderService.requestTrackingOtp(id, clean);
-      setVerifyStep('OTP');
-      setResendCooldown(60);
-      setSuccessMsg('If this email matches our records, a 6-digit access code was sent.');
-    } catch (err: any) {
-      setEmailVerifyError(err?.message || 'Failed to send verification code.');
-    } finally {
-      setIsVerifying(false);
-    }
-  };
-
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const cleanOtp = enteredOtp.trim();
-    if (cleanOtp.length !== 6 || !/^\d{6}$/.test(cleanOtp)) {
-      setEmailVerifyError('Please enter the 6-digit verification code.');
-      return;
-    }
-    setIsVerifying(true);
-    setEmailVerifyError(null);
-    try {
-      const res = await orderService.verifyTrackingOtp(id, enteredEmail.trim(), cleanOtp);
-      if (res?.trackingToken) {
-        await loadOrder(res.trackingToken);
-      }
-    } catch (err: any) {
-      setEmailVerifyError(err?.message || 'Invalid or expired verification code.');
-    } finally {
-      setIsVerifying(false);
-    }
-  };
-
-  const handleResendOtp = async () => {
-    if (resendCooldown > 0 || isResending) return;
-    setIsResending(true);
-    setEmailVerifyError(null);
-    try {
-      await orderService.requestTrackingOtp(id, enteredEmail.trim());
-      setResendCooldown(60);
-      setSuccessMsg('A new access code has been dispatched.');
-    } catch (err: any) {
-      setEmailVerifyError(err?.message || 'Failed to resend code.');
-    } finally {
-      setIsResending(false);
-    }
-  };
 
   const handleBuyAgain = async () => {
     if (!order) return;
@@ -219,163 +120,6 @@ function OrderTrackingContent() {
     );
   }
 
-  // Guest Email / OTP Verification Required (Phase B.1)
-  if (!order && needsEmailVerification) {
-    return (
-      <div className="max-w-md mx-auto px-4 py-16 sm:py-24 text-center space-y-6">
-        <div className="w-16 h-16 rounded-full bg-[#F0F7FF] text-[#0066CC] flex items-center justify-center mx-auto border border-[#C6E7FF]">
-          {verifyStep === 'EMAIL' ? <Mail className="w-8 h-8" /> : <ShieldCheck className="w-8 h-8" />}
-        </div>
-        <div className="space-y-2">
-          <h1 className="text-xl sm:text-2xl font-bold text-[#292525]">
-            {verifyStep === 'EMAIL' ? 'Guest Order Verification Required' : 'Enter Order Access Code'}
-          </h1>
-          <p className="text-xs text-[#292525]/60">
-            {verifyStep === 'EMAIL' ? (
-              <>
-                To protect customer order information for order <span className="font-mono font-bold text-[#0066CC]">#{id}</span>, please enter the email address used during checkout to receive an access code.
-              </>
-            ) : (
-              <>
-                A 6-digit access code was sent to <span className="font-bold text-[#0066CC]">{enteredEmail}</span>. Enter the code below to view your order.
-              </>
-            )}
-          </p>
-        </div>
-
-        <div className="bg-white rounded-3xl border border-[#C6E7FF]/60 p-6 space-y-4 shadow-sm text-left">
-          {emailVerifyError && (
-            <div className="p-3 bg-red-50 rounded-xl border border-red-200 text-xs text-red-700 flex items-start gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-              <span>{emailVerifyError}</span>
-            </div>
-          )}
-
-          {successMsg && (
-            <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-xs text-emerald-800 flex items-start gap-2">
-              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600 mt-0.5" />
-              <span>{successMsg}</span>
-            </div>
-          )}
-
-          {verifyStep === 'EMAIL' ? (
-            <form onSubmit={handleRequestOtp} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-[#292525] mb-1">
-                  Customer Email Address
-                </label>
-                <input
-                  type="email"
-                  value={enteredEmail}
-                  onChange={(e) => setEnteredEmail(e.target.value)}
-                  placeholder="e.g. yourname@example.com"
-                  required
-                  disabled={isVerifying}
-                  className="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#0066CC]"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={isVerifying}
-                className="w-full bg-[#0066CC] hover:bg-[#0052a3] text-white text-xs font-bold py-3 rounded-full transition-all shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
-              >
-                {isVerifying ? (
-                  <>
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    <span>Sending Code...</span>
-                  </>
-                ) : (
-                  <>
-                    <Mail className="w-3.5 h-3.5" />
-                    <span>Send Access Code</span>
-                  </>
-                )}
-              </button>
-            </form>
-          ) : (
-            <form onSubmit={handleVerifyOtp} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-[#292525] mb-1 text-center">
-                  6-Digit Access Code
-                </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={6}
-                    value={enteredOtp}
-                    onChange={(e) => setEnteredOtp(e.target.value.replace(/\D/g, ''))}
-                    placeholder="123456"
-                    required
-                    disabled={isVerifying}
-                    className="w-full text-center tracking-[0.4em] font-mono font-bold text-lg py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#0066CC] bg-stone-50"
-                  />
-                  <KeyRound className="w-4 h-4 text-stone-400 absolute left-3 top-3.5" />
-                </div>
-                <p className="text-[11px] text-[#292525]/60 text-center mt-2">
-                  Code expires in 10 minutes.
-                </p>
-              </div>
-
-              <button
-                type="submit"
-                disabled={isVerifying || enteredOtp.length !== 6}
-                className="w-full bg-[#0866E8] hover:bg-[#09285C] text-white text-xs font-bold py-3 rounded-full transition-all shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
-              >
-                {isVerifying ? (
-                  <>
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    <span>Verifying Code...</span>
-                  </>
-                ) : (
-                  <>
-                    <ShieldCheck className="w-3.5 h-3.5" />
-                    <span>Confirm Code &amp; View Order</span>
-                  </>
-                )}
-              </button>
-
-              <div className="flex items-center justify-between pt-1 text-xs">
-                <button
-                  type="button"
-                  onClick={() => setVerifyStep('EMAIL')}
-                  className="text-slate-500 hover:text-slate-800 underline p-1"
-                >
-                  Change email
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleResendOtp}
-                  disabled={resendCooldown > 0 || isResending}
-                  className="font-bold text-[#0866E8] disabled:text-slate-400 hover:underline flex items-center gap-1 p-1"
-                >
-                  {isResending ? <RefreshCw className="w-3 h-3 animate-spin" /> : null}
-                  <span>
-                    {resendCooldown > 0
-                      ? `Resend in ${resendCooldown}s`
-                      : 'Resend code'}
-                  </span>
-                </button>
-              </div>
-            </form>
-          )}
-        </div>
-
-        <div>
-          <Link
-            href="/shop"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0866E8] hover:underline"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Return to Shop</span>
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
   if (!order) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-16 text-center">
@@ -406,13 +150,13 @@ function OrderTrackingContent() {
             className="text-xs font-bold text-[#0866E8] hover:underline flex items-center gap-1 mb-2"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Back to Orders</span>
+            <span>{t('nav.orderHistory')}</span>
           </Link>
           <h1 className="text-2xl sm:text-3xl font-black text-[#09285C] tracking-tight">
-            Order #{order.orderNumber}
+            {t('order.orderNumber')} #{order.orderNumber}
           </h1>
           <p className="text-xs text-slate-500 mt-1">
-            Placed on{' '}
+            {t('order.placedOn')}{' '}
             {new Date(order.createdAt).toLocaleDateString('en-LK', { dateStyle: 'long' })}
           </p>
         </div>
@@ -423,7 +167,7 @@ function OrderTrackingContent() {
             type="button"
             onClick={handleBuyAgain}
             disabled={isReordering}
-            className="bg-white hover:bg-blue-50 text-[#0866E8] border border-blue-200 text-xs font-bold px-4 py-2 rounded-full transition-all flex items-center gap-1.5 shadow-xs disabled:opacity-50 touch-target"
+            className="bg-white hover:bg-blue-50 text-[#0866E8] border border-blue-200 text-xs font-bold px-4 py-2 rounded-full transition-all flex items-center gap-1.5 shadow-xs disabled:opacity-50 touch-target cursor-pointer"
             title="Reorder available products from this order"
           >
             {isReordering ? (
@@ -434,7 +178,7 @@ function OrderTrackingContent() {
             ) : (
               <>
                 <Repeat className="w-3.5 h-3.5" />
-                <span>Buy Again</span>
+                <span>{t('action.reorder')}</span>
               </>
             )}
           </button>
@@ -669,17 +413,17 @@ function OrderTrackingContent() {
 
           <div className="pt-3 space-y-1.5 text-xs">
             <div className="flex justify-between text-slate-600">
-              <span>Subtotal</span>
+              <span>{t('cart.subtotal')}</span>
               <span>{formatLKR(order.subtotalCents)}</span>
             </div>
             {order.discountCents > 0 && (
               <div className="flex justify-between text-emerald-600">
-                <span>Discount</span>
+                <span>{t('cart.discount')}</span>
                 <span>-{formatLKR(order.discountCents)}</span>
               </div>
             )}
             <div className="flex justify-between text-slate-600">
-              <span>Delivery</span>
+              <span>{t('cart.deliveryFee')}</span>
               <span>
                 {order.deliveryCents === 0 ? (
                   <span className="text-emerald-600 font-bold">FREE</span>
@@ -689,7 +433,7 @@ function OrderTrackingContent() {
               </span>
             </div>
             <div className="flex justify-between text-sm font-bold text-[#09285C] pt-2 border-t border-slate-100">
-              <span>Total Payable</span>
+              <span>{t('cart.total')}</span>
               <span className="text-base font-black text-[#0866E8]">
                 {formatLKR(order.totalCents)}
               </span>
@@ -699,7 +443,7 @@ function OrderTrackingContent() {
 
         <div className="bg-white rounded-3xl border border-slate-100 p-5 sm:p-7 space-y-4 shadow-xs text-xs">
           <h2 className="text-sm font-bold text-[#09285C] pb-2 border-b border-slate-100">
-            Shipping Destination
+            {t('checkout.shippingAddress')}
           </h2>
           <div>
             <strong className="block text-[#09285C] font-bold">{order.customerName}</strong>
@@ -720,7 +464,7 @@ function OrderTrackingContent() {
 
           <div className="pt-4 border-t border-slate-100">
             <span className="text-slate-400 block text-[10px] uppercase font-bold">
-              Payment Method
+              {t('checkout.paymentMethod')}
             </span>
             <span className="font-bold text-[#09285C] capitalize mt-0.5 block">
               {(order.paymentMethod || '').replace('_', ' ')}

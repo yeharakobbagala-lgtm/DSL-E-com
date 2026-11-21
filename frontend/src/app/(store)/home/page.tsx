@@ -36,6 +36,7 @@ import { formatLKR } from '@/lib/currency';
 import { NewsletterSubscriptionForm } from '@/components/newsletter/NewsletterSubscriptionForm';
 import { WelcomeSplashLoader } from '@/components/common/WelcomeSplashLoader';
 import { INITIAL_PRODUCTS } from '@/mocks/products';
+import { isMediaVideo, formatMediaUrl } from '@/lib/mediaUtils';
 
 function getCuratedStorefrontProducts(items: Product[], type: 'best' | 'new'): Product[] {
   const withImages = items.filter(
@@ -146,13 +147,70 @@ export default function HomeStorefrontPage() {
         <HeroRibbonSection />
 
         {/* ========================================================= */}
-        {/* FEATURE HIGHLIGHTS (SCROLL STACK SECTION)                 */}
-        {/* Pinned Window Scroll Sequence with Sticky DSL Watermark   */}
+        {/* 2. CATEGORIES & BEST SELLERS SECTIONS (SOLID WHITE SURFACE) */}
+        {/* ========================================================= */}
+        <div className="relative z-20 bg-white w-full space-y-[1.5cm] pt-0">
+          <ShopByCollectionSection />
+
+          {/* Promotional Blue Wave Ribbon */}
+          <PromotionalWaveRibbon />
+
+          {/* Best Sellers (Continuous Right-Moving Marquee) */}
+          <section className="w-full max-w-[1720px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5 sm:gap-3">
+                <span className="w-2 sm:w-2.5 h-6 sm:h-7 bg-[#0866E8] rounded-full inline-block" />
+                <h2 className="text-xl sm:text-2xl lg:text-3xl font-black text-[#102C60] tracking-tight">
+                  Best Sellers
+                </h2>
+              </div>
+              <Link
+                href="/shop?filter=best-sellers"
+                className="text-xs sm:text-sm font-bold text-[#0866E8] hover:text-[#09285C] transition-colors flex items-center gap-1.5 group"
+              >
+                <span>View All</span>
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </div>
+
+            {/* Continuous Right-Moving Product Track with Hover/Touch/Focus-Pause */}
+            <div
+              className="relative overflow-hidden py-3 group"
+              onTouchStart={(e) => {
+                const el = e.currentTarget.querySelector('.animate-marquee-right');
+                if (el) (el as HTMLElement).style.animationPlayState = 'paused';
+              }}
+              onTouchEnd={(e) => {
+                const target = e.currentTarget;
+                setTimeout(() => {
+                  const el = target.querySelector('.animate-marquee-right');
+                  if (el) (el as HTMLElement).style.animationPlayState = 'running';
+                }, 3000);
+              }}
+            >
+              <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-r from-white to-transparent z-10" />
+              <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-l from-white to-transparent z-10" />
+
+              <div className="animate-marquee-right flex gap-4 sm:gap-6 items-stretch">
+                {[...bestSellers, ...bestSellers].map((product, idx) => (
+                  <div key={`best-${product.id}-${idx}`} className="w-[200px] sm:w-[240px] md:w-[260px] shrink-0 flex flex-col h-full">
+                    <ProductCard product={product} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        </div>
+
+        {/* ========================================================= */}
+        {/* 3. BRAND SCROLL CARDS (SCROLL STACK SECTION)              */}
+        {/* Pinned Window Scroll Sequence with DSL Watermark Background */}
         {/* ========================================================= */}
         <section
           id="our-brands"
-          className="w-full relative z-10 border-t border-blue-200/60"
-          aria-label="Feature Highlights Stack"
+          ref={sectionOurBrandsRef}
+          className="w-full relative z-10 border-t border-b border-blue-200/60"
+          aria-label="Brand Feature Highlights Stack"
         >
           {/* Pinned Sticky Background: Stays fixed in the viewport while scrolling the cards */}
           <div className="sticky top-0 h-[100dvh] w-full overflow-hidden pointer-events-none -mb-[100dvh]">
@@ -199,64 +257,10 @@ export default function HomeStorefrontPage() {
         </section>
 
         {/* ========================================================= */}
-        {/* 2. SUBSEQUENT SECTIONS WRAPPER (Z-30 SOLID WHITE SURFACE) */}
-        {/* Glides cleanly over Section 2 with zero empty background  */}
+        {/* 4. SUBSEQUENT SECTIONS WRAPPER (Z-30 SOLID WHITE SURFACE) */}
+        {/* Glides cleanly over Section 3 with zero empty background  */}
         {/* ========================================================= */}
         <div className="relative z-30 bg-white w-full space-y-[1.5cm] pt-0">
-          <ShopByCollectionSection />
-
-          {/* ========================================================= */}
-          {/* 3. PROMOTIONAL BLUE WAVE RIBBON                           */}
-          {/* ========================================================= */}
-          <PromotionalWaveRibbon />
-
-          {/* ========================================================= */}
-          {/* 4. BEST SELLERS (CONTINUOUS RIGHT-MOVING MARQUEE)         */}
-          {/* ========================================================= */}
-          <section className="w-full max-w-[1720px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5 sm:gap-3">
-                <span className="w-2 sm:w-2.5 h-6 sm:h-7 bg-[#0866E8] rounded-full inline-block" />
-                <h2 className="text-xl sm:text-2xl lg:text-3xl font-black text-[#102C60] tracking-tight">
-                  Best Sellers
-                </h2>
-              </div>
-              <Link
-                href="/shop?filter=best-sellers"
-                className="text-xs sm:text-sm font-bold text-[#0866E8] hover:text-[#09285C] transition-colors flex items-center gap-1.5 group"
-              >
-                <span>View All</span>
-                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-              </Link>
-            </div>
-
-            {/* Continuous Right-Moving Product Track with Hover/Touch/Focus-Pause */}
-            <div
-              className="relative overflow-hidden py-3 group"
-              onTouchStart={(e) => {
-                const el = e.currentTarget.querySelector('.animate-marquee-right');
-                if (el) (el as HTMLElement).style.animationPlayState = 'paused';
-              }}
-              onTouchEnd={(e) => {
-                const target = e.currentTarget;
-                setTimeout(() => {
-                  const el = target.querySelector('.animate-marquee-right');
-                  if (el) (el as HTMLElement).style.animationPlayState = 'running';
-                }, 3000);
-              }}
-            >
-              <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-r from-white to-transparent z-10" />
-              <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-l from-white to-transparent z-10" />
-
-              <div className="animate-marquee-right flex gap-4 sm:gap-6 items-stretch">
-                {[...bestSellers, ...bestSellers].map((product, idx) => (
-                  <div key={`best-${product.id}-${idx}`} className="w-[200px] sm:w-[240px] md:w-[260px] shrink-0 flex flex-col h-full">
-                    <ProductCard product={product} />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
 
           {/* ========================================================= */}
           {/* 5. ABOUT US SHOWCASE - "LITTLE ESSENTIALS. BIG IDEAS."    */}
@@ -405,19 +409,64 @@ export default function HomeStorefrontPage() {
                 (!midPromoBanner.subtitle && !midPromoBanner.description && !midPromoBanner.buttonText));
 
             if (isMidPromoGraphic && midPromoBanner?.desktopImage) {
+              const isVideo = isMediaVideo(midPromoBanner.desktopImage);
+              const mediaSrc = formatMediaUrl(midPromoBanner.desktopImage);
+
               return (
                 <section className="w-full max-w-[1720px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16">
                   {midPromoBanner.buttonLink ? (
                     <Link href={midPromoBanner.buttonLink} className="block group">
                       <div className="relative rounded-3xl overflow-hidden shadow-xl border border-slate-200 transition-all group-hover:shadow-2xl bg-slate-900">
+                        {isVideo ? (
+                          <video
+                            src={mediaSrc}
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                            className="w-full h-auto min-h-[180px] max-h-[500px] object-cover"
+                          />
+                        ) : (
+                          <picture className="w-full h-auto block">
+                            {midPromoBanner.mobileImage && (
+                              <source media="(max-width: 768px)" srcSet={midPromoBanner.mobileImage} />
+                            )}
+                            <img
+                              src={mediaSrc}
+                              alt={midPromoBanner.imageAltText || midPromoBanner.title}
+                              className="w-full h-auto min-h-[160px] sm:min-h-[220px] object-cover transition-transform duration-500 group-hover:scale-[1.01]"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                if (!target.dataset.retried && target.src.includes('/uploads/')) {
+                                  target.dataset.retried = 'true';
+                                  target.src = `http://localhost:4000${midPromoBanner.desktopImage.startsWith('/') ? '' : '/'}${midPromoBanner.desktopImage}`;
+                                }
+                              }}
+                            />
+                          </picture>
+                        )}
+                      </div>
+                    </Link>
+                  ) : (
+                    <div className="relative rounded-3xl overflow-hidden shadow-xl border border-slate-200 bg-slate-900">
+                      {isVideo ? (
+                        <video
+                          src={mediaSrc}
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
+                          className="w-full h-auto min-h-[180px] max-h-[500px] object-cover"
+                        />
+                      ) : (
                         <picture className="w-full h-auto block">
                           {midPromoBanner.mobileImage && (
                             <source media="(max-width: 768px)" srcSet={midPromoBanner.mobileImage} />
                           )}
                           <img
-                            src={midPromoBanner.desktopImage}
+                            src={mediaSrc}
                             alt={midPromoBanner.imageAltText || midPromoBanner.title}
-                            className="w-full h-auto min-h-[160px] sm:min-h-[220px] object-cover transition-transform duration-500 group-hover:scale-[1.01]"
+                            className="w-full h-auto min-h-[160px] sm:min-h-[220px] object-cover"
                             onError={(e) => {
                               const target = e.target as HTMLImageElement;
                               if (!target.dataset.retried && target.src.includes('/uploads/')) {
@@ -427,27 +476,7 @@ export default function HomeStorefrontPage() {
                             }}
                           />
                         </picture>
-                      </div>
-                    </Link>
-                  ) : (
-                    <div className="relative rounded-3xl overflow-hidden shadow-xl border border-slate-200 bg-slate-900">
-                      <picture className="w-full h-auto block">
-                        {midPromoBanner.mobileImage && (
-                          <source media="(max-width: 768px)" srcSet={midPromoBanner.mobileImage} />
-                        )}
-                        <img
-                          src={midPromoBanner.desktopImage}
-                          alt={midPromoBanner.imageAltText || midPromoBanner.title}
-                          className="w-full h-auto min-h-[160px] sm:min-h-[220px] object-cover"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            if (!target.dataset.retried && target.src.includes('/uploads/')) {
-                              target.dataset.retried = 'true';
-                              target.src = `http://localhost:4000${midPromoBanner.desktopImage.startsWith('/') ? '' : '/'}${midPromoBanner.desktopImage}`;
-                            }
-                          }}
-                        />
-                      </picture>
+                      )}
                     </div>
                   )}
                 </section>

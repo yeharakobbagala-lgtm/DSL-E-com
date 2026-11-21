@@ -23,6 +23,38 @@ class InventoryService {
    * Helper to normalize a backend movement entity to frontend presentation shape.
    */
   private mapBackendMovement(m: any): InventoryMovement {
+    const rawReason = String(m.reason || '').toUpperCase();
+    const orderMatch = m.note?.match(/(DSL-[A-Za-z0-9-_]+|ORD-[A-Za-z0-9-_]+)/i);
+
+    // Build or adopt actor profile
+    let actor = m.actor;
+    if (!actor) {
+      if (rawReason === 'ORDER_FULFILLMENT' || m.performedById === 'SYSTEM_CHECKOUT') {
+        actor = {
+          id: m.performedById || null,
+          name: 'Store Customer',
+          role: 'Customer',
+          type: 'CUSTOMER',
+          reference: orderMatch ? orderMatch[1] : undefined,
+        };
+      } else if (rawReason === 'RESTOCK' && (!m.performedById || m.performedById === 'SYSTEM')) {
+        actor = {
+          id: m.performedById || null,
+          name: 'Warehouse GRN Intake',
+          role: 'Supplier Intake / GRN',
+          type: 'SUPPLIER',
+        };
+      } else {
+        actor = {
+          id: m.performedById || null,
+          name: 'System Administrator',
+          role: 'Super Admin',
+          email: 'admin@dslstationery.lk',
+          type: 'ADMIN',
+        };
+      }
+    }
+
     return {
       id: m.id,
       productId: m.productId,
@@ -35,7 +67,8 @@ class InventoryService {
       createdAt: m.createdAt || new Date().toISOString(),
       timestamp: m.createdAt || new Date().toISOString(),
       performedById: m.performedById || null,
-      performedBy: m.performedById || 'Authorized Admin',
+      performedBy: actor?.name || 'System Administrator',
+      actor,
       product: m.product
         ? { id: m.product.id, name: m.product.name, sku: m.product.sku }
         : undefined,

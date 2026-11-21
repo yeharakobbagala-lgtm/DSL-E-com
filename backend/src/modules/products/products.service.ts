@@ -5,6 +5,7 @@ import {
   NotFoundException,
   ConflictException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import * as ExcelJS from 'exceljs';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -27,6 +28,8 @@ import {
 
 @Injectable()
 export class ProductsService {
+  private readonly logger = new Logger(ProductsService.name);
+
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(SkuGeneratorService) private readonly skuGenerator: SkuGeneratorService,
@@ -534,10 +537,18 @@ export class ProductsService {
     ]);
 
     if (existingSlug) {
-      throw new ConflictException(`Product slug "${dto.slug}" already exists`);
+      let counter = 1;
+      let candidate = `${dto.slug}-${counter}`;
+      while (await this.prisma.product.findUnique({ where: { slug: candidate } })) {
+        counter++;
+        candidate = `${dto.slug}-${counter}`;
+      }
+      this.logger.log(`Slug collision detected for "${dto.slug}". Disambiguated to "${candidate}".`);
+      dto.slug = candidate;
     }
     if (existingSku || existingGlobalSku) {
-      throw new ConflictException(`Product SKU "${dto.sku}" already exists`);
+      dto.sku = await this.skuGenerator.generateProductSku(dto.categoryId, dto.brandId);
+      this.logger.log(`SKU collision detected for "${dto.sku}". Auto-generated new SKU "${dto.sku}".`);
     }
 
     // Verify foreign keys

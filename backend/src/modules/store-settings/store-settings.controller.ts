@@ -107,5 +107,45 @@ export class StoreSettingsController {
 
     return this.storeSettingsService.updateBankTransferSettings(dto, adminUserId);
   }
+
+  @Get('about')
+  @ApiOperation({
+    summary: 'Retrieve customer-facing About Us page sections and imagery',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Dynamic content for About Us page with fallback defaults',
+  })
+  async getAboutPageContent() {
+    return this.storeSettingsService.getAboutPageContent();
+  }
+
+  @Get('admin/about')
+  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
+  @RequirePermissions('settings.view')
+  @ApiCookieAuth('dsl_access_token')
+  @ApiBearerAuth('bearerAuth')
+  @ApiOperation({
+    summary: 'Retrieve About Us page content for administrative editing',
+  })
+  async getAdminAboutPageContent() {
+    return this.storeSettingsService.getAboutPageContent();
+  }
+
+  @Put('admin/about')
+  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @RequirePermissions('settings.manage')
+  @HttpCode(HttpStatus.OK)
+  @ApiCookieAuth('dsl_access_token')
+  @ApiBearerAuth('bearerAuth')
+  @ApiOperation({
+    summary: 'Update About Us page content sections, text, and imagery',
+  })
+  async updateAboutPageContent(@Body() dto: any, @Req() req: any) {
+    const adminUserId = req.user?.id || req.user?.sub || 'system-admin';
+    return this.storeSettingsService.updateAboutPageContent(dto, adminUserId);
+  }
 }
 

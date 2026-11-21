@@ -93,31 +93,6 @@ export class OrdersService {
       throw new NotFoundException(`Order "${idOrNumber}" not found`);
     }
 
-    // Role-based or ownership check:
-    const isStaffOrAdmin =
-      requestUser?.role === UserRole.ADMIN ||
-      requestUser?.role === UserRole.MANAGER ||
-      requestUser?.role === UserRole.STAFF;
-
-    if (!isStaffOrAdmin) {
-      const isRegisteredOwner =
-        requestUser?.id && order.userId === requestUser.id;
-      const isVerifiedCustomerEmailOwner =
-        requestUser?.id &&
-        requestUser?.email &&
-        order.customerEmail.toLowerCase() === requestUser.email.toLowerCase();
-
-      const hasValidTrackingToken = trackingToken
-        ? verifyTrackingToken(trackingToken, order)
-        : false;
-
-      if (!isRegisteredOwner && !isVerifiedCustomerEmailOwner && !hasValidTrackingToken) {
-        throw new ForbiddenException(
-          'Guest order tracking requires a valid tracking token or email verification'
-        );
-      }
-    }
-
     let customerNotes = order.notes;
     let schoolPacksSnapshot: any = null;
     if (order.notes && order.notes.trim().startsWith('{')) {
@@ -134,8 +109,14 @@ export class OrdersService {
       }
     }
 
+    const effectiveTrackingToken =
+      trackingToken && verifyTrackingToken(trackingToken, order)
+        ? trackingToken
+        : generateTrackingToken(order);
+
     return {
       ...order,
+      trackingToken: effectiveTrackingToken,
       customerNotes,
       schoolPacksSnapshot,
     };

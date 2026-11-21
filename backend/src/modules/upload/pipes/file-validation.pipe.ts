@@ -10,8 +10,15 @@ export interface FileValidationOptions {
   allowSvg?: boolean;
 }
 
-const DEFAULT_MAX_SIZE = 5 * 1024 * 1024; // 5 MB
-const DEFAULT_ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/webp'];
+const DEFAULT_MAX_SIZE = 25 * 1024 * 1024; // 25 MB
+const DEFAULT_ALLOWED_MIMES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+  'video/mp4',
+  'video/webm',
+];
 
 @Injectable()
 export class FileValidationPipe implements PipeTransform<Express.Multer.File, Express.Multer.File> {
@@ -78,6 +85,35 @@ export class FileValidationPipe implements PipeTransform<Express.Multer.File, Ex
     if (mime === 'image/svg+xml') {
       const textHeader = buffer.slice(0, 100).toString('utf-8').trim().toLowerCase();
       return textHeader.startsWith('<svg') || textHeader.startsWith('<?xml');
+    }
+
+    // GIF: GIF87a or GIF89a (47 49 46 38)
+    if (mime === 'image/gif') {
+      return (
+        buffer.length >= 6 &&
+        buffer[0] === 0x47 &&
+        buffer[1] === 0x49 &&
+        buffer[2] === 0x46 &&
+        buffer[3] === 0x38
+      );
+    }
+
+    // MP4 Video: ftyp box at bytes 4-7
+    if (mime === 'video/mp4') {
+      if (buffer.length < 8) return false;
+      const ftyp = buffer.slice(4, 8).toString('latin1');
+      return ftyp === 'ftyp' || ftyp === 'isom' || ftyp === 'mp41' || ftyp === 'mp42';
+    }
+
+    // WebM Video: 1A 45 DF A3 (EBML Header)
+    if (mime === 'video/webm') {
+      return (
+        buffer.length >= 4 &&
+        buffer[0] === 0x1a &&
+        buffer[1] === 0x45 &&
+        buffer[2] === 0xdf &&
+        buffer[3] === 0xa3
+      );
     }
 
     // PDF: %PDF- (25 50 44 46)

@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import { bannerService } from '@/services/bannerService';
 import { HomepageBanner } from '@/types/banner';
 import { ScrapbookHero } from './ScrapbookHero';
+import { isMediaVideo, isYouTubeVideo, getYouTubeEmbedUrl, formatMediaUrl } from '@/lib/mediaUtils';
 
 export const DynamicHeroBanners: React.FC = () => {
   const [banners, setBanners] = useState<HomepageBanner[]>([]);
@@ -90,25 +91,47 @@ export const DynamicHeroBanners: React.FC = () => {
       aria-label="Homepage Promotional Banners"
     >
       <div className="relative w-full max-w-[1920px] mx-auto min-h-[380px] sm:min-h-[460px] md:min-h-[520px] lg:aspect-[1920/800] flex items-center justify-center">
-        {/* Banner Imagery with Responsive Picture Element */}
-        <picture className="absolute inset-0 w-full h-full">
-          {currentBanner.mobileImage && (
-            <source media="(max-width: 768px)" srcSet={currentBanner.mobileImage} />
-          )}
-          <img
-            src={currentBanner.desktopImage}
-            alt={currentBanner.imageAltText || currentBanner.title}
-            className="w-full h-full object-cover object-center transition-opacity duration-700 ease-in-out"
-            onError={(e) => {
-              const img = e.target as HTMLImageElement;
-              if (img.src.includes(':3000/uploads/')) {
-                img.src = img.src.replace(':3000/uploads/', ':4000/uploads/');
-              } else {
-                img.src = '/images/hero/hero_section_2x.png';
-              }
-            }}
-          />
-        </picture>
+        {/* Banner Media: Responsive Video or Image */}
+        {isMediaVideo(currentBanner.desktopImage) ? (
+          isYouTubeVideo(currentBanner.desktopImage) ? (
+            <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden">
+              <iframe
+                src={`${getYouTubeEmbedUrl(currentBanner.desktopImage)}?autoplay=1&mute=1&controls=0&loop=1&playlist=${currentBanner.desktopImage.match(/([^#&?]*)$/)?.[0] || ''}`}
+                className="w-full h-full object-cover scale-125"
+                allow="autoplay; encrypted-media"
+                title={currentBanner.title}
+              />
+            </div>
+          ) : (
+            <video
+              src={formatMediaUrl(currentBanner.desktopImage)}
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="absolute inset-0 w-full h-full object-cover object-center"
+            />
+          )
+        ) : (
+          <picture className="absolute inset-0 w-full h-full">
+            {currentBanner.mobileImage && (
+              <source media="(max-width: 768px)" srcSet={currentBanner.mobileImage} />
+            )}
+            <img
+              src={formatMediaUrl(currentBanner.desktopImage)}
+              alt={currentBanner.imageAltText || currentBanner.title}
+              className="w-full h-full object-cover object-center transition-opacity duration-700 ease-in-out"
+              onError={(e) => {
+                const img = e.target as HTMLImageElement;
+                if (img.src.includes(':3000/uploads/')) {
+                  img.src = img.src.replace(':3000/uploads/', ':4000/uploads/');
+                } else {
+                  img.src = '/images/hero/hero_section_2x.png';
+                }
+              }}
+            />
+          </picture>
+        )}
 
         {/* If ready-made graphic banner with destination link, make entire banner clickable */}
         {isReadyMadeGraphic && currentBanner.buttonLink ? (

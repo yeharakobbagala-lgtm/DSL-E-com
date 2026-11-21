@@ -156,6 +156,7 @@ async function bootstrap() {
       'x-guest-session-id',
       'x-session-id',
       'x-tracking-otp',
+      'x-tracking-token',
       'Origin',
       'x-action-confirmation',
     ],

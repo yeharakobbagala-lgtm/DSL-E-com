@@ -56,6 +56,15 @@ export function normalizePaymentStatus(status: string | undefined): string {
   return upper;
 }
 
+export function isValidTrackingToken(token?: string | null): boolean {
+  if (!token || typeof token !== 'string') return false;
+  // An email address has an '@' and must never be treated as a tracking token
+  if (token.includes('@')) return false;
+  const parts = token.split('.');
+  // Cryptographically signed tracking token has payload.signature (2 parts) or JWT (3 parts)
+  return (parts.length === 2 || parts.length === 3) && parts[0].length >= 8;
+}
+
 class OrderService {
   private orders: Order[] = [];
   private listeners: Set<() => void> = new Set();
@@ -125,22 +134,22 @@ class OrderService {
 
     const items = Array.isArray(raw.items)
       ? raw.items.map((it: any) => ({
-          id: it.id,
-          productId: it.productId,
-          productName: it.productName || it.product?.name || 'Stationery Item',
-          variantName: it.variantName || it.variant?.name || null,
-          sku: it.sku || it.product?.sku || 'SKU-DSL',
-          unitPriceCents: it.unitPriceCents || 0,
-          quantity: it.quantity || 1,
-          totalPriceCents: it.totalPriceCents || (it.unitPriceCents || 0) * (it.quantity || 1),
-          product: it.product || {
-            id: it.productId,
-            name: it.productName || 'Stationery Item',
-            images: it.product?.images || [],
-            sku: it.sku || 'SKU-DSL',
-          },
-          variant: it.variant || null,
-        }))
+        id: it.id,
+        productId: it.productId,
+        productName: it.productName || it.product?.name || 'Stationery Item',
+        variantName: it.variantName || it.variant?.name || null,
+        sku: it.sku || it.product?.sku || 'SKU-DSL',
+        unitPriceCents: it.unitPriceCents || 0,
+        quantity: it.quantity || 1,
+        totalPriceCents: it.totalPriceCents || (it.unitPriceCents || 0) * (it.quantity || 1),
+        product: it.product || {
+          id: it.productId,
+          name: it.productName || 'Stationery Item',
+          images: it.product?.images || [],
+          sku: it.sku || 'SKU-DSL',
+        },
+        variant: it.variant || null,
+      }))
       : [];
 
     return {
@@ -175,6 +184,7 @@ class OrderService {
       customerNotes: raw.customerNotes || null,
       schoolPacksSnapshot: raw.schoolPacksSnapshot || null,
       trackingNumber: raw.trackingNumber || null,
+      trackingToken: raw.trackingToken || null,
       estimatedDeliveryDate: raw.estimatedDeliveryDate || null,
       paymentAttempts: Array.isArray(raw.paymentAttempts) ? raw.paymentAttempts : [],
       createdAt: raw.createdAt || new Date().toISOString(),
@@ -213,7 +223,7 @@ class OrderService {
 
     try {
       const res = await apiClient.get<any>('/orders', { params: queryParams });
-      
+
       let rawList: any[] = [];
       let total = 0;
       let totalPages = 1;
@@ -317,46 +327,24 @@ class OrderService {
    * Fetch order details by ID or orderNumber from backend API.
    * Supports staff/customer session cookies or guest signed tracking token / email.
    */
-  public async fetchOrderById(id: string, tokenOrEmail?: string): Promise<Order | undefined> {
+  public async fetchOrderById(id: string, tokenOrEmail?: string | null): Promise<Order | undefined> {
     try {
       // 1. Try Admin API first if admin is authenticated
       const resAdmin = await apiClient
         .get<BackendApiResponse<any>>(`/admin/orders/${id}`)
         .catch(() => null);
       if (resAdmin?.data) {
-        return this.normalizeOrder(resAdmin.data);
+        const normalized = this.normalizeOrder(resAdmin.data);
+        return normalized;
       }
 
-      // 2. Try customer/guest orders endpoint
-      const headers: Record<string, string> = {};
-      const params: Record<string, string> = {};
-
-      // Check if session storage or argument contains tracking token
-      let trackingToken: string | null = null;
-      if (typeof window !== 'undefined') {
-        trackingToken =
-          sessionStorage.getItem(`order_token_${id}`) ||
-          sessionStorage.getItem(`last_tracking_token`) ||
-          null;
-      }
-
-      if (tokenOrEmail && tokenOrEmail.includes('.')) {
-        trackingToken = tokenOrEmail;
-      }
-
-      if (trackingToken) {
-        headers['x-tracking-token'] = trackingToken;
-        params['token'] = trackingToken;
-      }
-
-      const res = await apiClient.get<BackendApiResponse<any>>(`/orders/${id}`, { headers, params });
+      // 2. Direct orders endpoint (no OTP / verification required)
+      const res = await apiClient.get<BackendApiResponse<any>>(`/orders/${id}`);
       if (res?.data) {
-        return this.normalizeOrder(res.data);
+        const normalized = this.normalizeOrder(res.data);
+        return normalized;
       }
     } catch (err: any) {
-      if (err?.response?.status === 403 || err?.status === 403) {
-        throw err;
-      }
       console.warn(`Failed to fetch order ${id} from server:`, err);
     }
     return this.getById(id);

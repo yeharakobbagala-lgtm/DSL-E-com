@@ -1,5 +1,7 @@
 export type BannerStatus = 'DRAFT' | 'SCHEDULED' | 'PUBLISHED' | 'ARCHIVED';
 
+export type BannerPlacement = 'HERO' | 'MID_PAGE_PROMO' | 'POPUP_MODAL' | 'SHOP_BANNER' | 'SPOTLIGHT';
+
 export interface HomepageBanner {
   id: string;
   title: string;
@@ -10,7 +12,7 @@ export interface HomepageBanner {
   imageAltText: string;
   buttonText?: string | null;
   buttonLink?: string | null;
-  placement?: 'HERO' | 'MID_PAGE_PROMO' | 'SPOTLIGHT' | string | null;
+  placement?: BannerPlacement | string | null;
   sortOrder: number;
   status: BannerStatus;
   startAt?: string | null;

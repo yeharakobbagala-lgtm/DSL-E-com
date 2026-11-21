@@ -8,6 +8,7 @@ import { useCartStore } from '@/services/cartStore';
 import { formatLKR, FREE_DELIVERY_THRESHOLD_CENTS } from '@/lib/currency';
 import { WhatsAppOrderButton } from '@/components/cart/WhatsAppOrderButton';
 import { ProductThumbnail } from '@/components/common/ProductThumbnail';
+import { useTranslation } from '@/services/languageStore';
 
 export const CartDrawer: React.FC = () => {
   const router = useRouter();
@@ -25,6 +26,7 @@ export const CartDrawer: React.FC = () => {
   const applyPromoCode = useCartStore((state) => state.applyPromoCode);
   const removePromoCode = useCartStore((state) => state.removePromoCode);
   const getSummary = useCartStore((state) => state.getSummary);
+  const { t } = useTranslation();
 
   useEffect(() => {
     setMounted(true);
@@ -73,8 +75,8 @@ export const CartDrawer: React.FC = () => {
                 <ShoppingBag className="w-4 h-4" />
               </div>
               <div>
-                <h2 className="text-sm font-black text-[#09285C]">Shopping Bag</h2>
-                <p className="text-[11px] text-[#64748B]">{summary.itemCount} item{summary.itemCount === 1 ? '' : 's'}</p>
+                <h2 className="text-sm font-black text-[#09285C]">{t('cart.title')}</h2>
+                <p className="text-[11px] text-[#64748B]">{summary.itemCount} {summary.itemCount === 1 ? t('cart.itemCount', 'item') : t('cart.itemsCount', '{count} items').replace('{count}', String(summary.itemCount))}</p>
               </div>
             </div>
             <button
@@ -93,7 +95,7 @@ export const CartDrawer: React.FC = () => {
               <span className="flex items-center gap-1.5 text-[#0866E8] font-bold text-[11px]">
                 <Truck className="w-3.5 h-3.5 text-[#0866E8]" />
                 {summary.isFreeDeliveryEligible
-                  ? '🌸 You unlocked FREE Islandwide Delivery!'
+                  ? `🌸 ${t('cart.freeDeliveryEligible')}`
                   : `Add ${formatLKR(remainingForFreeDelivery)} more for FREE Delivery`}
               </span>
               <span className="text-[#09285C] font-bold text-[10px]">{freeDeliveryPercent}%</span>
@@ -113,9 +115,9 @@ export const CartDrawer: React.FC = () => {
                 <div className="w-16 h-16 rounded-2xl bg-[#EAF4FF] flex items-center justify-center mx-auto text-[#0866E8]">
                   <ShoppingBag className="w-8 h-8" />
                 </div>
-                <h3 className="text-base font-black text-[#09285C]">Your bag is empty</h3>
+                <h3 className="text-base font-black text-[#09285C]">{t('cart.emptyTitle')}</h3>
                 <p className="text-xs text-[#64748B] max-w-xs mx-auto leading-relaxed">
-                  Discover our school packs, stationery supplies, and joyful creative tools.
+                  {t('cart.emptySubtitle')}
                 </p>
                 <div className="pt-2">
                   <Link
@@ -123,7 +125,7 @@ export const CartDrawer: React.FC = () => {
                     onClick={() => setDrawerOpen(false)}
                     className="inline-flex items-center gap-2 bg-[#09285C] hover:bg-[#0866E8] text-white text-xs font-bold px-6 py-3 rounded-2xl shadow-xs transition-colors touch-target"
                   >
-                    <span>Start Shopping</span>
+                    <span>{t('cart.startShopping')}</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                 </div>
@@ -278,7 +280,7 @@ export const CartDrawer: React.FC = () => {
                     type="submit"
                     className="bg-[#09285C] hover:bg-[#0866E8] text-white text-xs font-bold px-4 py-1.5 rounded-xl transition-colors cursor-pointer"
                   >
-                    Apply
+                    {t('action.apply')}
                   </button>
                 </form>
               )}
@@ -286,17 +288,17 @@ export const CartDrawer: React.FC = () => {
               {/* Price Breakdown */}
               <div className="space-y-1.5 text-xs pt-1">
                 <div className="flex justify-between text-[#64748B]">
-                  <span>Subtotal</span>
+                  <span>{t('cart.subtotal')}</span>
                   <span className="font-bold text-[#09285C]">{formatLKR(summary.subtotalCents)}</span>
                 </div>
                 {summary.discountCents > 0 && (
                   <div className="flex justify-between text-[#0866E8] font-semibold">
-                    <span>Discounts</span>
+                    <span>{t('cart.discount')}</span>
                     <span>-{formatLKR(summary.discountCents)}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-[#64748B]">
-                  <span>Delivery</span>
+                  <span>{t('cart.deliveryFee')}</span>
                   <span className="font-bold text-[#09285C]">
                     {summary.deliveryCents === 0 ? (
                       <span className="text-emerald-700 font-bold">FREE</span>
@@ -306,7 +308,7 @@ export const CartDrawer: React.FC = () => {
                   </span>
                 </div>
                 <div className="flex justify-between text-sm font-black text-[#09285C] pt-2 border-t border-slate-100">
-                  <span>Total</span>
+                  <span>{t('cart.total')}</span>
                   <span className="text-base text-[#0866E8] font-black">{formatLKR(summary.totalCents)}</span>
                 </div>
               </div>
@@ -322,7 +324,7 @@ export const CartDrawer: React.FC = () => {
                   <span>
                     {summary.selectedItemCount === 0
                       ? 'Select Items to Checkout'
-                      : `Proceed to Checkout (${summary.selectedItemCount})`}
+                      : `${t('action.proceedCheckout')} (${summary.selectedItemCount})`}
                   </span>
                   <ArrowRight className="w-4 h-4" />
                 </button>

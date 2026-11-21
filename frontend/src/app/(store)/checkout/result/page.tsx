@@ -22,9 +22,10 @@ import {
   KeyRound,
   Mail,
 } from 'lucide-react';
-import { orderService } from '@/services/orderService';
+import { orderService, isValidTrackingToken } from '@/services/orderService';
 import { checkoutService } from '@/services/checkoutService';
 import { useUserStore } from '@/services/userStore';
+import { useTranslation } from '@/services/languageStore';
 import { formatLKR } from '@/lib/currency';
 
 function CheckoutResultContent() {
@@ -40,6 +41,7 @@ function CheckoutResultContent() {
   const verifyEmail = useUserStore((state) => state.verifyEmail);
   const resendVerificationOtp = useUserStore((state) => state.resendVerificationOtp);
   const loginCustomer = useUserStore((state) => state.loginCustomer);
+  const { t } = useTranslation();
 
   const [order, setOrder] = useState<any | null>(null);
   const [reconciledStatus, setReconciledStatus] = useState<any | null>(null);
@@ -88,14 +90,16 @@ function CheckoutResultContent() {
       return;
     }
 
-    if (tokenParam && typeof window !== 'undefined') {
-      sessionStorage.setItem(`order_token_${orderId}`, tokenParam);
-      sessionStorage.setItem('last_tracking_token', tokenParam);
+    const validToken = isValidTrackingToken(tokenParam) ? tokenParam : undefined;
+
+    if (validToken && typeof window !== 'undefined') {
+      sessionStorage.setItem(`order_token_${orderId}`, validToken);
+      sessionStorage.setItem('last_tracking_token', validToken);
     }
 
     try {
-      // 1. Fetch live order details from backend (passing token if present)
-      const fetchedOrder = await orderService.fetchOrderById(orderId, tokenParam || effectiveEmail);
+      // 1. Fetch live order details from backend (passing token only if cryptographically valid)
+      const fetchedOrder = await orderService.fetchOrderById(orderId, validToken);
       if (fetchedOrder) {
         setOrder(fetchedOrder);
       }
@@ -105,7 +109,7 @@ function CheckoutResultContent() {
         const status = await checkoutService.reconcilePaymentStatus(orderId);
         setReconciledStatus(status);
         if (status?.orderId && !fetchedOrder) {
-          const reFetched = await orderService.fetchOrderById(status.orderId, tokenParam || effectiveEmail);
+          const reFetched = await orderService.fetchOrderById(status.orderId, validToken);
           if (reFetched) setOrder(reFetched);
         }
       } catch (recErr) {
@@ -117,7 +121,7 @@ function CheckoutResultContent() {
       setIsLoading(false);
       setIsRechecking(false);
     }
-  }, [orderId, effectiveEmail, tokenParam]);
+  }, [orderId, tokenParam]);
 
   // Determine authoritative payment status from backend
   const paymentStatus =
@@ -132,12 +136,15 @@ function CheckoutResultContent() {
 
   const effectiveOrderId = order?.id || order?.orderNumber || orderId;
 
-  const orderToken =
-    tokenParam ||
+  const rawOrderToken =
+    (isValidTrackingToken(tokenParam) ? tokenParam : null) ||
+    (order?.trackingToken && isValidTrackingToken(order.trackingToken) ? order.trackingToken : null) ||
     (typeof window !== 'undefined' && effectiveOrderId
       ? sessionStorage.getItem(`order_token_${effectiveOrderId}`)
       : null) ||
     (typeof window !== 'undefined' ? sessionStorage.getItem('last_tracking_token') : null);
+
+  const orderToken = isValidTrackingToken(rawOrderToken) ? rawOrderToken : null;
 
   const viewOrderUrl = effectiveOrderId
     ? `/orders/${effectiveOrderId}${orderToken ? `?token=${encodeURIComponent(orderToken)}` : ''}`
@@ -336,7 +343,7 @@ function CheckoutResultContent() {
               <Clock className="w-3.5 h-3.5" /> Order Received — Pending Fulfilment
             </span>
             <h1 className="text-3xl sm:text-4xl font-black text-[#292525] tracking-tight">
-              Order Placed Successfully!
+              {t('order.successTitle')}
             </h1>
             <p className="text-sm text-[#292525]/70 max-w-md mx-auto">
               {paymentQueryParam === 'pending' || order?.paymentMethod === 'CARD_PAYHERE'
@@ -347,10 +354,10 @@ function CheckoutResultContent() {
               <button
                 onClick={handleManualRecheck}
                 disabled={isRechecking}
-                className="inline-flex items-center gap-2 bg-[#0866E8] hover:bg-[#09285C] text-white text-xs font-bold px-5 py-2.5 rounded-full transition-all shadow-sm disabled:opacity-50"
+                className="inline-flex items-center gap-2 bg-[#0866E8] hover:bg-[#09285C] text-white text-xs font-bold px-5 py-2.5 rounded-full transition-all shadow-sm disabled:opacity-50 cursor-pointer"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isRechecking ? 'animate-spin' : ''}`} />
-                <span>{isRechecking ? 'Checking Status...' : 'Re-check Order Status'}</span>
+                <span>{isRechecking ? 'Checking Status...' : t('action.recheckStatus')}</span>
               </button>
             </div>
           </div>
@@ -737,15 +744,15 @@ function CheckoutResultContent() {
             className="bg-[#0866E8] hover:bg-[#09285C] text-white text-xs font-bold px-7 py-3 rounded-full transition-all shadow-md flex items-center gap-2 group cursor-pointer"
           >
             <Eye className="w-4 h-4 group-hover:scale-110 transition-transform" />
-            <span>View Order</span>
+            <span>{t('action.viewOrder')}</span>
           </Link>
         )}
 
         <Link
           href="/shop"
-          className="bg-white hover:bg-[#FFFDF0] text-[#292525] border border-[#C6E7FF] text-xs font-bold px-6 py-3 rounded-full transition-all shadow-xs flex items-center gap-1.5"
+          className="bg-white hover:bg-[#FFFDF0] text-[#292525] border border-[#C6E7FF] text-xs font-bold px-6 py-3 rounded-full transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
         >
-          <span>Continue Shopping</span> <ArrowRight className="w-3.5 h-3.5" />
+          <span>{t('action.continueShopping')}</span> <ArrowRight className="w-3.5 h-3.5" />
         </Link>
       </div>
     </div>

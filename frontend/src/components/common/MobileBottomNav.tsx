@@ -18,6 +18,7 @@ import { useWishlistStore } from '@/services/wishlistStore';
 import { productService } from '@/services/productService';
 import { Product } from '@/types/product';
 import { formatLKR } from '@/lib/currency';
+import { useTranslation } from '@/services/languageStore';
 
 export const MobileBottomNav: React.FC = () => {
   const pathname = usePathname();
@@ -30,6 +31,7 @@ export const MobileBottomNav: React.FC = () => {
   const setDrawerOpen = useCartStore((state) => state.setDrawerOpen);
   const cartItemCount = items.reduce((acc, item) => acc + item.quantity, 0);
   const wishlistCount = useWishlistStore((state) => state.itemCount);
+  const { t } = useTranslation();
 
   useEffect(() => {
     setIsMounted(true);
@@ -168,7 +170,7 @@ export const MobileBottomNav: React.FC = () => {
             }`}
           >
             <Home className="w-5 h-5 mb-0.5" strokeWidth={isHome ? 2.5 : 2} />
-            <span className="text-[10px] tracking-tight">Home</span>
+            <span className="text-[10px] tracking-tight">{t('nav.home')}</span>
           </Link>
 
           {/* 2. Categories */}
@@ -181,7 +183,7 @@ export const MobileBottomNav: React.FC = () => {
             }`}
           >
             <Grid className="w-5 h-5 mb-0.5" strokeWidth={isCategories ? 2.5 : 2} />
-            <span className="text-[10px] tracking-tight">Categories</span>
+            <span className="text-[10px] tracking-tight">{t('nav.categories')}</span>
           </Link>
 
           {/* 3. Search */}
@@ -192,7 +194,7 @@ export const MobileBottomNav: React.FC = () => {
             aria-label="Open search"
           >
             <Search className="w-5 h-5 mb-0.5" />
-            <span className="text-[10px] tracking-tight">Search</span>
+            <span className="text-[10px] tracking-tight">{t('action.search')}</span>
           </button>
 
           {/* 4. Wishlist */}
@@ -212,7 +214,7 @@ export const MobileBottomNav: React.FC = () => {
                 </span>
               )}
             </div>
-            <span className="text-[10px] tracking-tight">Wishlist</span>
+            <span className="text-[10px] tracking-tight">{t('nav.wishlist')}</span>
           </Link>
 
           {/* 5. Cart */}
@@ -234,7 +236,7 @@ export const MobileBottomNav: React.FC = () => {
                 </span>
               )}
             </div>
-            <span className="text-[10px] tracking-tight">Cart</span>
+            <span className="text-[10px] tracking-tight">{t('nav.cart')}</span>
           </button>
         </div>
       </nav>

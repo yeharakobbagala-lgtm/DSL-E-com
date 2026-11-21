@@ -24,6 +24,10 @@ import {
   TrendingUp,
   CircleDot,
   BarChart3,
+  Zap,
+  Check,
+  Loader2,
+  Table,
 } from 'lucide-react';
 import { productService } from '@/services/productService';
 import { categoryService } from '@/services/categoryService';
@@ -37,6 +41,7 @@ import {
   CatalogFilterToolbar,
   ActiveFilterChip,
   CatalogExportModal,
+  BulkAddProductsModal,
 } from '@/components/admin/catalog';
 import { AdminPageAccess } from '@/components/admin/AdminPageAccess';
 import { useUserStore } from '@/services/userStore';
@@ -120,6 +125,9 @@ function AdminProductsContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [isMutating, setIsMutating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Bulk Add Table Data Entry Modal
+  const [isBulkAddModalOpen, setIsBulkAddModalOpen] = useState(false);
 
   // Load products from backend with full server-side pagination & multi-filter
   const loadProducts = useCallback(async (targetPage = page, targetLimit = limit) => {
@@ -444,25 +452,16 @@ function AdminProductsContent() {
               </Link>
             )}
 
-            <button
-              type="button"
-              onClick={() => setIsExportModalOpen(true)}
-              className="inline-flex items-center gap-1.5 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs px-3 py-2 rounded-xl border border-slate-300 transition-colors shadow-xs"
-              title="Export products to CSV or Excel"
-            >
-              <Download className="w-3.5 h-3.5 text-blue-600" />
-              <span>Export ({selectedIds.size > 0 ? `${selectedIds.size} Selected` : 'All'})</span>
-            </button>
-
-            {hasPermission('products.import') && (
-              <Link
-                href="/admin/products/import"
-                className="inline-flex items-center gap-1.5 bg-[#08275E] hover:bg-[#103b8c] text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-xs transition-colors"
-                title="Import products from Excel (.xlsx) or CSV (.csv)"
+            {hasPermission('products.create') && (
+              <button
+                type="button"
+                onClick={() => setIsBulkAddModalOpen(true)}
+                className="inline-flex items-center gap-1.5 bg-blue-50 hover:bg-blue-100 text-[#08275E] border border-blue-200 font-bold text-xs px-3.5 py-2 rounded-xl shadow-2xs transition-colors cursor-pointer active:scale-95"
+                title="Add multiple products using table spreadsheet"
               >
-                <FileSpreadsheet className="w-3.5 h-3.5 text-blue-200" />
-                <span>Import</span>
-              </Link>
+                <Table className="w-3.5 h-3.5 text-[#0066CC]" />
+                <span>+ Add via Table</span>
+              </button>
             )}
 
             {hasPermission('products.create') && (
@@ -771,8 +770,11 @@ function AdminProductsContent() {
                     return (
                       <tr
                         key={p.id}
-                        className={`hover:bg-slate-50/80 transition-colors ${isSelected ? 'bg-blue-50/40' : ''
-                          }`}
+                        className={`transition-colors ${
+                          isSelected
+                            ? 'bg-blue-50/40 hover:bg-slate-50/80'
+                            : 'hover:bg-slate-50/80'
+                        }`}
                       >
                         <td className="py-3 px-3 text-center">
                           <input
@@ -840,7 +842,7 @@ function AdminProductsContent() {
                         {/* Price */}
                         {isColVisible('price') && (
                           <td className="py-3 px-3 font-bold text-slate-900 whitespace-nowrap">
-                            {(p.priceCents / 100).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            Rs. {(p.priceCents / 100).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
                         )}
 
@@ -895,18 +897,18 @@ function AdminProductsContent() {
                                 }`}
                               title="Click to toggle active status"
                             >
-                              {p.isActive ? (
-                                <>
-                                  <Eye className="w-3 h-3" />
-                                  <span>Active</span>
-                                </>
-                              ) : (
-                                <>
-                                  <EyeOff className="w-3 h-3" />
-                                  <span>Hidden</span>
-                                </>
-                              )}
-                            </button>
+                                {p.isActive ? (
+                                  <>
+                                    <Eye className="w-3 h-3" />
+                                    <span>Active</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <EyeOff className="w-3 h-3" />
+                                    <span>Hidden</span>
+                                  </>
+                                )}
+                              </button>
                           </td>
                         )}
 
@@ -964,6 +966,18 @@ function AdminProductsContent() {
             isLoading={isLoading}
           />
         </div>
+
+        {/* Bulk Add Products Table Modal */}
+        <BulkAddProductsModal
+          isOpen={isBulkAddModalOpen}
+          onClose={() => setIsBulkAddModalOpen(false)}
+          categories={categories}
+          brands={brands}
+          onSuccess={() => {
+            loadProducts(page, limit);
+            productService.fetchProductAnalytics().then((a) => a && setAnalytics(a)).catch(() => {});
+          }}
+        />
 
         {/* Export Modal */}
         <CatalogExportModal

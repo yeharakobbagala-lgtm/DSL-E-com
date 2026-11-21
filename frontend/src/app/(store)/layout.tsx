@@ -7,6 +7,7 @@ import { Navbar } from '@/components/common/Navbar';
 import { Footer } from '@/components/common/Footer';
 import { CartDrawer } from '@/components/common/CartDrawer';
 import { MobileBottomNav } from '@/components/common/MobileBottomNav';
+import { StorefrontPromoModal } from '@/components/common/StorefrontPromoModal';
 
 export default function StoreLayout({
   children,
@@ -29,6 +30,7 @@ export default function StoreLayout({
       {!isSplashPage && <Navbar />}
       {!isSplashPage && !isCustomizePen && <DemoBanner />}
       <CartDrawer />
+      <StorefrontPromoModal />
       <main className="flex-1 pb-16 lg:pb-0">
         {children}
       </main>

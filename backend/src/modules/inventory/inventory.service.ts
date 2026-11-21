@@ -61,7 +61,7 @@ export class InventoryService {
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Optional() @Inject(InventoryGateway) private readonly inventoryGateway?: InventoryGateway,
     @Optional() @Inject(BackInStockService) private readonly backInStockService?: BackInStockService
-  ) {}
+  ) { }
 
   /**
    * Atomically adjusts stock for a product or product variant within a PostgreSQL transaction.
@@ -80,16 +80,16 @@ export class InventoryService {
       if (this.inventoryGateway) {
         const activeRes = this.prisma.stockReservationItem
           ? await this.prisma.stockReservationItem.findMany({
-              where: {
-                productId: result.product.id,
-                ...(result.variant ? { variantId: result.variant.id } : {}),
-                reservation: {
-                  status: { in: ['ACTIVE', 'PAYMENT_PENDING'] },
-                  expiresAt: { gt: new Date() },
-                },
+            where: {
+              productId: result.product.id,
+              ...(result.variant ? { variantId: result.variant.id } : {}),
+              reservation: {
+                status: { in: ['ACTIVE', 'PAYMENT_PENDING'] },
+                expiresAt: { gt: new Date() },
               },
-              select: { quantity: true },
-            })
+            },
+            select: { quantity: true },
+          })
           : [];
         const currentReserved = activeRes.reduce((s, it) => s + it.quantity, 0);
         const physStock = result.variant
@@ -226,16 +226,16 @@ export class InventoryService {
     // Enforce fundamental invariant: Physical Stock >= Active Reserved Stock
     const activeReservations = tx.stockReservationItem
       ? await tx.stockReservationItem.findMany({
-          where: {
-            productId: dto.productId,
-            ...(dto.variantId ? { variantId: dto.variantId } : {}),
-            reservation: {
-              status: { in: ['ACTIVE', 'PAYMENT_PENDING'] },
-              expiresAt: { gt: new Date() },
-            },
+        where: {
+          productId: dto.productId,
+          ...(dto.variantId ? { variantId: dto.variantId } : {}),
+          reservation: {
+            status: { in: ['ACTIVE', 'PAYMENT_PENDING'] },
+            expiresAt: { gt: new Date() },
           },
-          select: { quantity: true },
-        })
+        },
+        select: { quantity: true },
+      })
       : [];
     const reservedStock = activeReservations.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -476,8 +476,132 @@ export class InventoryService {
       }),
     ]);
 
+    // Enrich movements with detailed Actor info (Name, Role, Email, Customer details, Order Reference)
+    const userIds = Array.from(
+      new Set(movements.map((m) => m.performedById).filter(Boolean))
+    ) as string[];
+
+    const orderNumbers = movements
+      .map((m) => {
+        if (!m.note) return null;
+        const match = m.note.match(/(DSL-[A-Za-z0-9-_]+|ORD-[A-Za-z0-9-_]+)/i);
+        return match ? match[1] : null;
+      })
+      .filter(Boolean) as string[];
+
+    const [users, orders] = await Promise.all([
+      userIds.length > 0
+        ? this.prisma.user.findMany({
+          where: { id: { in: userIds } },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            role: true,
+            assignedRole: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        })
+        : [],
+      orderNumbers.length > 0
+        ? this.prisma.order.findMany({
+          where: { orderNumber: { in: orderNumbers } },
+          select: {
+            id: true,
+            orderNumber: true,
+            customerName: true,
+            customerEmail: true,
+            customerPhone: true,
+            userId: true,
+          },
+        })
+        : [],
+    ]);
+
+    const userMap = new Map(users.map((u) => [u.id, u]));
+    const orderMap = new Map(orders.map((o) => [o.orderNumber.toUpperCase(), o]));
+
+    const enrichedMovements = movements.map((m) => {
+      const user = m.performedById ? userMap.get(m.performedById) : null;
+      const orderMatch = m.note?.match(/(DSL-[A-Za-z0-9-_]+|ORD-[A-Za-z0-9-_]+)/i);
+      const order = orderMatch ? orderMap.get(orderMatch[1].toUpperCase()) : null;
+
+      let actor: {
+        id: string | null;
+        name: string;
+        role: string;
+        email?: string | null;
+        phone?: string | null;
+        type: 'ADMIN' | 'CUSTOMER' | 'SYSTEM' | 'SUPPLIER';
+        reference?: string | null;
+      };
+
+      if (user) {
+        const isCustomer = user.role === 'CUSTOMER';
+        const roleLabel =
+          user.assignedRole?.name ||
+          (user.role === 'ADMIN'
+            ? 'Administrator'
+            : user.role === 'MANAGER'
+              ? 'Store Manager'
+              : user.role === 'STAFF'
+                ? 'Warehouse Staff'
+                : 'Customer');
+        actor = {
+          id: user.id,
+          name: user.name || (isCustomer ? 'Customer' : 'System Administrator'),
+          role: roleLabel,
+          email: user.email,
+          phone: user.phone,
+          type: isCustomer ? 'CUSTOMER' : 'ADMIN',
+          reference: order ? order.orderNumber : undefined,
+        };
+      } else if (order) {
+        actor = {
+          id: order.userId || m.performedById,
+          name: order.customerName || 'Store Customer',
+          role: 'Customer',
+          email: order.customerEmail,
+          phone: order.customerPhone,
+          type: 'CUSTOMER',
+          reference: order.orderNumber,
+        };
+      } else if (m.reason === 'ORDER_FULFILLMENT' || m.performedById === 'SYSTEM_CHECKOUT') {
+        actor = {
+          id: m.performedById,
+          name: 'Store Customer',
+          role: 'Customer (Order Checkout)',
+          type: 'CUSTOMER',
+          reference: orderMatch ? orderMatch[1] : undefined,
+        };
+      } else if (m.reason === 'RESTOCK' && (!m.performedById || m.performedById === 'SYSTEM')) {
+        actor = {
+          id: m.performedById,
+          name: 'Warehouse Receiving (GRN)',
+          role: 'Supplier Intake / GRN',
+          type: 'SUPPLIER',
+        };
+      } else {
+        actor = {
+          id: m.performedById,
+          name: 'System Administrator',
+          role: 'Administrator',
+          type: 'ADMIN',
+        };
+      }
+
+      return {
+        ...m,
+        actor,
+      };
+    });
+
     const meta = createPaginationMeta(totalItems, query.page, query.limit);
-    return createPaginatedResponse(movements, meta);
+    return createPaginatedResponse(enrichedMovements, meta);
   }
 
   /**

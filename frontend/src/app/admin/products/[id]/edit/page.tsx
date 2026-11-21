@@ -11,6 +11,7 @@ import { ProductCategory, Brand, Product } from '@/types/product';
 import { rupeesToCents, centsToRupees, formatLKR } from '@/lib/currency';
 import { AdminPageAccess } from '@/components/admin/AdminPageAccess';
 import { resolveImageUrl } from '@/lib/image';
+import { SearchableSelect } from '@/components/common/SearchableSelect';
 
 function AdminEditProductContent() {
   const params = useParams();
@@ -368,24 +369,25 @@ function AdminEditProductContent() {
 
           <div>
             <label className="font-bold text-slate-700 block mb-1">Parent Category</label>
-            <select
+            <SearchableSelect
               value={categoryId}
-              onChange={(e) => {
-                const newCatId = e.target.value;
+              onChange={(newCatId) => {
                 setCategoryId(newCatId);
                 const belongs = categories.some((c) => c.id === subcategoryId && c.parentId === newCatId);
                 if (!belongs) {
                   setSubcategoryId('');
                 }
               }}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white"
-            >
-              {categories
+              placeholder="-- Select Parent Category --"
+              searchPlaceholder="Search category..."
+              options={categories
                 .filter((c) => !c.parentId)
-                .map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-            </select>
+                .map((c) => ({
+                  value: c.id,
+                  label: c.name,
+                  sublabel: c.slug,
+                }))}
+            />
           </div>
 
           <div>
@@ -393,34 +395,42 @@ function AdminEditProductContent() {
             {(() => {
               const availableSubs = categories.filter((c) => c.parentId === categoryId);
               return (
-                <select
+                <SearchableSelect
                   value={subcategoryId}
-                  onChange={(e) => setSubcategoryId(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white disabled:bg-slate-50 disabled:text-slate-400"
+                  onChange={(val) => setSubcategoryId(val)}
+                  placeholder={
+                    availableSubs.length > 0
+                      ? '-- Select Subcategory (Optional) --'
+                      : 'No subcategories under selected category'
+                  }
+                  searchPlaceholder="Search subcategory..."
                   disabled={availableSubs.length === 0}
-                >
-                  <option value="">
-                    {availableSubs.length > 0 ? '-- Select Subcategory (Optional) --' : 'No subcategories under selected category'}
-                  </option>
-                  {availableSubs.map((sc) => (
-                    <option key={sc.id} value={sc.id}>{sc.name}</option>
-                  ))}
-                </select>
+                  options={[
+                    { value: '', label: '-- None (No Subcategory) --' },
+                    ...availableSubs.map((sc) => ({
+                      value: sc.id,
+                      label: sc.name,
+                      sublabel: sc.slug,
+                    })),
+                  ]}
+                />
               );
             })()}
           </div>
 
           <div>
             <label className="font-bold text-slate-700 block mb-1">Brand</label>
-            <select
+            <SearchableSelect
               value={brandId}
-              onChange={(e) => setBrandId(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white"
-            >
-              {brands.map((b) => (
-                <option key={b.id} value={b.id}>{b.name}</option>
-              ))}
-            </select>
+              onChange={(val) => setBrandId(val)}
+              placeholder="-- Select Brand --"
+              searchPlaceholder="Search brand name..."
+              options={brands.map((b) => ({
+                value: b.id,
+                label: b.name,
+                sublabel: b.originCountry ? `Origin: ${b.originCountry}` : undefined,
+              }))}
+            />
           </div>
 
           <div className="sm:col-span-2">

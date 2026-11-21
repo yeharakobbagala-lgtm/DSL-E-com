@@ -922,7 +922,18 @@ export class CheckoutService {
           },
         },
         include: {
-          items: true,
+          items: {
+            include: {
+              product: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                  images: true,
+                },
+              },
+            },
+          },
           addressSnapshot: true,
         },
       });
@@ -1043,30 +1054,41 @@ export class CheckoutService {
       }
     }
 
-    // 6. Send order confirmation notification
+    const trackingToken = generateTrackingToken(createdOrder);
+
+    // 6. Send premium HTML order confirmation notification
     if (this.notificationsService) {
       this.notificationsService
         .sendOrderConfirmation({
+          orderId: createdOrder.id,
           orderNumber: createdOrder.orderNumber,
+          orderDate: createdOrder.createdAt,
           customerName: createdOrder.customerName,
           customerEmail: createdOrder.customerEmail,
           customerPhone: createdOrder.customerPhone,
+          subtotalCents: createdOrder.subtotalCents,
+          deliveryFeeCents: createdOrder.deliveryCents,
+          discountCents: createdOrder.discountCents,
           totalCents: createdOrder.totalCents,
+          promoCode: createdOrder.promoCode,
           paymentMethod: createdOrder.paymentMethod,
           paymentStatus: createdOrder.paymentStatus,
-          deliveryAddress: `${createdOrder.addressSnapshot?.addressLine1}, ${createdOrder.addressSnapshot?.city}`,
-          items: createdOrder.items.map((it) => ({
+          deliveryAddress: createdOrder.addressSnapshot,
+          trackingToken,
+          items: createdOrder.items.map((it: any) => ({
+            productId: it.productId,
             productName: it.productName,
             variantName: it.variantName,
+            sku: it.sku,
             quantity: it.quantity,
             unitPriceCents: it.unitPriceCents,
             totalPriceCents: it.totalPriceCents,
+            imageUrl: it.product?.images?.[0] || null,
+            customization: it.customization,
           })),
         })
         .catch((err) => this.logger.error('Failed to dispatch order confirmation notification:', err));
     }
-
-    const trackingToken = generateTrackingToken(createdOrder);
 
     return {
       order: createdOrder,

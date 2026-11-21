@@ -150,6 +150,7 @@ export interface Order {
   customerNotes?: string | null;
   schoolPacksSnapshot?: any;
   trackingNumber?: string | null;
+  trackingToken?: string | null;
   estimatedDeliveryDate?: string | null;
   paymentAttempts?: PaymentAttempt[];
   bankDepositSubmissions?: BankDepositSubmissionSummary[];

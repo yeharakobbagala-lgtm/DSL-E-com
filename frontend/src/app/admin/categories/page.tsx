@@ -24,6 +24,9 @@ import {
   Package,
   Eye,
   ExternalLink,
+  Zap,
+  Loader2,
+  Table,
 } from 'lucide-react';
 import { categoryService } from '@/services/categoryService';
 import { ProductCategory } from '@/types/product';
@@ -36,12 +39,14 @@ import {
   KpiCardData,
   CatalogExportModal,
   CategoryProductsModal,
+  BulkAddCategoriesModal,
 } from '@/components/admin/catalog';
 import { AdminPageAccess } from '@/components/admin/AdminPageAccess';
 import { useUserStore } from '@/services/userStore';
 import { SensitiveActionConfirmationModal } from '@/components/admin/security/SensitiveActionConfirmationModal';
 import { CategoryStructureChart } from '@/components/admin/analytics/CategoryStructureChart';
 import { CategoryLeadersCard } from '@/components/admin/analytics/CategoryLeadersCard';
+import { SearchableSelect } from '@/components/common/SearchableSelect';
 
 interface CategoryFormData {
   id?: string;
@@ -103,6 +108,9 @@ export default function AdminCategoriesPage() {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isMutating, setIsMutating] = useState(false);
+
+  // Bulk Add Categories Table Data Entry Modal
+  const [isBulkAddModalOpen, setIsBulkAddModalOpen] = useState(false);
 
   const loadData = useCallback(async () => {
     setIsLoading(true);
@@ -444,718 +452,736 @@ export default function AdminCategoriesPage() {
   return (
     <AdminPageAccess permission="categories.view" pageTitle="Categories Management">
       <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-              Categories &amp; Subcategories
-            </h1>
-            <span className="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-0.5 rounded-full">
-              2-Level Tree
-            </span>
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                Categories &amp; Subcategories
+              </h1>
+              <span className="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-0.5 rounded-full">
+                2-Level Tree
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 mt-1">
+              Manage category parent-child relationships, subcategories, product count distributions, and hierarchy exports.
+            </p>
           </div>
-          <p className="text-xs text-slate-500 mt-1">
-            Manage category parent-child relationships, subcategories, product count distributions, and hierarchy exports.
-          </p>
-        </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            onClick={loadData}
-            disabled={isLoading || isMutating}
-            className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3 py-2 rounded-xl transition-colors disabled:opacity-50"
-            title="Refresh from server"
-          >
-            <RotateCcw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-            <span>Refresh</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setIsExportModalOpen(true)}
-            className="inline-flex items-center gap-1.5 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs px-3 py-2 rounded-xl border border-slate-300 transition-colors shadow-xs"
-            title="Export categories to CSV or Excel"
-          >
-            <Download className="w-3.5 h-3.5 text-blue-600" />
-            <span>Export</span>
-          </button>
-
-          {hasPermission('categories.create') && (
+          <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
-              onClick={() => openAddModal()}
-              className="inline-flex items-center gap-1.5 bg-[#08275E] hover:bg-[#103b8c] text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-xs transition-colors"
+              onClick={loadData}
+              disabled={isLoading || isMutating}
+              className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3 py-2 rounded-xl transition-colors disabled:opacity-50"
+              title="Refresh from server"
             >
-              <Plus className="w-3.5 h-3.5 text-[#FFD21C]" />
-              <span>Add Category</span>
+              <RotateCcw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+              <span>Refresh</span>
             </button>
-          )}
-        </div>
-      </div>
 
-      {error && (
-        <div className="bg-rose-50 border border-rose-200 p-4 rounded-xl flex items-center gap-3 text-rose-800 text-xs">
-          <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
-          <div className="flex-1 font-medium">{error}</div>
-          <button onClick={() => setError(null)} className="text-rose-500 hover:text-rose-700 font-bold">
-            Dismiss
-          </button>
-        </div>
-      )}
-
-      {successMsg && (
-        <div className="bg-blue-50 border border-blue-200 p-4 rounded-xl flex items-center gap-3 text-[#08275E] text-xs">
-          <Check className="w-4 h-4 text-[#0066CC] shrink-0" />
-          <div className="flex-1 font-medium">{successMsg}</div>
-          <button onClick={() => setSuccessMsg(null)} className="text-[#0066CC] hover:text-[#08275E] font-bold">
-            Dismiss
-          </button>
-        </div>
-      )}
-
-      {/* Categories Analytics Suite: Radar Structure & Leaders */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-7">
-          <CategoryStructureChart
-            data={analytics?.topCategories || []}
-            rootCount={analytics?.parentCategories ?? rootCategories.length}
-            subCount={analytics?.subcategories ?? categories.reduce((sum, c) => sum + (c.children?.length ?? 0), 0)}
-            activeCount={analytics?.totalCategories ?? categories.length}
-            inactiveCount={0}
-          />
-        </div>
-        <div className="lg:col-span-5">
-          <CategoryLeadersCard
-            categories={analytics?.topCategories || []}
-            totalProducts={
-              analytics?.topCategories?.reduce((acc, c) => acc + c.count, 0) || 1
-            }
-          />
-        </div>
-      </div>
-
-      {/* Quick Filter Navigation Tabs */}
-      <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100">
-        <button
-          type="button"
-          onClick={handleClearAllFilters}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-2xs ${
-            hierarchyFilter === 'all' && productFilter === 'all'
-              ? 'bg-[#08275E] text-white shadow-xs'
-              : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
-          }`}
-        >
-          All Categories ({analytics?.totalCategories ?? categories.length})
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            setHierarchyFilter('roots');
-            setProductFilter('all');
-          }}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-2xs ${
-            hierarchyFilter === 'roots'
-              ? 'bg-[#08275E] text-white'
-              : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
-          }`}
-        >
-          Root Categories ({analytics?.parentCategories ?? rootCategories.length})
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            setHierarchyFilter('subs');
-            setProductFilter('all');
-          }}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-2xs ${
-            hierarchyFilter === 'subs'
-              ? 'bg-[#08275E] text-white'
-              : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
-          }`}
-        >
-          Subcategories ({analytics?.subcategories ?? 0})
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            setHierarchyFilter('all');
-            setProductFilter('with_products');
-          }}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-2xs ${
-            productFilter === 'with_products'
-              ? 'bg-blue-600 text-white'
-              : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
-          }`}
-        >
-          With Products ({analytics?.categoriesWithProducts ?? '-'})
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            setHierarchyFilter('all');
-            setProductFilter('empty');
-          }}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-2xs ${
-            productFilter === 'empty'
-              ? 'bg-amber-600 text-white'
-              : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
-          }`}
-        >
-          Empty Categories ({analytics?.emptyCategories ?? '-'})
-        </button>
-      </div>
-
-      {/* Filter and Search Toolbar */}
-      <CatalogFilterToolbar
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        searchPlaceholder="Search category name, slug, or description..."
-        activeChips={activeChips}
-        onClearAll={handleClearAllFilters}
-        totalResults={filteredTree.length}
-        rightAction={
-          <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={expandAll}
-              className="px-2.5 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg border border-slate-200"
-              title="Expand all tree nodes"
+              onClick={() => setIsExportModalOpen(true)}
+              className="inline-flex items-center gap-1.5 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs px-3 py-2 rounded-xl border border-slate-300 transition-colors shadow-xs"
+              title="Export categories to CSV or Excel"
             >
-              Expand All
+              <Download className="w-3.5 h-3.5 text-blue-600" />
+              <span>Export</span>
             </button>
-            <button
-              type="button"
-              onClick={collapseAll}
-              className="px-2.5 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg border border-slate-200"
-              title="Collapse all tree nodes"
-            >
-              Collapse All
+
+            {hasPermission('categories.create') && (
+              <button
+                type="button"
+                onClick={() => setIsBulkAddModalOpen(true)}
+                className="inline-flex items-center gap-1.5 bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200/80 font-bold text-xs px-3.5 py-2 rounded-xl shadow-2xs transition-colors cursor-pointer active:scale-95"
+                title="Add multiple categories using table spreadsheet"
+              >
+                <Table className="w-3.5 h-3.5 text-purple-700" />
+                <span>+ Add via Table</span>
+              </button>
+            )}
+
+            {hasPermission('categories.create') && (
+              <button
+                type="button"
+                onClick={() => openAddModal()}
+                className="inline-flex items-center gap-1.5 bg-[#08275E] hover:bg-[#103b8c] text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-xs transition-colors cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5 text-[#FFD21C]" />
+                <span>Add Category (Card)</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {error && (
+          <div className="bg-rose-50 border border-rose-200 p-4 rounded-xl flex items-center gap-3 text-rose-800 text-xs">
+            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+            <div className="flex-1 font-medium">{error}</div>
+            <button onClick={() => setError(null)} className="text-rose-500 hover:text-rose-700 font-bold">
+              Dismiss
             </button>
-            <ColumnVisibilityDropdown
-              columns={columns}
-              onChange={setColumns}
-              storageKey="dsl_admin_categories_cols"
+          </div>
+        )}
+
+        {successMsg && (
+          <div className="bg-blue-50 border border-blue-200 p-4 rounded-xl flex items-center gap-3 text-[#08275E] text-xs">
+            <Check className="w-4 h-4 text-[#0066CC] shrink-0" />
+            <div className="flex-1 font-medium">{successMsg}</div>
+            <button onClick={() => setSuccessMsg(null)} className="text-[#0066CC] hover:text-[#08275E] font-bold">
+              Dismiss
+            </button>
+          </div>
+        )}
+
+        {/* Categories Analytics Suite: Radar Structure & Leaders */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="lg:col-span-7">
+            <CategoryStructureChart
+              data={analytics?.topCategories || []}
+              rootCount={analytics?.parentCategories ?? rootCategories.length}
+              subCount={analytics?.subcategories ?? categories.reduce((sum, c) => sum + (c.children?.length ?? 0), 0)}
+              activeCount={analytics?.totalCategories ?? categories.length}
+              inactiveCount={0}
             />
           </div>
-        }
-      >
-        <select
-          value={hierarchyFilter}
-          onChange={(e) => setHierarchyFilter(e.target.value as any)}
-          className="px-2.5 py-2 text-xs rounded-lg border border-slate-300 bg-white font-medium text-slate-700 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+          <div className="lg:col-span-5">
+            <CategoryLeadersCard
+              categories={analytics?.topCategories || []}
+              totalProducts={
+                analytics?.topCategories?.reduce((acc, c) => acc + c.count, 0) || 1
+              }
+            />
+          </div>
+        </div>
+
+        {/* Quick Filter Navigation Tabs */}
+        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100">
+          <button
+            type="button"
+            onClick={handleClearAllFilters}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-2xs ${hierarchyFilter === 'all' && productFilter === 'all'
+              ? 'bg-[#08275E] text-white shadow-xs'
+              : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+              }`}
+          >
+            All Categories ({analytics?.totalCategories ?? categories.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setHierarchyFilter('roots');
+              setProductFilter('all');
+            }}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-2xs ${hierarchyFilter === 'roots'
+              ? 'bg-[#08275E] text-white'
+              : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+              }`}
+          >
+            Root Categories ({analytics?.parentCategories ?? rootCategories.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setHierarchyFilter('subs');
+              setProductFilter('all');
+            }}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-2xs ${hierarchyFilter === 'subs'
+              ? 'bg-[#08275E] text-white'
+              : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+              }`}
+          >
+            Subcategories ({analytics?.subcategories ?? 0})
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setHierarchyFilter('all');
+              setProductFilter('with_products');
+            }}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-2xs ${productFilter === 'with_products'
+              ? 'bg-blue-600 text-white'
+              : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+              }`}
+          >
+            With Products ({analytics?.categoriesWithProducts ?? '-'})
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setHierarchyFilter('all');
+              setProductFilter('empty');
+            }}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-2xs ${productFilter === 'empty'
+              ? 'bg-amber-600 text-white'
+              : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+              }`}
+          >
+            Empty Categories ({analytics?.emptyCategories ?? '-'})
+          </button>
+        </div>
+
+        {/* Filter and Search Toolbar */}
+        <CatalogFilterToolbar
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          searchPlaceholder="Search category name, slug, or description..."
+          activeChips={activeChips}
+          onClearAll={handleClearAllFilters}
+          totalResults={filteredTree.length}
+          rightAction={
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={expandAll}
+                className="px-2.5 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg border border-slate-200"
+                title="Expand all tree nodes"
+              >
+                Expand All
+              </button>
+              <button
+                type="button"
+                onClick={collapseAll}
+                className="px-2.5 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg border border-slate-200"
+                title="Collapse all tree nodes"
+              >
+                Collapse All
+              </button>
+              <ColumnVisibilityDropdown
+                columns={columns}
+                onChange={setColumns}
+                storageKey="dsl_admin_categories_cols"
+              />
+            </div>
+          }
         >
-          <option value="all">All Hierarchy Levels</option>
-          <option value="roots">Parent Categories Only</option>
-          <option value="subs">Subcategories Only</option>
-        </select>
+          <select
+            value={hierarchyFilter}
+            onChange={(e) => setHierarchyFilter(e.target.value as any)}
+            className="px-2.5 py-2 text-xs rounded-lg border border-slate-300 bg-white font-medium text-slate-700 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+          >
+            <option value="all">All Hierarchy Levels</option>
+            <option value="roots">Parent Categories Only</option>
+            <option value="subs">Subcategories Only</option>
+          </select>
 
-        <select
-          value={productFilter}
-          onChange={(e) => setProductFilter(e.target.value as any)}
-          className="px-2.5 py-2 text-xs rounded-lg border border-slate-300 bg-white font-medium text-slate-700 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-        >
-          <option value="all">All Product Counts</option>
-          <option value="with_products">Categories With Products</option>
-          <option value="empty">Empty Categories</option>
-        </select>
-      </CatalogFilterToolbar>
+          <select
+            value={productFilter}
+            onChange={(e) => setProductFilter(e.target.value as any)}
+            className="px-2.5 py-2 text-xs rounded-lg border border-slate-300 bg-white font-medium text-slate-700 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+          >
+            <option value="all">All Product Counts</option>
+            <option value="with_products">Categories With Products</option>
+            <option value="empty">Empty Categories</option>
+          </select>
+        </CatalogFilterToolbar>
 
-      {/* Categories Hierarchy Table */}
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead>
-              <tr className="bg-slate-50 text-slate-500 border-b border-slate-200">
-                {isColVisible('name') && <th className="py-3 px-4 font-bold">Category Hierarchy</th>}
-                {isColVisible('id') && <th className="py-3 px-3 font-bold">Category ID</th>}
-                {isColVisible('slug') && <th className="py-3 px-3 font-bold">Slug</th>}
-                {isColVisible('directProducts') && <th className="py-3 px-3 font-bold">Direct Products</th>}
-                {isColVisible('totalProducts') && <th className="py-3 px-3 font-bold">Total Products</th>}
-                {isColVisible('subcategories') && <th className="py-3 px-3 font-bold">Subcategories</th>}
-                {isColVisible('featured') && <th className="py-3 px-3 font-bold">Featured</th>}
-                {isColVisible('displayOrder') && <th className="py-3 px-3 font-bold">Order</th>}
-                {isColVisible('actions') && <th className="py-3 px-4 font-bold text-right">Actions</th>}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {isLoading && categories.length === 0 ? (
-                <tr>
-                  <td colSpan={9} className="py-12 text-center text-slate-400">
-                    <div className="inline-flex items-center gap-2">
-                      <RotateCcw className="w-4 h-4 animate-spin text-blue-600" />
-                      <span>Loading category hierarchy...</span>
-                    </div>
-                  </td>
+        {/* Categories Hierarchy Table */}
+        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr className="bg-slate-50 text-slate-500 border-b border-slate-200">
+                  {isColVisible('name') && <th className="py-3 px-4 font-bold">Category Hierarchy</th>}
+                  {isColVisible('id') && <th className="py-3 px-3 font-bold">Category ID</th>}
+                  {isColVisible('slug') && <th className="py-3 px-3 font-bold">Slug</th>}
+                  {isColVisible('directProducts') && <th className="py-3 px-3 font-bold">Direct Products</th>}
+                  {isColVisible('totalProducts') && <th className="py-3 px-3 font-bold">Total Products</th>}
+                  {isColVisible('subcategories') && <th className="py-3 px-3 font-bold">Subcategories</th>}
+                  {isColVisible('featured') && <th className="py-3 px-3 font-bold">Featured</th>}
+                  {isColVisible('displayOrder') && <th className="py-3 px-3 font-bold">Order</th>}
+                  {isColVisible('actions') && <th className="py-3 px-4 font-bold text-right">Actions</th>}
                 </tr>
-              ) : filteredTree.length === 0 ? (
-                <tr>
-                  <td colSpan={9} className="py-12 text-center text-slate-400">
-                    <div className="flex flex-col items-center justify-center gap-1">
-                      <Folder className="w-8 h-8 text-slate-300 mb-1" />
-                      <p className="font-semibold text-slate-600">No categories match your filters</p>
-                      <p className="text-[11px] text-slate-400">Try adjusting search or level filters</p>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                filteredTree.map((root) => {
-                  const isCollapsed = !!collapsedRoots[root.id];
-                  const hasChildren = (root.children || []).length > 0;
-                  const directCount = root.directProductCount ?? 0;
-                  const totalCount = root.itemCount ?? directCount;
-                  const subCount = root.children?.length ?? 0;
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {isLoading && categories.length === 0 ? (
+                  <tr>
+                    <td colSpan={9} className="py-12 text-center text-slate-400">
+                      <div className="inline-flex items-center gap-2">
+                        <RotateCcw className="w-4 h-4 animate-spin text-blue-600" />
+                        <span>Loading category hierarchy...</span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : filteredTree.length === 0 ? (
+                  <tr>
+                    <td colSpan={9} className="py-12 text-center text-slate-400">
+                      <div className="flex flex-col items-center justify-center gap-1">
+                        <Folder className="w-8 h-8 text-slate-300 mb-1" />
+                        <p className="font-semibold text-slate-600">No categories match your filters</p>
+                        <p className="text-[11px] text-slate-400">Try adjusting search or level filters</p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredTree.map((root) => {
+                    const isCollapsed = !!collapsedRoots[root.id];
+                    const hasChildren = (root.children || []).length > 0;
+                    const directCount = root.directProductCount ?? 0;
+                    const totalCount = root.itemCount ?? directCount;
+                    const subCount = root.children?.length ?? 0;
 
-                  return (
-                    <React.Fragment key={root.id}>
-                      {/* Parent Root Row */}
-                      <tr className="hover:bg-slate-50/80 transition-colors bg-white font-medium">
-                        {isColVisible('name') && (
-                          <td className="py-3 px-4">
-                            <div className="flex items-center gap-2.5">
-                              {hasChildren ? (
-                                <button
-                                  type="button"
-                                  onClick={() => toggleCollapse(root.id)}
-                                  className="p-1 rounded hover:bg-slate-200 text-slate-600 transition-colors"
-                                  title={isCollapsed ? 'Expand subcategories' : 'Collapse subcategories'}
-                                >
-                                  {isCollapsed ? (
-                                    <ChevronRight className="w-4 h-4" />
-                                  ) : (
-                                    <ChevronDown className="w-4 h-4" />
-                                  )}
-                                </button>
-                              ) : (
-                                <span className="w-6 inline-block" />
-                              )}
+                    return (
+                      <React.Fragment key={root.id}>
+                        {/* Parent Root Row */}
+                        <tr className="hover:bg-slate-50/80 bg-white transition-colors font-medium">
+                          {isColVisible('name') && (
+                            <td className="py-3 px-4">
+                              <div className="flex items-center gap-2.5">
+                                {hasChildren ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleCollapse(root.id)}
+                                    className="p-1 rounded hover:bg-slate-200 text-slate-600 transition-colors"
+                                    title={isCollapsed ? 'Expand subcategories' : 'Collapse subcategories'}
+                                  >
+                                    {isCollapsed ? (
+                                      <ChevronRight className="w-4 h-4" />
+                                    ) : (
+                                      <ChevronDown className="w-4 h-4" />
+                                    )}
+                                  </button>
+                                ) : (
+                                  <span className="w-6 inline-block" />
+                                )}
 
-                              <button
-                                type="button"
-                                onClick={() => setViewingCategoryProducts(root)}
-                                className="p-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors cursor-pointer"
-                                title={`View products in ${root.name}`}
-                              >
-                                {isCollapsed ? <Folder className="w-4 h-4" /> : <FolderOpen className="w-4 h-4" />}
-                              </button>
-
-                              <div className="text-left">
                                 <button
                                   type="button"
                                   onClick={() => setViewingCategoryProducts(root)}
-                                  className="font-bold text-slate-900 text-sm hover:text-blue-600 transition-colors cursor-pointer group flex items-center gap-1.5"
+                                  className="p-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors cursor-pointer"
                                   title={`View products in ${root.name}`}
                                 >
-                                  <span>{root.name}</span>
-                                  <Eye className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                                  {isCollapsed ? <Folder className="w-4 h-4" /> : <FolderOpen className="w-4 h-4" />}
                                 </button>
-                                {root.description && (
-                                  <p className="text-[11px] text-slate-400 truncate max-w-xs">
-                                    {root.description}
-                                  </p>
-                                )}
+
+                                <div className="text-left">
+                                  <button
+                                    type="button"
+                                    onClick={() => setViewingCategoryProducts(root)}
+                                    className="font-bold text-slate-900 text-sm hover:text-blue-600 transition-colors cursor-pointer group flex items-center gap-1.5"
+                                    title={`View products in ${root.name}`}
+                                  >
+                                    <span>{root.name}</span>
+                                    <Eye className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                                  </button>
+                                  {root.description && (
+                                    <p className="text-[11px] text-slate-400 truncate max-w-xs">
+                                      {root.description}
+                                    </p>
+                                  )}
+                                </div>
                               </div>
-                            </div>
-                          </td>
-                        )}
+                            </td>
+                          )}
 
-                        {isColVisible('id') && (
-                          <td className="py-3 px-3 font-mono text-[10px] text-slate-400 truncate max-w-[120px]" title={root.id}>
-                            {root.id}
-                          </td>
-                        )}
+                          {isColVisible('id') && (
+                            <td className="py-3 px-3 font-mono text-[10px] text-slate-400 truncate max-w-[120px]" title={root.id}>
+                              {root.id}
+                            </td>
+                          )}
 
-                        {isColVisible('slug') && (
-                          <td className="py-3 px-3 font-mono text-slate-500 whitespace-nowrap">
-                            {root.slug}
-                          </td>
-                        )}
+                          {isColVisible('slug') && (
+                            <td className="py-3 px-3 font-mono text-slate-500 whitespace-nowrap">
+                              {root.slug}
+                            </td>
+                          )}
 
-                        {isColVisible('directProducts') && (
-                          <td className="py-3 px-3">
-                            <button
-                              type="button"
-                              onClick={() => setViewingCategoryProducts(root)}
-                              className="font-bold text-slate-800 hover:text-blue-600 hover:underline cursor-pointer transition-colors"
-                              title={`View ${directCount} products in ${root.name}`}
-                            >
-                              {directCount}
-                            </button>
-                          </td>
-                        )}
-
-                        {isColVisible('totalProducts') && (
-                          <td className="py-3 px-3">
-                            <button
-                              type="button"
-                              onClick={() => setViewingCategoryProducts(root)}
-                              className="inline-flex items-center gap-1 font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 px-2.5 py-0.5 rounded-full text-xs transition-colors cursor-pointer"
-                              title={`View all ${totalCount} products in ${root.name}`}
-                            >
-                              <span>{totalCount}</span>
-                              <ExternalLink className="w-2.5 h-2.5 text-blue-500" />
-                            </button>
-                          </td>
-                        )}
-
-                        {isColVisible('subcategories') && (
-                          <td className="py-3 px-3">
-                            <span className="font-medium text-slate-600">
-                              {subCount} {subCount === 1 ? 'sub' : 'subs'}
-                            </span>
-                          </td>
-                        )}
-
-                        {isColVisible('featured') && (
-                          <td className="py-3 px-3 whitespace-nowrap">
-                            {root.featured ? (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
-                                Featured
-                              </span>
-                            ) : (
-                              <span className="text-slate-400 text-xs">No</span>
-                            )}
-                          </td>
-                        )}
-
-                        {isColVisible('displayOrder') && (
-                          <td className="py-3 px-3 text-slate-600 font-mono">
-                            {root.displayOrder ?? 0}
-                          </td>
-                        )}
-
-                        {isColVisible('actions') && (
-                          <td className="py-3 px-4 text-right whitespace-nowrap">
-                            <div className="flex items-center justify-end gap-1">
+                          {isColVisible('directProducts') && (
+                            <td className="py-3 px-3">
                               <button
                                 type="button"
                                 onClick={() => setViewingCategoryProducts(root)}
-                                className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
-                                title="View products in this category"
+                                className="font-bold text-slate-800 hover:text-blue-600 hover:underline cursor-pointer transition-colors"
+                                title={`View ${directCount} products in ${root.name}`}
                               >
-                                <Eye className="w-3.5 h-3.5" />
+                                {directCount}
                               </button>
-                              {hasPermission('categories.create') && (
-                                <button
-                                  type="button"
-                                  onClick={() => openAddModal(root.id)}
-                                  className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                  title="Add subcategory"
-                                >
-                                  <Plus className="w-3.5 h-3.5" />
-                                </button>
-                              )}
-                              {hasPermission('categories.edit') && (
-                                <button
-                                  type="button"
-                                  onClick={() => openEditModal(root)}
-                                  className="p-1.5 text-slate-500 hover:text-blue-700 hover:bg-slate-100 rounded-lg transition-colors"
-                                  title="Edit category"
-                                >
-                                  <Edit2 className="w-3.5 h-3.5" />
-                                </button>
-                              )}
-                              {hasPermission('categories.delete') && (
-                                <button
-                                  type="button"
-                                  onClick={() => handleDeleteCategory(root)}
-                                  disabled={isMutating}
-                                  className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-                                  title="Delete category"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-                              )}
-                            </div>
-                          </td>
-                        )}
-                      </tr>
+                            </td>
+                          )}
 
-                      {/* Subcategories (if expanded) */}
-                      {!isCollapsed &&
-                        (root.children || []).map((child, idx, arr) => {
-                          const isLast = idx === arr.length - 1;
-                          const childDirect = child.directProductCount ?? child.itemCount ?? 0;
+                          {isColVisible('totalProducts') && (
+                            <td className="py-3 px-3">
+                              <button
+                                type="button"
+                                onClick={() => setViewingCategoryProducts(root)}
+                                className="inline-flex items-center gap-1 font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 px-2.5 py-0.5 rounded-full text-xs transition-colors cursor-pointer"
+                                title={`View all ${totalCount} products in ${root.name}`}
+                              >
+                                <span>{totalCount}</span>
+                                <ExternalLink className="w-2.5 h-2.5 text-blue-500" />
+                              </button>
+                            </td>
+                          )}
 
-                          return (
-                            <tr
-                              key={child.id}
-                              className="hover:bg-blue-50/30 transition-colors bg-slate-50/40 text-xs"
-                            >
-                              {isColVisible('name') && (
-                                <td className="py-2.5 px-4 pl-12">
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-slate-400 font-mono select-none">
-                                      {isLast ? '└──' : '├──'}
-                                    </span>
-                                    <CornerDownRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                                    <div className="text-left">
-                                      <button
-                                        type="button"
-                                        onClick={() => setViewingCategoryProducts(child)}
-                                        className="font-semibold text-slate-800 hover:text-blue-600 transition-colors cursor-pointer group flex items-center gap-1.5"
-                                        title={`View products in ${child.name}`}
-                                      >
-                                        <span>{child.name}</span>
-                                        <Eye className="w-3 h-3 text-slate-400 group-hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-                                      </button>
-                                      {child.description && (
-                                        <p className="text-[10px] text-slate-400 truncate max-w-xs">
-                                          {child.description}
-                                        </p>
-                                      )}
+                          {isColVisible('subcategories') && (
+                            <td className="py-3 px-3">
+                              <span className="font-medium text-slate-600">
+                                {subCount} {subCount === 1 ? 'sub' : 'subs'}
+                              </span>
+                            </td>
+                          )}
+
+                          {isColVisible('featured') && (
+                            <td className="py-3 px-3 whitespace-nowrap">
+                              {root.featured ? (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
+                                  Featured
+                                </span>
+                              ) : (
+                                <span className="text-slate-400 text-xs">No</span>
+                              )}
+                            </td>
+                          )}
+
+                          {isColVisible('displayOrder') && (
+                            <td className="py-3 px-3 text-slate-600 font-mono">
+                              {root.displayOrder ?? 0}
+                            </td>
+                          )}
+
+                          {isColVisible('actions') && (
+                            <td className="py-3 px-4 text-right whitespace-nowrap">
+                              <div className="flex items-center justify-end gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() => setViewingCategoryProducts(root)}
+                                  className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                                  title="View products in this category"
+                                >
+                                  <Eye className="w-3.5 h-3.5" />
+                                </button>
+                                {hasPermission('categories.create') && (
+                                  <button
+                                    type="button"
+                                    onClick={() => openAddModal(root.id)}
+                                    className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                    title="Add subcategory"
+                                  >
+                                    <Plus className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
+                                {hasPermission('categories.edit') && (
+                                  <button
+                                    type="button"
+                                    onClick={() => openEditModal(root)}
+                                    className="p-1.5 text-slate-500 hover:text-blue-700 hover:bg-slate-100 rounded-lg transition-colors"
+                                    title="Edit category"
+                                  >
+                                    <Edit2 className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
+                                {hasPermission('categories.delete') && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteCategory(root)}
+                                    disabled={isMutating}
+                                    className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                                    title="Delete category"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          )}
+                        </tr>
+
+                        {/* Subcategories (if expanded) */}
+                        {!isCollapsed &&
+                          (root.children || []).map((child, idx, arr) => {
+                            const isLast = idx === arr.length - 1;
+                            const childDirect = child.directProductCount ?? child.itemCount ?? 0;
+
+                            return (
+                              <tr
+                                key={child.id}
+                                className="hover:bg-blue-50/30 bg-slate-50/40 transition-colors text-xs"
+                              >
+                                {isColVisible('name') && (
+                                  <td className="py-2.5 px-4 pl-12">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-slate-400 font-mono select-none">
+                                        {isLast ? '└──' : '├──'}
+                                      </span>
+                                      <CornerDownRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                                      <div className="text-left">
+                                        <button
+                                          type="button"
+                                          onClick={() => setViewingCategoryProducts(child)}
+                                          className="font-semibold text-slate-800 hover:text-blue-600 transition-colors cursor-pointer group flex items-center gap-1.5"
+                                          title={`View products in ${child.name}`}
+                                        >
+                                          <span>{child.name}</span>
+                                          <Eye className="w-3 h-3 text-slate-400 group-hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                                        </button>
+                                        {child.description && (
+                                          <p className="text-[10px] text-slate-400 truncate max-w-xs">
+                                            {child.description}
+                                          </p>
+                                        )}
+                                      </div>
                                     </div>
-                                  </div>
-                                </td>
-                              )}
+                                  </td>
+                                )}
 
-                              {isColVisible('id') && (
-                                <td className="py-2.5 px-3 font-mono text-[10px] text-slate-400 truncate max-w-[120px]" title={child.id}>
-                                  {child.id}
-                                </td>
-                              )}
+                                {isColVisible('id') && (
+                                  <td className="py-2.5 px-3 font-mono text-[10px] text-slate-400 truncate max-w-[120px]" title={child.id}>
+                                    {child.id}
+                                  </td>
+                                )}
 
-                              {isColVisible('slug') && (
-                                <td className="py-2.5 px-3 font-mono text-slate-500 whitespace-nowrap">
-                                  {child.slug}
-                                </td>
-                              )}
+                                {isColVisible('slug') && (
+                                  <td className="py-2.5 px-3 font-mono text-slate-500 whitespace-nowrap">
+                                    {child.slug}
+                                  </td>
+                                )}
 
-                              {isColVisible('directProducts') && (
-                                <td className="py-2.5 px-3 font-semibold text-slate-700">
-                                  <button
-                                    type="button"
-                                    onClick={() => setViewingCategoryProducts(child)}
-                                    className="font-semibold text-slate-700 hover:text-blue-600 hover:underline cursor-pointer transition-colors"
-                                    title={`View ${childDirect} products in ${child.name}`}
-                                  >
-                                    {childDirect}
-                                  </button>
-                                </td>
-                              )}
-
-                              {isColVisible('totalProducts') && (
-                                <td className="py-2.5 px-3 font-semibold text-slate-700">
-                                  <button
-                                    type="button"
-                                    onClick={() => setViewingCategoryProducts(child)}
-                                    className="inline-flex items-center gap-1 font-semibold text-blue-700 bg-blue-50/70 hover:bg-blue-100 px-2 py-0.5 rounded-full text-[11px] cursor-pointer transition-colors"
-                                    title={`View ${childDirect} products in ${child.name}`}
-                                  >
-                                    <span>{childDirect}</span>
-                                    <ExternalLink className="w-2.5 h-2.5 text-blue-500" />
-                                  </button>
-                                </td>
-                              )}
-
-                              {isColVisible('subcategories') && (
-                                <td className="py-2.5 px-3 text-slate-400">-</td>
-                              )}
-
-                              {isColVisible('featured') && (
-                                <td className="py-2.5 px-3 text-slate-400 text-xs">
-                                  {child.featured ? 'Yes' : 'No'}
-                                </td>
-                              )}
-
-                              {isColVisible('displayOrder') && (
-                                <td className="py-2.5 px-3 text-slate-500 font-mono text-[11px]">
-                                  {child.displayOrder ?? 0}
-                                </td>
-                              )}
-
-                              {isColVisible('actions') && (
-                                <td className="py-2.5 px-4 text-right whitespace-nowrap">
-                                  <div className="flex items-center justify-end gap-1">
+                                {isColVisible('directProducts') && (
+                                  <td className="py-2.5 px-3 font-semibold text-slate-700">
                                     <button
                                       type="button"
                                       onClick={() => setViewingCategoryProducts(child)}
-                                      className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
-                                      title="View products in this subcategory"
+                                      className="font-semibold text-slate-700 hover:text-blue-600 hover:underline cursor-pointer transition-colors"
+                                      title={`View ${childDirect} products in ${child.name}`}
                                     >
-                                      <Eye className="w-3.5 h-3.5" />
+                                      {childDirect}
                                     </button>
-                                    {hasPermission('categories.edit') && (
+                                  </td>
+                                )}
+
+                                {isColVisible('totalProducts') && (
+                                  <td className="py-2.5 px-3 font-semibold text-slate-700">
+                                    <button
+                                      type="button"
+                                      onClick={() => setViewingCategoryProducts(child)}
+                                      className="inline-flex items-center gap-1 font-semibold text-blue-700 bg-blue-50/70 hover:bg-blue-100 px-2 py-0.5 rounded-full text-[11px] cursor-pointer transition-colors"
+                                      title={`View ${childDirect} products in ${child.name}`}
+                                    >
+                                      <span>{childDirect}</span>
+                                      <ExternalLink className="w-2.5 h-2.5 text-blue-500" />
+                                    </button>
+                                  </td>
+                                )}
+
+                                {isColVisible('subcategories') && (
+                                  <td className="py-2.5 px-3 text-slate-400">-</td>
+                                )}
+
+                                {isColVisible('featured') && (
+                                  <td className="py-2.5 px-3 text-slate-400 text-xs">
+                                    {child.featured ? 'Yes' : 'No'}
+                                  </td>
+                                )}
+
+                                {isColVisible('displayOrder') && (
+                                  <td className="py-2.5 px-3 text-slate-500 font-mono text-[11px]">
+                                    {child.displayOrder ?? 0}
+                                  </td>
+                                )}
+
+                                {isColVisible('actions') && (
+                                  <td className="py-2.5 px-4 text-right whitespace-nowrap">
+                                    <div className="flex items-center justify-end gap-1">
                                       <button
                                         type="button"
-                                        onClick={() => openEditModal(child)}
-                                        className="p-1.5 text-slate-500 hover:text-blue-700 hover:bg-slate-100 rounded-lg transition-colors"
-                                        title="Edit subcategory"
+                                        onClick={() => setViewingCategoryProducts(child)}
+                                        className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                                        title="View products in this subcategory"
                                       >
-                                        <Edit2 className="w-3.5 h-3.5" />
+                                        <Eye className="w-3.5 h-3.5" />
                                       </button>
-                                    )}
-                                    {hasPermission('categories.delete') && (
-                                      <button
-                                        type="button"
-                                        onClick={() => handleDeleteCategory(child)}
-                                        disabled={isMutating}
-                                        className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-                                        title="Delete subcategory"
-                                      >
-                                        <Trash2 className="w-3.5 h-3.5" />
-                                      </button>
-                                    )}
-                                  </div>
-                                </td>
-                              )}
-                            </tr>
-                          );
-                        })}
-                    </React.Fragment>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+                                      {hasPermission('categories.edit') && (
+                                        <button
+                                          type="button"
+                                          onClick={() => openEditModal(child)}
+                                          className="p-1.5 text-slate-500 hover:text-blue-700 hover:bg-slate-100 rounded-lg transition-colors"
+                                          title="Edit subcategory"
+                                        >
+                                          <Edit2 className="w-3.5 h-3.5" />
+                                        </button>
+                                      )}
+                                      {hasPermission('categories.delete') && (
+                                        <button
+                                          type="button"
+                                          onClick={() => handleDeleteCategory(child)}
+                                          disabled={isMutating}
+                                          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                                          title="Delete subcategory"
+                                        >
+                                          <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                      )}
+                                    </div>
+                                  </td>
+                                )}
+                              </tr>
+                            );
+                          })}
+                      </React.Fragment>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
 
-      {/* Category Products Modal */}
-      <CategoryProductsModal
-        category={viewingCategoryProducts}
-        onClose={() => setViewingCategoryProducts(null)}
-        allCategories={categories}
-      />
+        {/* Bulk Add Categories Table Modal */}
+        <BulkAddCategoriesModal
+          isOpen={isBulkAddModalOpen}
+          onClose={() => setIsBulkAddModalOpen(false)}
+          existingCategories={categories}
+          onSuccess={loadData}
+        />
 
-      {/* Export Modal */}
-      <CatalogExportModal
-        isOpen={isExportModalOpen}
-        onClose={() => setIsExportModalOpen(false)}
-        onExport={handleExport}
-        title="Export Categories Dataset"
-        totalFilteredCount={filteredTree.length}
-      />
+        {/* Category Products Modal */}
+        <CategoryProductsModal
+          category={viewingCategoryProducts}
+          onClose={() => setViewingCategoryProducts(null)}
+          allCategories={categories}
+        />
 
-      {/* Create / Edit Category Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 max-w-md w-full space-y-4 shadow-xl">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="text-base font-bold text-slate-900">
-                {editingCategory ? `Edit "${editingCategory.name}"` : 'Add New Category'}
-              </h3>
-              <button
-                type="button"
-                onClick={closeModal}
-                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+        {/* Export Modal */}
+        <CatalogExportModal
+          isOpen={isExportModalOpen}
+          onClose={() => setIsExportModalOpen(false)}
+          onExport={handleExport}
+          title="Export Categories Dataset"
+          totalFilteredCount={filteredTree.length}
+        />
 
-            <form onSubmit={handleFormSubmit} className="space-y-4 text-xs">
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">
-                  Category Name <span className="text-rose-600">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="e.g. Writing Instruments"
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">
-                  URL Slug (Optional - auto generated if blank)
-                </label>
-                <input
-                  type="text"
-                  value={formData.slug}
-                  onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                  placeholder="e.g. writing-instruments"
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 font-mono focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">
-                  Parent Category (Hierarchy Level)
-                </label>
-                <select
-                  value={formData.parentId}
-                  onChange={(e) => setFormData({ ...formData, parentId: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none font-medium"
-                >
-                  <option value="">None (Top-Level Root Category)</option>
-                  {rootCategories
-                    .filter((c) => c.id !== editingCategory?.id)
-                    .map((r) => (
-                      <option key={r.id} value={r.id}>
-                        Parent: {r.name}
-                      </option>
-                    ))}
-                </select>
-                <p className="text-[11px] text-slate-400 mt-1">
-                  Selecting a parent nests this as a subcategory.
-                </p>
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">Description</label>
-                <textarea
-                  rows={2}
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Short description for SEO and catalog navigation..."
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">Display Order</label>
-                <input
-                  type="number"
-                  value={formData.displayOrder}
-                  onChange={(e) => setFormData({ ...formData, displayOrder: Number(e.target.value) })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                />
-              </div>
-
-              <div className="flex gap-2 justify-end pt-3 border-t border-slate-100">
+        {/* Create / Edit Category Modal */}
+        {isModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in">
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 max-w-md w-full space-y-4 shadow-xl">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                <h3 className="text-base font-bold text-slate-900">
+                  {editingCategory ? `Edit "${editingCategory.name}"` : 'Add New Category'}
+                </h3>
                 <button
                   type="button"
                   onClick={closeModal}
-                  disabled={isMutating}
-                  className="px-4 py-2 rounded-xl font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
+                  className="text-slate-400 hover:text-slate-600 p-1 rounded-lg"
                 >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isMutating}
-                  className="px-5 py-2 rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white transition-colors disabled:opacity-50"
-                >
-                  {isMutating ? 'Saving...' : editingCategory ? 'Update Category' : 'Create Category'}
+                  <X className="w-5 h-5" />
                 </button>
               </div>
-            </form>
+
+              <form onSubmit={handleFormSubmit} className="space-y-4 text-xs">
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    Category Name <span className="text-rose-600">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    placeholder="e.g. Writing Instruments"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    URL Slug (Optional - auto generated if blank)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.slug}
+                    onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                    placeholder="e.g. writing-instruments"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 font-mono focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    Parent Category (Hierarchy Level)
+                  </label>
+                  <SearchableSelect
+                    value={formData.parentId}
+                    onChange={(val) => setFormData({ ...formData, parentId: val })}
+                    placeholder="None (Creates as a Main / Parent Category)"
+                    searchPlaceholder="Type to search parent category..."
+                    options={[
+                      { value: '', label: 'None (Creates as a Main / Parent Category)', badge: 'Main Parent' },
+                      ...rootCategories
+                        .filter((c) => c.id !== editingCategory?.id)
+                        .map((r) => ({
+                          value: r.id,
+                          label: r.name,
+                          sublabel: r.slug,
+                          badge: 'Parent',
+                        })),
+                    ]}
+                  />
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    Selecting a parent nests this as a subcategory.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">Description</label>
+                  <textarea
+                    rows={2}
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    placeholder="Short description for SEO and catalog navigation..."
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">Display Order</label>
+                  <input
+                    type="number"
+                    value={formData.displayOrder}
+                    onChange={(e) => setFormData({ ...formData, displayOrder: Number(e.target.value) })}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  />
+                </div>
+
+                <div className="flex gap-2 justify-end pt-3 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={closeModal}
+                    disabled={isMutating}
+                    className="px-4 py-2 rounded-xl font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isMutating}
+                    className="px-5 py-2 rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white transition-colors disabled:opacity-50"
+                  >
+                    {isMutating ? 'Saving...' : editingCategory ? 'Update Category' : 'Create Category'}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
-      )}
-      {/* GitHub-Style Typed Delete Confirmation Modal for Any Authorized Admin */}
-      <SensitiveActionConfirmationModal
-        isOpen={Boolean(pendingDeleteCategory)}
-        onClose={() => setPendingDeleteCategory(null)}
-        actionTitle={`Delete Category: "${pendingDeleteCategory?.name || 'Category'}"`}
-        actionDescription="Permanently removing this category from store taxonomy and customer navigation"
-        targetResourceType="Category"
-        targetResourceName={pendingDeleteCategory?.name}
-        expectedConfirmationPhrase={pendingDeleteCategory?.name || ''}
-        confirmButtonLabel="Confirm & Delete Category"
-        impactWarning="Deleting this category removes it from navigation menus and product filters. Type the exact category name to proceed."
-        onConfirmed={async (phrase) => {
-          if (pendingDeleteCategory) {
-            await executeDeleteCategory(pendingDeleteCategory, phrase);
-          }
-        }}
-      />
-    </div>
+        )}
+        {/* GitHub-Style Typed Delete Confirmation Modal for Any Authorized Admin */}
+        <SensitiveActionConfirmationModal
+          isOpen={Boolean(pendingDeleteCategory)}
+          onClose={() => setPendingDeleteCategory(null)}
+          actionTitle={`Delete Category: "${pendingDeleteCategory?.name || 'Category'}"`}
+          actionDescription="Permanently removing this category from store taxonomy and customer navigation"
+          targetResourceType="Category"
+          targetResourceName={pendingDeleteCategory?.name}
+          expectedConfirmationPhrase={pendingDeleteCategory?.name || ''}
+          confirmButtonLabel="Confirm & Delete Category"
+          impactWarning="Deleting this category removes it from navigation menus and product filters. Type the exact category name to proceed."
+          onConfirmed={async (phrase) => {
+            if (pendingDeleteCategory) {
+              await executeDeleteCategory(pendingDeleteCategory, phrase);
+            }
+          }}
+        />
+      </div>
     </AdminPageAccess>
   );
 }

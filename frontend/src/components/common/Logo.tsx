@@ -28,11 +28,11 @@ export const Logo: React.FC<LogoProps> = ({
         <img
           src="/images/dsl-logo-header.png"
           alt="DSL Enterprises (Pvt) Ltd"
-          className="h-10 sm:h-12 md:h-13 lg:h-14 w-auto object-contain transition-transform duration-200 group-hover:scale-[1.02]"
+          className="h-7.5 sm:h-8.5 md:h-9 lg:h-9.5 xl:h-10 2xl:h-11.5 w-auto object-contain transition-transform duration-200 group-hover:scale-[1.02]"
         />
         {showSubtitle && (
           <span
-            className={`text-[8.5px] sm:text-[9.5px] md:text-[10px] font-black uppercase tracking-[0.26em] pl-12 sm:pl-14 md:pl-16 -mt-0.5 hidden sm:block ${
+            className={`text-[8px] sm:text-[8.5px] md:text-[9px] font-black uppercase tracking-[0.24em] pl-10 sm:pl-12 md:pl-14 -mt-0.5 hidden sm:block ${
               isDark ? 'text-sky-200/90' : 'text-[#102A5E]/85'
             }`}
           >

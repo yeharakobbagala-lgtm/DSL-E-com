@@ -39,10 +39,12 @@ import { inventorySocketService } from '@/services/inventorySocketService';
 import { PaymentMethod, ShippingAddress } from '@/types/order';
 import { formatLKR } from '@/lib/currency';
 import { loadPayHereScript } from '@/lib/payhere';
+import { useTranslation } from '@/services/languageStore';
 import ReservationCountdown from '@/components/checkout/ReservationCountdown';
 import DeliveryLocationPicker, { DISTRICT_TO_PROVINCE_MAP } from '@/components/checkout/DeliveryLocationPicker';
 
 export default function CheckoutPage() {
+  const { t } = useTranslation();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -614,6 +616,23 @@ export default function CheckoutPage() {
             localStorage.removeItem('dsl_saved_guest_details');
           }
         } catch {}
+      } else if (currentUser && saveDetailsForFuture && (addresses.length === 0 || useCustomAddress)) {
+        try {
+          await useUserStore.getState().addAddress({
+            fullName: formData.fullName,
+            phone: formData.phone,
+            email: formData.email,
+            addressLine1: formData.addressLine1,
+            addressLine2: formData.addressLine2,
+            city: formData.city,
+            district: formData.district,
+            postalCode: formData.postalCode,
+            province: formData.province,
+            isDefault: addresses.length === 0,
+          });
+        } catch (addrErr) {
+          console.warn('Failed to save address to customer account:', addrErr);
+        }
       }
 
       // 3. Branching: PayHere Online Gateway vs Offline Payments
@@ -878,7 +897,7 @@ export default function CheckoutPage() {
       {/* Header and Status */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-[#09285C]">Checkout &amp; Delivery</h1>
+          <h1 className="text-2xl sm:text-3xl font-black text-[#09285C]">{t('checkout.title')}</h1>
           <p className="text-xs text-slate-500 mt-1">
             {currentUser ? (
               <span className="inline-flex items-center gap-1.5 text-emerald-700 font-semibold">
@@ -1149,7 +1168,7 @@ export default function CheckoutPage() {
             )}
 
             {/* Save details for future orders checkbox */}
-            {(!currentUser || useCustomAddress) && (
+            {(!currentUser || addresses.length === 0 || useCustomAddress) && (
               <div className="p-4 rounded-2xl bg-blue-50/70 border border-blue-200/80 flex items-start gap-3 transition-all hover:bg-blue-50">
                 <input
                   type="checkbox"
@@ -1164,7 +1183,9 @@ export default function CheckoutPage() {
                     <span>Save my details for faster checkout on future orders</span>
                   </span>
                   <span className="block text-[11px] text-slate-600 mt-0.5">
-                    We will remember your name, phone, email, and delivery address on this device so your next stationery orders are fast and effortless.
+                    {currentUser
+                      ? 'Save this delivery address to your account so you can reuse it with 1 click.'
+                      : 'We will remember your name, phone, email, and delivery address on this device so your next stationery orders are fast and effortless.'}
                   </span>
                 </label>
               </div>
@@ -1174,7 +1195,7 @@ export default function CheckoutPage() {
             <div className="bg-white rounded-3xl border border-[#C6E7FF]/60 p-6 sm:p-8 space-y-4 shadow-sm">
               <h2 className="text-base font-bold text-[#292525] flex items-center gap-2">
                 <CreditCard className="w-4 h-4 text-[#0066CC]" />
-                <span>Select Payment Method</span>
+                <span>{t('checkout.paymentMethod')}</span>
               </h2>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1192,10 +1213,10 @@ export default function CheckoutPage() {
                       <div>
                         <div className="flex items-center gap-1.5 font-bold text-xs text-[#292525]">
                           <CreditCard className="w-4 h-4 text-[#0066CC]" />
-                          <span>PayHere Online Payment</span>
+                          <span>{t('checkout.card')}</span>
                         </div>
                         <p className="text-[11px] text-[#292525]/60 mt-1">
-                          Visa, MasterCard, Genie, FriMi &amp; Internet Banking
+                          {t('checkout.cardDesc')}
                         </p>
                       </div>
                       <div
@@ -1227,10 +1248,10 @@ export default function CheckoutPage() {
                       <div>
                         <div className="flex items-center gap-1.5 font-bold text-xs text-[#292525]">
                           <Banknote className="w-4 h-4 text-emerald-600" />
-                          <span>Cash on Delivery (COD)</span>
+                          <span>{t('checkout.cod')}</span>
                         </div>
                         <p className="text-[11px] text-[#292525]/60 mt-1">
-                          Pay in cash upon doorstep delivery anywhere in Sri Lanka
+                          {t('checkout.codDesc')}
                         </p>
                       </div>
                       <div
@@ -1503,7 +1524,7 @@ export default function CheckoutPage() {
         <div className="lg:col-span-5 sticky top-24 space-y-6">
           <div className="bg-white rounded-3xl border border-slate-100 p-5 sm:p-7 space-y-6 shadow-xs">
             <h2 className="text-base font-bold text-[#09285C] border-b border-slate-100 pb-3 flex items-center justify-between">
-              <span>Order Summary</span>
+              <span>{t('checkout.orderSummary')}</span>
               <span className="text-xs font-semibold text-[#0866E8] bg-[#F7FAFF] px-2.5 py-1 rounded-full border border-blue-100">
                 {itemsToCheckout.length} {itemsToCheckout.length === 1 ? 'item' : 'items'} selected
               </span>
@@ -1555,7 +1576,7 @@ export default function CheckoutPage() {
             {/* Calculations Breakdown */}
             <div className="border-t border-slate-100 pt-4 space-y-2 text-xs">
               <div className="flex justify-between text-slate-600">
-                <span>Subtotal</span>
+                <span>{t('cart.subtotal')}</span>
                 <span className="font-medium text-[#09285C]">{formatLKR(displaySubtotalCents)}</span>
               </div>
 
@@ -1579,7 +1600,7 @@ export default function CheckoutPage() {
 
               {/* Delivery Fee line with free delivery breakdown */}
               <div className="flex justify-between text-slate-600">
-                <span>Islandwide Delivery</span>
+                <span>{t('cart.deliveryFee')}</span>
                 <span>
                   {displayDeliveryCents === 0 ? (
                     <span className="text-emerald-700 font-bold inline-flex items-center gap-1">
@@ -1604,7 +1625,7 @@ export default function CheckoutPage() {
 
               <div className="border-t border-slate-100 pt-3 flex justify-between items-baseline">
                 <div>
-                  <strong className="text-sm font-bold text-[#09285C]">Payable Total</strong>
+                  <strong className="text-sm font-bold text-[#09285C]">{t('cart.total')}</strong>
                   <span className="block text-[10px] text-slate-400">
                     Authoritative server total in LKR
                   </span>
@@ -1633,7 +1654,7 @@ export default function CheckoutPage() {
                 {isSubmitting ? (
                   <>
                     <RefreshCw className="w-4 h-4 animate-spin" />
-                    <span>Verifying Stock &amp; Payment...</span>
+                    <span>{t('action.placingOrder')}</span>
                   </>
                 ) : !selectedPaymentMethod || (!paymentSettings.onlineCardEnabled && !paymentSettings.codEnabled && !paymentSettings.bankTransferEnabled) ? (
                   <span>Select an Available Payment Method</span>
@@ -1648,7 +1669,7 @@ export default function CheckoutPage() {
                 ) : (
                   <>
                     <Lock className="w-4 h-4" />
-                    <span>Place Order &bull; {formatLKR(displayTotalCents)}</span>
+                    <span>{t('action.placeOrder')} &bull; {formatLKR(displayTotalCents)}</span>
                   </>
                 )}
               </button>

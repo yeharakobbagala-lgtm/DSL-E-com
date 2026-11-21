@@ -110,6 +110,13 @@ export const envSchema = z.object({
   MAIL_FROM_EMAIL: z.string().optional(),
   CONTACT_RECEIVER_EMAIL: z.string().optional(),
   EMAIL_PROVIDER_API_KEY: z.string().optional(),
+
+  // ─── SMS Gateway (SMSlenz Sri Lanka) ──────────────────────────────────────────
+  SMSLENZ_BASE_URL: z.string().optional().default('https://smslenz.lk'),
+  SMSLENZ_USER_ID: z.string().optional().default('1862'),
+  SMSLENZ_API_KEY: z.string().optional(),
+  SMSLENZ_SENDER_ID: z.string().optional().default('DARTCODES'),
+  OWNER_PHONE_NUMBER: z.string().optional().default('0710518229'),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;

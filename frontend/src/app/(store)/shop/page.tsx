@@ -19,6 +19,7 @@ import { Product, ProductCategory, Brand } from '@/types/product';
 import { FilterParams, SortOption } from '@/types/common';
 import { ProductCard } from '@/components/products/ProductCard';
 import { ProductFilters } from '@/components/products/ProductFilters';
+import { useTranslation } from '@/services/languageStore';
 
 function ProductCardSkeleton() {
   return (
@@ -38,6 +39,7 @@ function ProductCardSkeleton() {
 }
 
 function ShopContent() {
+  const { t } = useTranslation();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -209,7 +211,7 @@ function ShopContent() {
                   className="flex items-center gap-1.5 rounded-xl bg-[#09285C] hover:bg-[#0866E8] px-3.5 py-2.5 text-xs font-bold text-white shadow-xs lg:hidden shrink-0 touch-target cursor-pointer"
                 >
                   <SlidersHorizontal className="h-4 w-4" />
-                  <span>Filters</span>
+                  <span>{t('shop.filters')}</span>
                 </button>
 
                 {/* Direct Integrated Search Bar */}
@@ -218,7 +220,7 @@ function ShopContent() {
                     type="search"
                     value={searchInput}
                     onChange={(e) => setSearchInput(e.target.value)}
-                    placeholder="Search pens, books, calculators..."
+                    placeholder={t('nav.searchPlaceholder')}
                     aria-label="Search catalogue products"
                     className="w-full bg-[#F7FAFF] border border-slate-200 focus:border-[#0866E8] rounded-xl sm:rounded-full pl-9 pr-8 py-2 text-xs sm:text-sm text-[#09285C] placeholder-slate-400 focus:outline-hidden focus:bg-white focus:ring-2 focus:ring-[#0866E8]/20 transition-all font-medium"
                   />
@@ -240,7 +242,7 @@ function ShopContent() {
               <div className="flex items-center justify-between sm:justify-end gap-2 text-xs font-semibold text-[#09285C]/75 shrink-0 pt-1 sm:pt-0 border-t sm:border-t-0 border-slate-100">
                 <div className="flex items-center gap-1.5">
                   <ArrowUpDown className="h-3.5 w-3.5 text-[#0866E8]" />
-                  <span>Sort by:</span>
+                  <span>{t('shop.sortBy')}</span>
                 </div>
                 <select
                   value={sortBy}
@@ -248,12 +250,12 @@ function ShopContent() {
                   aria-label="Sort products by"
                   className="rounded-xl sm:rounded-full border border-slate-200 bg-[#F7FAFF] px-3 py-1.5 text-xs font-bold text-[#09285C] focus:outline-hidden focus:ring-2 focus:ring-[#0866E8] cursor-pointer"
                 >
-                  <option value="newest">Newest Arrivals</option>
-                  <option value="price_asc">Price: Low to High</option>
-                  <option value="price_desc">Price: High to Low</option>
-                  <option value="name_asc">Name: A to Z</option>
-                  <option value="name_desc">Name: Z to A</option>
-                  <option value="rating">Highest Rated</option>
+                  <option value="newest">{t('shop.newest')}</option>
+                  <option value="price_asc">{t('shop.priceLowHigh')}</option>
+                  <option value="price_desc">{t('shop.priceHighLow')}</option>
+                  <option value="name_asc">{t('shop.nameAZ')}</option>
+                  <option value="name_desc">{t('shop.nameZA')}</option>
+                  <option value="rating">{t('shop.rating')}</option>
                 </select>
               </div>
             </div>
@@ -262,7 +264,7 @@ function ShopContent() {
             {(filters.query || filters.category || filters.brand) && (
               <div className="flex flex-wrap items-center gap-2 px-1">
                 <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                  Active Filters:
+                  {t('shop.activeFilters')}
                 </span>
                 {filters.query && (
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-[#0866E8]/20 bg-[#EAF4FF] px-3 py-1 text-xs font-semibold text-[#0866E8]">

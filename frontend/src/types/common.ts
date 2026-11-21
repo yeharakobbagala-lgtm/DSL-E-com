@@ -12,7 +12,9 @@ export type SortOption =
   | 'name_asc'
   | 'name_desc'
   | 'newest'
-  | 'rating';
+  | 'rating'
+  | 'stock_asc'
+  | 'stock_desc';
 
 export interface FilterParams {
   category?: string;
@@ -28,6 +30,9 @@ export interface FilterParams {
   inStockOnly?: boolean;
   query?: string;
   featured?: boolean;
+  isFeatured?: boolean;
+  isBestSeller?: boolean;
+  isNewArrival?: boolean;
   onSale?: boolean;
   status?: 'active' | 'inactive' | 'all';
   stockStatus?: 'HEALTHY' | 'LOW_STOCK' | 'OUT_OF_STOCK' | 'all';

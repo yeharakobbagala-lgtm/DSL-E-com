@@ -1,6 +1,11 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
+import {
+  buildOrderConfirmationEmail,
+  OrderConfirmationEmailData,
+  OrderConfirmationEmailItem,
+} from './templates/order-confirmation.template';
 
 export class DefiniteDeliveryException extends Error {
   readonly isDefiniteFailure = true;
@@ -19,20 +24,32 @@ export class UncertainDeliveryTimeoutException extends Error {
 }
 
 export interface OrderNotificationPayload {
+  orderId?: string;
   orderNumber: string;
+  orderDate?: Date | string;
   customerName: string;
   customerEmail: string;
-  customerPhone: string;
+  customerPhone?: string;
+  subtotalCents?: number;
+  deliveryFeeCents?: number;
+  discountCents?: number;
   totalCents: number;
+  promoCode?: string | null;
   paymentMethod: string;
   paymentStatus: string;
-  deliveryAddress: string;
+  deliveryAddress: any;
+  trackingToken?: string | null;
+  orderUrl?: string;
   items: Array<{
+    productId?: string;
     productName: string;
     variantName?: string | null;
+    sku?: string | null;
     quantity: number;
     unitPriceCents: number;
     totalPriceCents: number;
+    imageUrl?: string | null;
+    customization?: any | null;
   }>;
 }
 
@@ -41,15 +58,18 @@ export class NotificationsService {
   private readonly logger = new Logger(NotificationsService.name);
   private transporter: nodemailer.Transporter | null = null;
   private readonly defaultFrom: string;
+  private readonly sentOrderConfirmationIds = new Set<string>();
 
   constructor(@Inject(ConfigService) private readonly configService: ConfigService) {
-    const host = this.configService.get<string>('SMTP_HOST') || process.env.SMTP_HOST;
+    const rawHost = this.configService.get<string>('SMTP_HOST');
+    const host = rawHost !== undefined ? rawHost : process.env.SMTP_HOST;
     const port = Number(this.configService.get<string | number>('SMTP_PORT', 587) || process.env.SMTP_PORT || 587);
     const secure =
       this.configService.get<string | boolean>('SMTP_SECURE') === true ||
       this.configService.get<string>('SMTP_SECURE') === 'true' ||
       process.env.SMTP_SECURE === 'true';
-    const user = this.configService.get<string>('SMTP_USER') || process.env.SMTP_USER;
+    const rawUser = this.configService.get<string>('SMTP_USER');
+    const user = rawUser !== undefined ? rawUser : process.env.SMTP_USER;
     const rawPass = this.configService.get<string>('SMTP_PASS') || process.env.SMTP_PASS || '';
     const pass = rawPass.replace(/\s+/g, '');
 
@@ -85,6 +105,7 @@ export class NotificationsService {
     subject: string;
     text: string;
     html?: string;
+    attachments?: Array<{ filename: string; path?: string; cid?: string; contentType?: string }>;
   }): Promise<{ success: boolean; messageId: string; deliveryStatus: 'DELIVERED' | 'SIMULATED' }> {
     if (this.transporter) {
       try {
@@ -94,6 +115,7 @@ export class NotificationsService {
           subject: options.subject,
           text: options.text,
           html: options.html,
+          attachments: options.attachments,
         });
         this.logger.log(`[EMAIL DISPATCHED] To: ${options.to} | Subject: "${options.subject}" | MessageId: ${info.messageId}`);
         return {
@@ -120,56 +142,245 @@ export class NotificationsService {
   }
 
   /**
-   * Dispatches order confirmation notification to customer upon successful order creation.
+   * Dispatches premium HTML order confirmation notification to customer upon successful order creation.
+   * Fully responsive across desktop, Android, and iOS Gmail clients.
+   * Enforces idempotency to avoid sending duplicate emails for the same order.
    */
   async sendOrderConfirmation(payload: OrderNotificationPayload): Promise<{ success: boolean; messageId: string }> {
     const totalLkr = (payload.totalCents / 100).toFixed(2);
     const messageId = `msg-order-${payload.orderNumber}-${Date.now()}`;
 
+    // 1. Idempotency Check: Prevent duplicate confirmation emails for the same order
+    if (payload.orderNumber && this.sentOrderConfirmationIds.has(payload.orderNumber)) {
+      this.logger.warn(
+        `[ORDER CONFIRMATION IDEMPOTENT] Duplicate confirmation request skipped for order #${payload.orderNumber}`
+      );
+      return {
+        success: true,
+        messageId: `msg-order-dup-${payload.orderNumber}`,
+      };
+    }
+
     this.logger.log(
-      `[ORDER NOTIFICATION] Order ${payload.orderNumber} confirmed for ${payload.customerName} (${payload.customerEmail}). Total: LKR ${totalLkr}. Payment: ${payload.paymentMethod} (${payload.paymentStatus})`
+      `[ORDER NOTIFICATION] Dispatching confirmation for Order #${payload.orderNumber} to ${payload.customerName} (${payload.customerEmail}). Total: LKR ${totalLkr}. Payment: ${payload.paymentMethod} (${payload.paymentStatus})`
     );
 
-    // Formatted notification text
-    const itemList = payload.items
-      .map((it) => `  - ${it.productName}${it.variantName ? ` (${it.variantName})` : ''} x ${it.quantity} @ LKR ${(it.unitPriceCents / 100).toFixed(2)} = LKR ${(it.totalPriceCents / 100).toFixed(2)}`)
-      .join('\n');
+    // 2. Resolve frontend tracking URL
+    const rawFrontend = this.configService.get<string>('FRONTEND_URL', 'http://localhost:3000') || 'http://localhost:3000';
+    const frontendUrl = rawFrontend.replace(/\/+$/, '');
+    const tokenParam = payload.trackingToken ? `?token=${encodeURIComponent(payload.trackingToken)}` : '';
+    const orderUrl = payload.orderUrl || `${frontendUrl}/orders/${encodeURIComponent(payload.orderNumber)}${tokenParam}`;
 
-    const emailBody = `
-Dear ${payload.customerName},
+    // 3. Build comprehensive, responsive HTML email with inline visual assets
+    const emailData: OrderConfirmationEmailData = {
+      orderId: payload.orderId || payload.orderNumber,
+      orderNumber: payload.orderNumber,
+      orderDate: payload.orderDate || new Date(),
+      customerName: payload.customerName || 'Valued Customer',
+      customerEmail: payload.customerEmail,
+      customerPhone: payload.customerPhone,
+      subtotalCents: payload.subtotalCents ?? payload.items.reduce((acc, it) => acc + (it.totalPriceCents || it.unitPriceCents * it.quantity), 0),
+      deliveryFeeCents: payload.deliveryFeeCents ?? 0,
+      discountCents: payload.discountCents ?? 0,
+      totalCents: payload.totalCents,
+      promoCode: payload.promoCode,
+      paymentMethod: payload.paymentMethod,
+      paymentStatus: payload.paymentStatus,
+      deliveryAddress: payload.deliveryAddress,
+      orderUrl,
+      frontendUrl,
+      items: (payload.items || []).map((it) => ({
+        productId: it.productId || '',
+        productName: it.productName,
+        variantName: it.variantName,
+        sku: it.sku,
+        quantity: it.quantity,
+        unitPriceCents: it.unitPriceCents,
+        totalPriceCents: it.totalPriceCents || it.unitPriceCents * it.quantity,
+        imageUrl: it.imageUrl,
+        customization: it.customization,
+      })),
+    };
 
-Thank you for your order with DSL Stationery!
-Your order #${payload.orderNumber} has been received and confirmed.
+    const generated = buildOrderConfirmationEmail(emailData);
 
-Order Summary:
-${itemList}
+    // 4. Safely dispatch email without failing the order transaction
+    try {
+      await this.dispatchEmail({
+        to: payload.customerEmail,
+        subject: `Order #${payload.orderNumber} Confirmed - DSL Stationery`,
+        text: generated.text,
+        html: generated.html,
+        attachments: generated.attachments,
+      });
 
-Payable Total: LKR ${totalLkr}
-Payment Method: ${payload.paymentMethod}
-Payment Status: ${payload.paymentStatus}
+      // Mark order as notified
+      this.sentOrderConfirmationIds.add(payload.orderNumber);
 
-Delivery Destination:
-${payload.deliveryAddress}
-
-We will notify you when your items are packaged and dispatched.
-Best regards,
-DSL Stationery Team
-`;
-
-    this.logger.debug(`[ORDER CONFIRMATION EMAIL CONTENT]\n${emailBody}`);
-
-    await this.dispatchEmail({
-      to: payload.customerEmail,
-      subject: `Order #${payload.orderNumber} Confirmation - DSL Stationery`,
-      text: emailBody,
-    }).catch((err) => {
-      this.logger.warn(`Could not dispatch order confirmation email: ${err.message}`);
-    });
+      // Dispatch real-time SMS alerts via SMSlenz
+      this.sendOwnerOrderAlertSms(payload).catch((smsErr) =>
+        this.logger.error(`Failed to send owner SMS alert for order #${payload.orderNumber}:`, smsErr)
+      );
+      this.sendCustomerOrderConfirmationSms(payload).catch((smsErr) =>
+        this.logger.error(`Failed to send customer confirmation SMS for order #${payload.orderNumber}:`, smsErr)
+      );
+    } catch (err: any) {
+      this.logger.warn(`Could not dispatch order confirmation email for Order #${payload.orderNumber}: ${err.message || err}`);
+    }
 
     return {
       success: true,
       messageId,
     };
+  }
+
+  /**
+   * Dispatches instant SMS order notification to the store owner via SMSlenz gateway.
+   */
+  async sendOwnerOrderAlertSms(payload: OrderNotificationPayload): Promise<boolean> {
+    const rawOwnerPhone =
+      this.configService.get<string>('OWNER_PHONE_NUMBER') ||
+      process.env.OWNER_PHONE_NUMBER ||
+      '0710518229';
+
+    if (!rawOwnerPhone) return false;
+
+    // Normalize phone number to +947... format
+    let cleanPhone = rawOwnerPhone.trim().replace(/[\s\-()]/g, '');
+    if (cleanPhone.startsWith('0')) {
+      cleanPhone = '+94' + cleanPhone.slice(1);
+    } else if (!cleanPhone.startsWith('+')) {
+      cleanPhone = '+' + cleanPhone;
+    }
+
+    const userId =
+      this.configService.get<string>('SMSLENZ_USER_ID') ||
+      process.env.SMSLENZ_USER_ID ||
+      '1862';
+    const apiKey =
+      this.configService.get<string>('SMSLENZ_API_KEY') ||
+      process.env.SMSLENZ_API_KEY ||
+      'b706c1f8-0231-4d15-bb1a-d4616f3e3ef6';
+    const senderId =
+      this.configService.get<string>('SMSLENZ_SENDER_ID') ||
+      process.env.SMSLENZ_SENDER_ID ||
+      'DARTCODES';
+    const baseUrl =
+      this.configService.get<string>('SMSLENZ_BASE_URL') ||
+      process.env.SMSLENZ_BASE_URL ||
+      'https://smslenz.lk';
+
+    const totalRs = (payload.totalCents / 100).toLocaleString('en-LK', {
+      style: 'currency',
+      currency: 'LKR',
+    });
+
+    const itemCount = (payload.items || []).reduce((acc, it) => acc + (it.quantity || 1), 0);
+    const itemNames = (payload.items || []).slice(0, 2).map((it) => it.productName).join(', ');
+    const moreSuffix = (payload.items || []).length > 2 ? ` +${payload.items.length - 2} more` : '';
+
+    const message = `🔔 [DSL NEW ORDER #${payload.orderNumber}]\nCustomer: ${payload.customerName}\nPhone: ${payload.customerPhone || 'N/A'}\nTotal: ${totalRs}\nPayment: ${payload.paymentMethod}\nItems (${itemCount}): ${itemNames}${moreSuffix}`;
+
+    try {
+      const url = `${baseUrl.replace(/\/+$/, '')}/api/send-sms`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: userId,
+          api_key: apiKey,
+          sender_id: senderId,
+          contact: cleanPhone,
+          message: message,
+        }),
+      });
+
+      const resJson = await response.json().catch(() => null);
+      if (response.ok && resJson?.success) {
+        this.logger.log(
+          `[SMSLENZ] Instant owner order alert SMS sent for order #${payload.orderNumber} to ${cleanPhone} (Campaign ID: ${resJson?.data?.campaign_id})`
+        );
+        return true;
+      } else {
+        this.logger.warn(`[SMSLENZ] Failed to send owner SMS: ${JSON.stringify(resJson || response.statusText)}`);
+        return false;
+      }
+    } catch (err: any) {
+      this.logger.error(`[SMSLENZ] Error sending owner order alert SMS: ${err.message || err}`);
+      return false;
+    }
+  }
+
+  /**
+   * Dispatches instant SMS order confirmation to the customer's phone if valid.
+   */
+  async sendCustomerOrderConfirmationSms(payload: OrderNotificationPayload): Promise<boolean> {
+    if (!payload.customerPhone) return false;
+
+    let cleanPhone = payload.customerPhone.trim().replace(/[\s\-()]/g, '');
+    if (cleanPhone.startsWith('0')) {
+      cleanPhone = '+94' + cleanPhone.slice(1);
+    } else if (!cleanPhone.startsWith('+')) {
+      cleanPhone = '+' + cleanPhone;
+    }
+
+    // Only send to valid Sri Lankan numbers (+947...)
+    if (!/^\+947\d{8}$/.test(cleanPhone)) {
+      return false;
+    }
+
+    const userId =
+      this.configService.get<string>('SMSLENZ_USER_ID') ||
+      process.env.SMSLENZ_USER_ID ||
+      '1862';
+    const apiKey =
+      this.configService.get<string>('SMSLENZ_API_KEY') ||
+      process.env.SMSLENZ_API_KEY ||
+      'b706c1f8-0231-4d15-bb1a-d4616f3e3ef6';
+    const senderId =
+      this.configService.get<string>('SMSLENZ_SENDER_ID') ||
+      process.env.SMSLENZ_SENDER_ID ||
+      'DARTCODES';
+    const baseUrl =
+      this.configService.get<string>('SMSLENZ_BASE_URL') ||
+      process.env.SMSLENZ_BASE_URL ||
+      'https://smslenz.lk';
+
+    const totalLkr = (payload.totalCents / 100).toFixed(2);
+    const message = `Hi ${payload.customerName}, thank you for ordering with DSL Stationery! Your Order #${payload.orderNumber} (LKR ${totalLkr}) has been received and is being processed.`;
+
+    try {
+      const url = `${baseUrl.replace(/\/+$/, '')}/api/send-sms`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: userId,
+          api_key: apiKey,
+          sender_id: senderId,
+          contact: cleanPhone,
+          message: message,
+        }),
+      });
+
+      const resJson = await response.json().catch(() => null);
+      if (response.ok && resJson?.success) {
+        this.logger.log(
+          `[SMSLENZ] Customer confirmation SMS sent for order #${payload.orderNumber} to ${cleanPhone}`
+        );
+        return true;
+      }
+      return false;
+    } catch (err: any) {
+      this.logger.error(`[SMSLENZ] Error sending customer SMS: ${err.message || err}`);
+      return false;
+    }
   }
 
   /**

@@ -4,6 +4,8 @@ import {
   BadRequestException,
   Logger,
 } from '@nestjs/common';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import {
@@ -11,6 +13,7 @@ import {
   PublicStoreSettingsResponse,
   AdminStoreSettingsResponse,
 } from './dto/store-settings.dto';
+import { AboutPageData, DEFAULT_ABOUT_PAGE_DATA } from './dto/about-page.dto';
 
 export const STORE_SETTINGS_DEFAULT_ID = 'default';
 
@@ -304,6 +307,59 @@ export class StoreSettingsService {
     }
 
     return this.getAdminSettings();
+  }
+
+  /**
+   * Retrieves public/administrative About Us page content.
+   * If a customized file exists in data/about-page.json, returns it merged with defaults.
+   */
+  async getAboutPageContent(): Promise<AboutPageData> {
+    try {
+      const filePath = path.resolve(process.cwd(), 'data', 'about-page.json');
+      const raw = await fs.readFile(filePath, 'utf-8');
+      const parsed = JSON.parse(raw);
+      return { ...DEFAULT_ABOUT_PAGE_DATA, ...parsed };
+    } catch {
+      return DEFAULT_ABOUT_PAGE_DATA;
+    }
+  }
+
+  /**
+   * Updates About Us page content, writing atomically to data/about-page.json.
+   * Also records an audit log entry for transparency.
+   */
+  async updateAboutPageContent(
+    data: Partial<AboutPageData>,
+    adminUserId: string,
+  ): Promise<AboutPageData> {
+    const current = await this.getAboutPageContent();
+    const updated: AboutPageData = {
+      ...current,
+      ...data,
+    };
+
+    const dataDir = path.resolve(process.cwd(), 'data');
+    await fs.mkdir(dataDir, { recursive: true });
+    const filePath = path.resolve(dataDir, 'about-page.json');
+    await fs.writeFile(filePath, JSON.stringify(updated, null, 2), 'utf-8');
+
+    if (adminUserId) {
+      try {
+        await this.auditService.recordAuditLog({
+          action: 'UPDATE_ABOUT_PAGE_CONTENT',
+          entityType: 'StoreContent',
+          entityId: 'about-page',
+          userId: adminUserId,
+          summary: `Admin updated storefront About Us page text and media`,
+          changes: { updatedFields: { new: Object.keys(data) } },
+        });
+      } catch (err) {
+        this.logger.warn(`Failed to record audit log for about page update: ${err}`);
+      }
+      this.logger.log(`Store About Us page content successfully updated by admin ${adminUserId}`);
+    }
+
+    return updated;
   }
 }
 
