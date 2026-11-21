@@ -4,16 +4,17 @@
 
 export function isMediaVideo(url?: string | null): boolean {
   if (!url) return false;
-  const lower = url.toLowerCase().trim();
+  const cleanUrl = url.split('?')[0].split('#')[0].toLowerCase().trim();
   return (
-    lower.endsWith('.mp4') ||
-    lower.endsWith('.webm') ||
-    lower.endsWith('.ogg') ||
-    lower.endsWith('.mov') ||
-    lower.includes('youtube.com') ||
-    lower.includes('youtu.be') ||
-    lower.includes('vimeo.com') ||
-    lower.startsWith('data:video/')
+    cleanUrl.endsWith('.mp4') ||
+    cleanUrl.endsWith('.webm') ||
+    cleanUrl.endsWith('.ogg') ||
+    cleanUrl.endsWith('.mov') ||
+    cleanUrl.endsWith('.m4v') ||
+    url.toLowerCase().includes('youtube.com') ||
+    url.toLowerCase().includes('youtu.be') ||
+    url.toLowerCase().includes('vimeo.com') ||
+    url.toLowerCase().startsWith('data:video/')
   );
 }
 

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Menu, RotateCcw, Check, User, ShieldCheck, Database, ExternalLink } from 'lucide-react';
 import { resetAllDemoData } from '@/services/resetDemoService';
 import { useUserStore } from '@/services/userStore';
+import { AdminOrderNotificationDropdown } from '@/components/admin/AdminOrderNotificationDropdown';
 
 interface AdminHeaderProps {
   onOpenMobileNav?: () => void;
@@ -74,6 +75,9 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({ onOpenMobileNav }) => 
         </Link>
 
         <div className="h-4 w-px bg-slate-200 hidden md:block" />
+
+        {/* Real-time Order Sound & Badge Notification Dropdown */}
+        <AdminOrderNotificationDropdown />
 
         {/* Admin Profile Pill */}
         <Link

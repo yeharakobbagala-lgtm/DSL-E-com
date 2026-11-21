@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 import Ferrofluid from '@/components/common/Ferrofluid';
 
 export const SpeedWriteHeroSlide: React.FC = () => {
@@ -47,18 +48,62 @@ export const SpeedWriteHeroSlide: React.FC = () => {
         }`}
     >
       {/* ========================================================= */}
-      {/* LAYER 1: ATMOSPHERIC FULL-BLEED BACKGROUND IMAGE & FERROFLUID */}
+      {/* 1. MOBILE VIEW (md:hidden)                                */}
+      {/* Exact portrait vertical layout matching uploaded artwork  */}
       {/* ========================================================= */}
-      <div className="absolute inset-0 w-full h-full pointer-events-none">
-        <div className="w-full h-full">
+      <div className="md:hidden relative w-full h-full flex items-center justify-center overflow-hidden">
+        {/* Full-bleed background */}
+        <div className="absolute inset-0 w-full h-full pointer-events-none">
           <img
             src="/images/hero/speed-hero/hero-background.png"
-            alt="Speed Write Beyond Limits Background"
-            className="w-full h-full object-cover object-center select-none"
+            alt=""
+            className="w-full h-full object-cover object-center pointer-events-none select-none"
             draggable={false}
           />
         </div>
+
+        {/* 575:1024 Portrait Stage */}
+        <div
+          className="relative h-full flex items-center justify-center"
+          style={{
+            aspectRatio: '575 / 1024',
+            maxHeight: '100%',
+            maxWidth: '100%',
+          }}
+        >
+          {/* Mobile Hero Visual Graphic */}
+          <img
+            src="/images/hero/speed-hero/speed-hero-mobile.jpg"
+            alt="Speed Ball Pen - Write Beyond Limits"
+            className="w-full h-full object-contain pointer-events-none select-none"
+            draggable={false}
+          />
+
+          {/* Interactive touch link to Speed products */}
+          <Link
+            href="/brands/speed"
+            aria-label="Explore SPEED Products"
+            className="absolute inset-0 w-full h-full pointer-events-auto"
+          />
+        </div>
       </div>
+
+      {/* ========================================================= */}
+      {/* 2. DESKTOP VIEW (hidden md:flex)                          */}
+      {/* True full-bleed widescreen landscape interactive stage   */}
+      {/* ========================================================= */}
+      <div className="hidden md:flex relative w-full h-full items-center justify-center overflow-hidden">
+        {/* LAYER 1: ATMOSPHERIC FULL-BLEED BACKGROUND IMAGE & FERROFLUID */}
+        <div className="absolute inset-0 w-full h-full pointer-events-none">
+          <div className="w-full h-full">
+            <img
+              src="/images/hero/speed-hero/hero-background.png"
+              alt="Speed Write Beyond Limits Background"
+              className="w-full h-full object-cover object-center select-none"
+              draggable={false}
+            />
+          </div>
+        </div>
 
       {/* Ferrofluid Liquid Dynamics Layer */}
       <div className="absolute inset-0 w-full h-full pointer-events-auto z-[2] opacity-75">
@@ -313,6 +358,7 @@ export const SpeedWriteHeroSlide: React.FC = () => {
           </div>
         </div>
       </div>
+    </div>
 
       {/* ========================================================= */}
       {/* KEYFRAME ANIMATIONS, TIMELINES & RESPONSIVE ALIGNMENT     */}

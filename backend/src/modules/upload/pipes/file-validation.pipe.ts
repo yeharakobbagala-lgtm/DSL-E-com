@@ -10,7 +10,7 @@ export interface FileValidationOptions {
   allowSvg?: boolean;
 }
 
-const DEFAULT_MAX_SIZE = 25 * 1024 * 1024; // 25 MB
+const DEFAULT_MAX_SIZE = 50 * 1024 * 1024; // 50 MB ceiling for promotional videos and high-res media
 const DEFAULT_ALLOWED_MIMES = [
   'image/jpeg',
   'image/png',
@@ -18,6 +18,10 @@ const DEFAULT_ALLOWED_MIMES = [
   'image/gif',
   'video/mp4',
   'video/webm',
+  'video/quicktime',
+  'video/x-m4v',
+  'video/ogg',
+  'application/pdf',
 ];
 
 @Injectable()
@@ -98,11 +102,28 @@ export class FileValidationPipe implements PipeTransform<Express.Multer.File, Ex
       );
     }
 
-    // MP4 Video: ftyp box at bytes 4-7
-    if (mime === 'video/mp4') {
+    // MP4 / QuickTime (MOV) / M4V Video: check for ftyp / moov / mdat or brand identifier at bytes 4-8
+    if (mime === 'video/mp4' || mime === 'video/quicktime' || mime === 'video/x-m4v') {
       if (buffer.length < 8) return false;
-      const ftyp = buffer.slice(4, 8).toString('latin1');
-      return ftyp === 'ftyp' || ftyp === 'isom' || ftyp === 'mp41' || ftyp === 'mp42';
+      const box = buffer.slice(4, 8).toString('latin1');
+      const validBoxes = [
+        'ftyp',
+        'isom',
+        'mp41',
+        'mp42',
+        'qt  ',
+        'M4V ',
+        'MSNV',
+        'avc1',
+        'dash',
+        'iso2',
+        'isml',
+        'moov',
+        'mdat',
+        'wide',
+        'skip',
+      ];
+      return validBoxes.includes(box) || buffer.slice(4, 8).includes(0x66);
     }
 
     // WebM Video: 1A 45 DF A3 (EBML Header)
@@ -113,6 +134,17 @@ export class FileValidationPipe implements PipeTransform<Express.Multer.File, Ex
         buffer[1] === 0x45 &&
         buffer[2] === 0xdf &&
         buffer[3] === 0xa3
+      );
+    }
+
+    // Ogg Video / Audio: OggS (4F 67 67 53)
+    if (mime === 'video/ogg' || mime === 'application/ogg') {
+      return (
+        buffer.length >= 4 &&
+        buffer[0] === 0x4f &&
+        buffer[1] === 0x67 &&
+        buffer[2] === 0x67 &&
+        buffer[3] === 0x53
       );
     }
 

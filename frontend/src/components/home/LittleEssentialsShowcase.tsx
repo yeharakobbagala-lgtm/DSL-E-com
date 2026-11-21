@@ -4,8 +4,10 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
+import { useTranslation } from '@/services/languageStore';
 
 export const LittleEssentialsShowcase: React.FC = () => {
+  const { t } = useTranslation();
   return (
     <section
       aria-labelledby="little-essentials-heading"
@@ -94,7 +96,7 @@ export const LittleEssentialsShowcase: React.FC = () => {
               <span className="hidden sm:inline-block w-8 sm:w-10 h-[2px] bg-[#087BFF]" />
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#087BFF]/40 bg-white/80 backdrop-blur-sm text-[11px] sm:text-xs font-bold tracking-widest text-[#102A5E] uppercase shadow-xs">
                 <span className="text-[#087BFF] text-[8px]" aria-hidden="true">&#9670;</span>
-                <span>CURATED ESSENTIALS FOR REFINED LIVING</span>
+                <span>{t('home.curatedEssentials', 'CURATED ESSENTIALS FOR REFINED LIVING')}</span>
                 <span className="text-[#087BFF] text-[8px]" aria-hidden="true">&#9670;</span>
               </div>
             </div>
@@ -104,30 +106,12 @@ export const LittleEssentialsShowcase: React.FC = () => {
               id="little-essentials-heading"
               className="font-['Times_New_Roman',_Times,_serif] text-3xl sm:text-4xl md:text-5xl lg:text-[46px] xl:text-[50px] font-extrabold tracking-tight text-[#102A5E] leading-[1.12]"
             >
-              Little Essentials.{' '}
-              <span className="relative inline-block text-[#087BFF] whitespace-nowrap">
-                Big Ideas.
-                {/* Curved Royal Blue Underline Swoosh */}
-                <svg
-                  className="absolute -bottom-2 sm:-bottom-2.5 left-0 w-full h-3 sm:h-3.5 text-[#087BFF]"
-                  viewBox="0 0 240 16"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M3 11C45 4 140 3 237 13"
-                    stroke="currentColor"
-                    strokeWidth="3.5"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </span>
+              {t('home.littleEssentialsHeading', 'Little Essentials. Big Ideas.')}
             </h2>
 
             {/* Description */}
             <p className="text-slate-600 text-sm sm:text-base lg:text-[15px] xl:text-[16px] leading-relaxed max-w-xl font-normal">
-              We&apos;re a modern stationery store offering everyday essentials, simple finds, and quality products designed to make studying, working, planning, and creating effortless and joyful. We handpick items you truly love — practical, affordable, and stylish.
+              {t('home.littleEssentialsDesc', "We're a modern stationery store offering everyday essentials, simple finds, and quality products designed to make studying, working, planning, and creating effortless and joyful. We handpick items you truly love — practical, affordable, and stylish.")}
             </p>
 
             {/* CTA Button: Know More -> */}
@@ -136,7 +120,7 @@ export const LittleEssentialsShowcase: React.FC = () => {
                 href="/about"
                 className="group inline-flex items-center gap-3 px-7 py-3 sm:px-8 sm:py-3.5 rounded-full bg-[#102A5E] hover:bg-[#087BFF] text-white text-sm sm:text-base font-bold shadow-md shadow-[#102A5E]/20 hover:shadow-lg hover:shadow-[#087BFF]/30 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
               >
-                <span>Know More</span>
+                <span>{t('action.knowMore', 'Know More')}</span>
                 <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
               </Link>
             </div>

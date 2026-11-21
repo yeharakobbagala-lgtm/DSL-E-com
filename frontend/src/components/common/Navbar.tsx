@@ -133,7 +133,9 @@ export const Navbar: React.FC = () => {
   };
 
   const isHomeActive = pathname === '/' || pathname === '/home';
-  const isShopActive = pathname.startsWith('/shop') || pathname.startsWith('/categories');
+  const isShopActive = pathname.startsWith('/shop');
+  const isCategoriesActive = pathname.startsWith('/categories');
+  const isBrandsActive = pathname.startsWith('/brands');
   const isCustomizePenActive = pathname.startsWith('/customize-pen');
   const isFindStationeryActive = pathname.startsWith('/find-my-stationery');
   const isSchoolPackActive = pathname.startsWith('/school-packs');
@@ -298,10 +300,10 @@ export const Navbar: React.FC = () => {
               className="shrink-0"
             />
 
-            {/* Wishlist / Favorite Link */}
+            {/* Wishlist / Favorite Link - hidden on narrow mobile to ensure Menu is 100% visible */}
             <Link
               href="/account/wishlist"
-              className={`relative ${navIconBtnClass}`}
+              className={`hidden sm:flex relative ${navIconBtnClass}`}
               aria-label={`Wishlist with ${wishlistCount} items`}
               title="My Wishlist"
             >
@@ -433,16 +435,179 @@ export const Navbar: React.FC = () => {
               )}
             </button>
 
-            {/* Mobile Menu Toggle Button */}
+            {/* Mobile Menu Toggle Button - Prominently visible and always on-screen */}
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className={`lg:hidden ml-0.5 ${navIconBtnClass}`}
+              className={`lg:hidden ml-1 p-1.5 sm:p-2 rounded-xl border transition-all cursor-pointer touch-target flex items-center justify-center shrink-0 ${
+                isMobileMenuOpen
+                  ? 'border-rose-300 bg-rose-50 text-rose-600'
+                  : isCustomizePenActive
+                    ? 'border-white/20 bg-white/10 text-white hover:bg-white/20'
+                    : 'border-slate-200 bg-slate-50 text-[#09285C] hover:border-[#0866E8] hover:bg-[#EAF4FF]'
+              }`}
               aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
             >
-              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {isMobileMenuOpen ? <X className="w-5 h-5 text-rose-600" /> : <Menu className="w-5 h-5 text-[#09285C]" />}
             </button>
           </div>
+        </div>
+
+        {/* ========================================================= */}
+        {/* MOBILE HORIZONTAL SCROLLABLE NAV BAR (SUB-HEADER CHIPS)   */}
+        {/* "display nav bar here like menu in mobile view"           */}
+        {/* ========================================================= */}
+        <div
+          className={`lg:hidden w-full overflow-x-auto no-scrollbar border-t transition-colors duration-200 px-2.5 py-1.5 flex items-center gap-1.5 scroll-smooth ${
+            isCustomizePenActive
+              ? 'border-white/10 bg-[#07080A]/95 text-white'
+              : 'border-slate-100 bg-white/95 text-[#09285C]'
+          }`}
+        >
+          {/* 1. Home */}
+          <Link
+            href="/home"
+            className={`px-3 py-1 rounded-full text-xs font-bold shrink-0 transition-colors ${
+              isHomeActive
+                ? isCustomizePenActive
+                  ? 'bg-white text-black font-black'
+                  : 'bg-[#09285C] text-white shadow-xs'
+                : isCustomizePenActive
+                  ? 'text-slate-300 hover:bg-white/10 hover:text-white'
+                  : 'hover:bg-slate-100 text-[#09285C]'
+            }`}
+          >
+            {navText('nav.home', 'Home')}
+          </Link>
+
+          {/* 2. Shop */}
+          <Link
+            href="/shop"
+            className={`px-3 py-1 rounded-full text-xs font-bold shrink-0 transition-colors ${
+              isShopActive && !isCategoriesActive
+                ? isCustomizePenActive
+                  ? 'bg-white text-black font-black'
+                  : 'bg-[#09285C] text-white shadow-xs'
+                : isCustomizePenActive
+                  ? 'text-slate-300 hover:bg-white/10 hover:text-white'
+                  : 'hover:bg-slate-100 text-[#09285C]'
+            }`}
+          >
+            {navText('nav.shop', 'Shop')}
+          </Link>
+
+          {/* 3. Customize Pen */}
+          <Link
+            href="/customize-pen"
+            className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold shrink-0 transition-colors ${
+              isCustomizePenActive
+                ? 'bg-white text-black font-black shadow-xs'
+                : 'bg-blue-50 text-[#0066CC] hover:bg-blue-100'
+            }`}
+          >
+            <PenTool className="w-3 h-3 text-[#0066CC]" />
+            <span>{navText('nav.customizePen', 'Customize Pen')}</span>
+            <span className="text-[8px] font-black uppercase tracking-wider bg-[#FFD84D] text-[#09285C] px-1.5 py-0.2 rounded-full">
+              New
+            </span>
+          </Link>
+
+          {/* 4. Brands */}
+          <Link
+            href="/brands"
+            className={`px-3 py-1 rounded-full text-xs font-bold shrink-0 transition-colors ${
+              isBrandsActive
+                ? isCustomizePenActive
+                  ? 'bg-white text-black font-black'
+                  : 'bg-[#09285C] text-white shadow-xs'
+                : isCustomizePenActive
+                  ? 'text-slate-300 hover:bg-white/10 hover:text-white'
+                  : 'hover:bg-slate-100 text-[#09285C]'
+            }`}
+          >
+            {navText('nav.brands', 'Brands')}
+          </Link>
+
+          {/* 5. Categories */}
+          <Link
+            href="/categories"
+            className={`px-3 py-1 rounded-full text-xs font-bold shrink-0 transition-colors ${
+              isCategoriesActive
+                ? isCustomizePenActive
+                  ? 'bg-white text-black font-black'
+                  : 'bg-[#09285C] text-white shadow-xs'
+                : isCustomizePenActive
+                  ? 'text-slate-300 hover:bg-white/10 hover:text-white'
+                  : 'hover:bg-slate-100 text-[#09285C]'
+            }`}
+          >
+            {navText('nav.categories', 'Categories')}
+          </Link>
+
+          {/* 6. Find My Stationery */}
+          <Link
+            href="/find-my-stationery"
+            className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold shrink-0 transition-colors ${
+              isFindStationeryActive
+                ? isCustomizePenActive
+                  ? 'bg-white text-black font-black'
+                  : 'bg-[#09285C] text-white shadow-xs'
+                : isCustomizePenActive
+                  ? 'text-slate-300 hover:bg-white/10 hover:text-white'
+                  : 'hover:bg-slate-100 text-[#09285C]'
+            }`}
+          >
+            <Sparkles className="w-3 h-3 text-[#FFD84D]" />
+            <span>{navText('nav.findMyStationery', 'Find My Stationery')}</span>
+          </Link>
+
+          {/* 7. School Packs */}
+          <Link
+            href="/school-packs"
+            className={`px-3 py-1 rounded-full text-xs font-bold shrink-0 transition-colors ${
+              isSchoolPackActive
+                ? isCustomizePenActive
+                  ? 'bg-white text-black font-black'
+                  : 'bg-[#09285C] text-white shadow-xs'
+                : isCustomizePenActive
+                  ? 'text-slate-300 hover:bg-white/10 hover:text-white'
+                  : 'hover:bg-slate-100 text-[#09285C]'
+            }`}
+          >
+            {navText('nav.schoolPacks', 'School Packs')}
+          </Link>
+
+          {/* 8. About Us */}
+          <Link
+            href="/about"
+            className={`px-3 py-1 rounded-full text-xs font-bold shrink-0 transition-colors ${
+              isAboutActive
+                ? isCustomizePenActive
+                  ? 'bg-white text-black font-black'
+                  : 'bg-[#09285C] text-white shadow-xs'
+                : isCustomizePenActive
+                  ? 'text-slate-300 hover:bg-white/10 hover:text-white'
+                  : 'hover:bg-slate-100 text-[#09285C]'
+            }`}
+          >
+            {navText('nav.about', 'About Us')}
+          </Link>
+
+          {/* 9. FAQ */}
+          <Link
+            href="/faq"
+            className={`px-3 py-1 rounded-full text-xs font-bold shrink-0 transition-colors ${
+              isFaqActive
+                ? isCustomizePenActive
+                  ? 'bg-white text-black font-black'
+                  : 'bg-[#09285C] text-white shadow-xs'
+                : isCustomizePenActive
+                  ? 'text-slate-300 hover:bg-white/10 hover:text-white'
+                  : 'hover:bg-slate-100 text-[#09285C]'
+            }`}
+          >
+            {navText('nav.faq', 'FAQ')}
+          </Link>
         </div>
       </div>
 
@@ -519,6 +684,24 @@ export const Navbar: React.FC = () => {
               <span className="text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">
                 New
               </span>
+            </Link>
+            <Link
+              href="/brands"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className={`px-4 py-3 rounded-xl text-sm font-bold transition-colors flex items-center justify-between ${isBrandsActive ? 'bg-[#09285C] text-white' : 'text-[#09285C] hover:bg-[#F7FAFF]'
+                }`}
+            >
+              <span>{navText('nav.brands', 'Authorised Brands')}</span>
+              <ArrowRight className={`w-4 h-4 ${isBrandsActive ? 'text-white' : 'text-slate-400'}`} />
+            </Link>
+            <Link
+              href="/categories"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className={`px-4 py-3 rounded-xl text-sm font-bold transition-colors flex items-center justify-between ${isCategoriesActive ? 'bg-[#09285C] text-white' : 'text-[#09285C] hover:bg-[#F7FAFF]'
+                }`}
+            >
+              <span>{navText('nav.categories', 'Categories')}</span>
+              <ArrowRight className={`w-4 h-4 ${isCategoriesActive ? 'text-white' : 'text-slate-400'}`} />
             </Link>
             <Link
               href="/school-packs"

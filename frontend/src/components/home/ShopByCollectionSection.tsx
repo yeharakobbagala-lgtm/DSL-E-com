@@ -3,10 +3,12 @@
 import React, { useRef, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useTranslation } from '@/services/languageStore';
 
 export interface CategoryCardItem {
   id: string;
   name: string;
+  transKey?: string;
   image: string;
   link: string;
 }
@@ -15,84 +17,98 @@ const POPULAR_CATEGORIES: CategoryCardItem[] = [
   {
     id: 'erasers',
     name: 'Erasers',
+    transKey: 'cat.erasers',
     image: '/images/categories/erasers.png',
     link: '/shop?category=erasers',
   },
   {
     id: 'pens',
     name: 'Pens & Writing',
+    transKey: 'cat.pensWriting',
     image: '/images/categories/pens.png',
     link: '/shop?category=pens',
   },
   {
     id: 'markers',
     name: 'Markers',
+    transKey: 'cat.markers',
     image: '/images/categories/markers.png',
     link: '/shop?category=markers',
   },
   {
     id: 'sharpeners',
     name: 'Sharpeners',
+    transKey: 'cat.sharpeners',
     image: '/images/categories/sharpeners.png',
     link: '/shop?category=sharpeners',
   },
   {
     id: 'highlighters',
     name: 'Highlighters',
+    transKey: 'cat.highlighters',
     image: '/images/categories/highlighters.png',
     link: '/shop?category=highlighters',
   },
   {
     id: 'pencils',
     name: 'Pencils',
+    transKey: 'cat.pencils',
     image: '/images/categories/pencils.png',
     link: '/shop?category=pencils',
   },
   {
     id: 'rulers',
     name: 'Rulers',
+    transKey: 'cat.rulers',
     image: '/images/categories/rulers.png',
     link: '/shop?category=rulers',
   },
   {
     id: 'calculators',
     name: 'Calculators',
+    transKey: 'cat.calculators',
     image: '/images/categories/calculators.png',
     link: '/shop?category=calculators',
   },
   {
     id: 'exercise-books',
     name: 'Exercise & Books',
+    transKey: 'cat.exerciseBooks',
     image: '/images/categories/exercise-books.png',
     link: '/shop?category=books',
   },
   {
     id: 'art-craft',
     name: 'Art & Craft',
+    transKey: 'cat.artCraft',
     image: '/images/categories/art-craft.png',
     link: '/shop?category=art',
   },
   {
     id: 'tapes-adhesives',
     name: 'Tapes & Adhesives',
+    transKey: 'cat.tapesAdhesives',
     image: '/images/categories/tapes-adhesives.png',
     link: '/shop?category=tapes',
   },
   {
     id: 'correction-pens',
     name: 'Correction Pens',
+    transKey: 'cat.correctionPens',
     image: '/images/categories/correction-pens.png',
     link: '/shop?category=pens',
   },
   {
     id: 'school-stationery',
     name: 'School Stationery',
+    transKey: 'cat.schoolStationery',
     image: '/images/categories/school-stationery.png',
     link: '/shop?category=books',
   },
 ];
 
 export const ShopByCollectionSection: React.FC = () => {
+  const { t } = useTranslation();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
@@ -132,7 +148,7 @@ export const ShopByCollectionSection: React.FC = () => {
         <div className="flex items-center gap-2.5 sm:gap-3">
           <span className="w-2 sm:w-2.5 h-6 sm:h-7 bg-[#0866E8] rounded-full inline-block" />
           <h2 className="text-xl sm:text-2xl lg:text-[28px] font-black text-[#102A5E] tracking-tight">
-            Popular Categories
+            {t('home.popularCategories', 'Popular Categories')}
           </h2>
         </div>
 
@@ -140,7 +156,7 @@ export const ShopByCollectionSection: React.FC = () => {
           href="/categories"
           className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-[#0866E8] hover:text-[#09285C] transition-colors group"
         >
-          <span>View All Categories</span>
+          <span>{t('home.viewAllCategories', 'View All Categories')}</span>
           <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
         </Link>
       </div>
@@ -201,7 +217,7 @@ export const ShopByCollectionSection: React.FC = () => {
 
                 {/* Category Title */}
                 <span className="mt-3 text-center text-xs sm:text-sm lg:text-[14px] font-bold text-[#102A5E] group-hover/item:text-[#0866E8] transition-colors leading-snug line-clamp-2 max-w-[105px] sm:max-w-[130px]">
-                  {cat.name}
+                  {cat.transKey ? t(cat.transKey as any, cat.name) : cat.name}
                 </span>
               </Link>
             </div>

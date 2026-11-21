@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 50" width="160" height="50">
+  <g transform="translate(18, 5)">
+    <text x="0" y="32" font-family="'Arial Black', 'Helvetica Neue', Arial, sans-serif" font-weight="900" font-size="34" fill="#003B7A" letter-spacing="-1">atlas</text>
+    <circle cx="94" cy="11" r="5" fill="#10B981" />
+  </g>
+</svg>

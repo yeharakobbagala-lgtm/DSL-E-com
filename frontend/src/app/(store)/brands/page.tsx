@@ -117,11 +117,19 @@ export default function BrandsPage() {
       {/* Brand 2-Line Continuous Moving Showcase */}
       {!isLoading && !error && brands.length > 0 && (() => {
         // Resolve logo if not explicitly set
+        const BRAND_LOGOS: Record<string, string> = {
+          speed: '/images/brands/speed.png',
+          doms: '/images/brands/doms.png',
+          linc: '/images/brands/linc.png',
+          pentonic: '/images/brands/pentonic.png',
+          amigo: '/images/brands/amigo.png',
+          amico: '/images/brands/amigo.png',
+          flexoffice: '/images/brands/flexoffice.png',
+        };
+
         const enrichedBrands = brands.map((b) => {
           const knownSlug = b.slug.toLowerCase();
-          const autoLogo = ['speed', 'doms', 'amigo', 'linc', 'pentonic', 'accumate', 'geommy', 'flexoffice'].includes(knownSlug)
-            ? `/images/brands/${knownSlug}.svg`
-            : b.logo;
+          const autoLogo = BRAND_LOGOS[knownSlug] || b.logo;
           return { ...b, logo: autoLogo };
         });
 

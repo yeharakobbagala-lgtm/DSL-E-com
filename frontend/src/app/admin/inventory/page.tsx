@@ -67,7 +67,7 @@ type InventorySort = 'stock_asc' | 'stock_desc' | 'cart_reserved' | 'price_desc'
 type MovementClassFilter = 'all' | 'GRN' | 'INVOICE' | 'ADJUSTMENT';
 type MovementActorType = 'all' | 'CUSTOMER' | 'ADMIN' | 'SUPPLIER';
 type MovementDirection = 'all' | 'inward' | 'outward' | 'high_inflow' | 'high_outflow';
-type MovementTimeframe = 'all' | 'today' | '7days' | '30days' | 'custom';
+type MovementTimeframe = 'all' | 'today' | '7days' | '30days' | '90days' | 'custom';
 type MovementSortOption = 'newest' | 'oldest' | 'change_desc' | 'change_asc';
 type ActiveInventoryView = 'STOCK' | 'LEDGER';
 type AdjustmentMode = 'DELTA' | 'TARGET';
@@ -442,6 +442,10 @@ function InventoryManagementContent() {
       } else if (movementTimeframe === '30days') {
         const d = new Date();
         d.setDate(d.getDate() - 30);
+        startDateStr = d.toISOString();
+      } else if (movementTimeframe === '90days') {
+        const d = new Date();
+        d.setDate(d.getDate() - 90);
         startDateStr = d.toISOString();
       } else if (movementTimeframe === 'custom') {
         if (movementStartDate) startDateStr = movementStartDate;
@@ -1754,9 +1758,10 @@ function InventoryManagementContent() {
                       className="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#08275E]"
                     >
                       <option value="all">All Time History</option>
-                      <option value="today">Today Only</option>
-                      <option value="7days">Past 7 Days</option>
-                      <option value="30days">Past 30 Days</option>
+                      <option value="today">Today (tdy)</option>
+                      <option value="7days">1 Week (7 Days)</option>
+                      <option value="30days">1 Month (30 Days)</option>
+                      <option value="90days">3 Months (90 Days)</option>
                       <option value="custom">📅 Custom Date Range...</option>
                     </select>
                   </div>

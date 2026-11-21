@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { motion, useReducedMotion, Variants } from 'framer-motion';
 import LightCardWavesBackground from '@/components/common/LightCardWavesBackground';
+import { useTranslation } from '@/services/languageStore';
 
 interface BrandItem {
   id: string;
@@ -32,25 +33,26 @@ const BRANDS: BrandItem[] = [
   },
   {
     id: 'flexoffice',
-    name: 'flexoffice',
+    name: 'FlexOffice',
     logo: '/images/brands/flexoffice.png',
     slug: 'flexoffice',
   },
   {
     id: 'amico',
-    name: 'amico',
-    logo: '/images/brands/amico.png',
+    name: 'Amigo',
+    logo: '/images/brands/amigo.png',
     slug: 'amico',
   },
   {
     id: 'pentonic',
-    name: 'pentonic',
+    name: 'Pentonic',
     logo: '/images/brands/pentonic.png',
     slug: 'pentonic',
   },
 ];
 
 export const TrustedBrandsStackCard: React.FC = () => {
+  const { t } = useTranslation();
   const [activeBrandId, setActiveBrandId] = useState<string>('speed');
   const prefersReducedMotion = useReducedMotion();
 
@@ -111,7 +113,7 @@ export const TrustedBrandsStackCard: React.FC = () => {
         <div className="inline-flex items-center justify-center gap-3 sm:gap-4 mb-2.5 sm:mb-3.5">
           <span className="h-[2.5px] w-8 sm:w-14 bg-gradient-to-r from-transparent via-[#FFB800] to-[#FF9E0B] rounded-full inline-block shadow-[0_0_8px_rgba(255,184,0,0.45)]" />
           <span className="px-3.5 py-1 rounded-full bg-white/85 border border-blue-200/60 shadow-[0_2px_8px_rgba(8,102,232,0.08)] backdrop-blur-md text-xs sm:text-sm font-extrabold tracking-[0.24em] text-[#0866E8] uppercase select-none inline-block drop-shadow-xs">
-            OUR BRANDS
+            {t('home.ourBrandsBadge', 'OUR BRANDS')}
           </span>
           <span className="h-[2.5px] w-8 sm:w-14 bg-gradient-to-r from-[#FF9E0B] via-[#FFB800] to-transparent rounded-full inline-block shadow-[0_0_8px_rgba(255,184,0,0.45)]" />
         </div>
@@ -119,32 +121,13 @@ export const TrustedBrandsStackCard: React.FC = () => {
         {/* Main Heading: Trusted by the Best with fully visible 't' in Best */}
         <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[40px] font-black tracking-tight leading-tight flex items-center justify-center flex-wrap gap-x-2.5">
           <span className="text-[#0F2752] inline-block font-black">
-            Trusted by the
-          </span>
-          <span className="relative inline-block text-[#0866E8] italic font-black pl-1 pr-3 sm:pr-4">
-            <span className="text-[#0866E8] italic font-black inline-block pr-1">
-              Best
-            </span>
-            {/* Curved yellow underline matching reference */}
-            <svg
-              className="absolute -bottom-2 sm:-bottom-2.5 left-0 w-full h-2.5 sm:h-3.5 overflow-visible pointer-events-none"
-              viewBox="0 0 100 14"
-              fill="none"
-              aria-hidden="true"
-            >
-              <path
-                d="M 2 4 Q 50 14 98 4"
-                stroke="#FFC72C"
-                strokeWidth="3.4"
-                strokeLinecap="round"
-              />
-            </svg>
+            {t('home.trustedByBest', 'Trusted by the Best')}
           </span>
         </h2>
 
         {/* Supporting text */}
         <p className="text-[#475569] text-xs sm:text-sm md:text-base font-medium leading-relaxed max-w-xl mx-auto mt-2.5 sm:mt-3 px-4">
-          Proud to partner with leading stationery brands known for quality, reliability and innovation.
+          {t('home.trustedDesc', 'Proud to partner with leading stationery brands known for quality, reliability and innovation.')}
         </p>
       </motion.div>
 
@@ -172,9 +155,8 @@ export const TrustedBrandsStackCard: React.FC = () => {
                   }}
                   role="button"
                   tabIndex={0}
-                  className={`brand-glass-card group/card relative w-full h-24 sm:h-28 md:h-32 rounded-2xl flex items-center justify-center p-3 sm:p-4 transition-all duration-300 cursor-pointer overflow-hidden ${
-                    isSpeed ? 'is-speed-card' : ''
-                  }`}
+                  className={`brand-glass-card group/card relative w-full h-24 sm:h-28 md:h-32 rounded-2xl flex items-center justify-center p-3 sm:p-4 transition-all duration-300 cursor-pointer overflow-hidden ${isSpeed ? 'is-speed-card' : ''
+                    }`}
                   aria-label={`Select ${brand.name}`}
                   aria-pressed={isSelected}
                 >
@@ -199,9 +181,8 @@ export const TrustedBrandsStackCard: React.FC = () => {
 
                 {/* Realistic reflection beneath each card on glossy floor */}
                 <div
-                  className={`card-reflection absolute -bottom-7 sm:-bottom-8 inset-x-2 h-6 sm:h-7 pointer-events-none select-none overflow-hidden transition-opacity duration-300 ${
-                    isSpeed ? 'opacity-50' : 'opacity-25 group-hover/card:opacity-40'
-                  }`}
+                  className={`card-reflection absolute -bottom-7 sm:-bottom-8 inset-x-2 h-6 sm:h-7 pointer-events-none select-none overflow-hidden transition-opacity duration-300 ${isSpeed ? 'opacity-50' : 'opacity-25 group-hover/card:opacity-40'
+                    }`}
                   aria-hidden="true"
                 >
                   <div className="w-full h-full rounded-xl bg-white/80 flex items-center justify-center p-1">
@@ -215,11 +196,10 @@ export const TrustedBrandsStackCard: React.FC = () => {
 
                 {/* Floor ambient glow ellipse */}
                 <div
-                  className={`absolute -bottom-2 inset-x-4 h-1.5 rounded-full blur-xs pointer-events-none transition-all duration-300 ${
-                    isSpeed
+                  className={`absolute -bottom-2 inset-x-4 h-1.5 rounded-full blur-xs pointer-events-none transition-all duration-300 ${isSpeed
                       ? 'bg-gradient-to-r from-transparent via-[#FF9E0B]/60 to-transparent scale-125'
                       : 'bg-gradient-to-r from-transparent via-[#0866E8]/10 to-transparent opacity-40'
-                  }`}
+                    }`}
                   aria-hidden="true"
                 />
               </motion.div>

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 50" width="160" height="50">
+  <g transform="translate(12, 8)">
+    <text x="0" y="26" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="900" font-size="26" fill="#DC2626" font-style="italic" letter-spacing="0.5">Luxor</text>
+    <polygon points="86,7 89,14 96,14 91,19 93,26 86,22 79,26 81,19 76,14 83,14" fill="#DC2626" />
+  </g>
+</svg>

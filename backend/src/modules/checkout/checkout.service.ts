@@ -9,6 +9,7 @@ import {
 import * as crypto from 'crypto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { InventoryGateway } from '../inventory/inventory.gateway';
+import { OrdersGateway } from '../orders/orders.gateway';
 import { CartService } from '../cart/cart.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { generateTrackingToken } from '../orders/utils/tracking-token.util';
@@ -85,6 +86,7 @@ export class CheckoutService {
     @Inject(InventoryGateway) private readonly inventoryGateway: InventoryGateway,
     @Inject(CartService) private readonly cartService: CartService,
     @Inject(PrivateReceiptStorageService) private readonly privateReceiptStorageService: PrivateReceiptStorageService,
+    @Optional() @Inject(OrdersGateway) private readonly ordersGateway?: OrdersGateway,
     @Optional() @Inject(NotificationsService) private readonly notificationsService?: NotificationsService,
     @Optional() @Inject(PromotionsService) private readonly promotionsService?: PromotionsService
   ) {}
@@ -1055,6 +1057,33 @@ export class CheckoutService {
     }
 
     const trackingToken = generateTrackingToken(createdOrder);
+
+    // 5b. Broadcast order.created to admin room for real-time notification with sound
+    if (this.ordersGateway) {
+      try {
+        this.ordersGateway.broadcastOrderEvent('order.created', {
+          orderId: createdOrder.id,
+          orderNumber: createdOrder.orderNumber,
+          event: 'order.created',
+          timestamp: new Date().toISOString(),
+          data: {
+            orderId: createdOrder.id,
+            orderNumber: createdOrder.orderNumber,
+            customerName: createdOrder.customerName,
+            customerEmail: createdOrder.customerEmail,
+            customerPhone: createdOrder.customerPhone,
+            totalCents: createdOrder.totalCents,
+            totalLKR: createdOrder.totalCents / 100,
+            itemsCount: createdOrder.items.length,
+            paymentMethod: createdOrder.paymentMethod,
+            orderStatus: createdOrder.orderStatus,
+            createdAt: createdOrder.createdAt,
+          },
+        });
+      } catch (wsOrderErr) {
+        this.logger.error('Error broadcasting new order event:', wsOrderErr);
+      }
+    }
 
     // 6. Send premium HTML order confirmation notification
     if (this.notificationsService) {

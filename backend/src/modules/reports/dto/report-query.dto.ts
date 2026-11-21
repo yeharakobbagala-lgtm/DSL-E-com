@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
-export const reportPeriodEnum = ['today', 'last7days', 'last30days', 'custom'] as const;
+export const reportPeriodEnum = ['today', 'last7days', 'last30days', 'last90days', 'custom'] as const;
 export type ReportPeriod = (typeof reportPeriodEnum)[number];
 
 export const exportFormatEnum = ['csv', 'xlsx'] as const;

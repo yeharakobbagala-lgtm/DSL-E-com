@@ -66,6 +66,38 @@ function ReconciliationContent() {
   const [hasDiscrepancy, setHasDiscrepancy] = useState<string>('all'); // 'all' | 'true' | 'false'
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
+  const [datePreset, setDatePreset] = useState<'all' | 'today' | '1week' | '1month' | '3month' | 'custom'>('all');
+
+  const getColomboDateStr = (dayOffset = 0): string => {
+    const now = new Date();
+    const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+    const colomboTime = new Date(utc + 5.5 * 3600000 + dayOffset * 86400000);
+    const y = colomboTime.getFullYear();
+    const m = String(colomboTime.getMonth() + 1).padStart(2, '0');
+    const d = String(colomboTime.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  };
+
+  const handleSelectDatePreset = (preset: 'all' | 'today' | '1week' | '1month' | '3month') => {
+    setDatePreset(preset);
+    if (preset === 'all') {
+      setStartDate('');
+      setEndDate('');
+    } else if (preset === 'today') {
+      const today = getColomboDateStr(0);
+      setStartDate(today);
+      setEndDate(today);
+    } else if (preset === '1week') {
+      setStartDate(getColomboDateStr(-6));
+      setEndDate(getColomboDateStr(0));
+    } else if (preset === '1month') {
+      setStartDate(getColomboDateStr(-29));
+      setEndDate(getColomboDateStr(0));
+    } else if (preset === '3month') {
+      setStartDate(getColomboDateStr(-89));
+      setEndDate(getColomboDateStr(0));
+    }
+  };
 
   const loadData = useCallback(
     async (targetPage = 1) => {
@@ -120,6 +152,7 @@ function ReconciliationContent() {
     setHasDiscrepancy('all');
     setStartDate('');
     setEndDate('');
+    setDatePreset('all');
   };
 
   return (
@@ -233,6 +266,43 @@ function ReconciliationContent() {
             </button>
           </div>
         </form>
+
+        {/* Quick Date Range Preset Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="text-xs font-bold text-slate-500 uppercase mr-1">Date Period:</span>
+            {[
+              { id: 'all', label: 'All Time' },
+              { id: 'today', label: 'Today (tdy)' },
+              { id: '1week', label: '1 Week' },
+              { id: '1month', label: '1 Month' },
+              { id: '3month', label: '3 Months' },
+            ].map((p) => {
+              const isActive = datePreset === p.id;
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => handleSelectDatePreset(p.id as any)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    isActive
+                      ? 'bg-[#08275E] text-white shadow-xs'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
+                  }`}
+                >
+                  {p.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {(startDate || endDate) && (
+            <span className="text-[11px] font-medium text-slate-500">
+              Filtered: <strong className="text-slate-800">{startDate || 'Beginning'}</strong> to{' '}
+              <strong className="text-slate-800">{endDate || 'Latest'}</strong>
+            </span>
+          )}
+        </div>
 
         {/* Filter Selectors */}
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-3 border-t border-slate-100">

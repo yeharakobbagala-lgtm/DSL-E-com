@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { CheckoutController } from './checkout.controller';
 import { CheckoutService } from './checkout.service';
 import { ReservationsService } from './reservations.service';
@@ -7,9 +7,10 @@ import { InventoryModule } from '../inventory/inventory.module';
 import { CartModule } from '../cart/cart.module';
 import { AuthModule } from '../auth/auth.module';
 import { PromotionsModule } from '../promotions/promotions.module';
+import { OrdersModule } from '../orders/orders.module';
 
 @Module({
-  imports: [InventoryModule, CartModule, AuthModule, PromotionsModule],
+  imports: [InventoryModule, CartModule, AuthModule, PromotionsModule, forwardRef(() => OrdersModule)],
   controllers: [CheckoutController],
   providers: [CheckoutService, ReservationsService, PrivateReceiptStorageService],
   exports: [CheckoutService, ReservationsService, PrivateReceiptStorageService],

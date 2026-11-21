@@ -303,6 +303,9 @@ export function parseColomboDateBoundaries(query: ReportQueryDto): ColomboDateRa
   } else if (period === 'last30days') {
     dateTo = getColomboCurrentDate();
     dateFrom = getColomboDateOffset(-29); // 30 days inclusive: today and previous 29
+  } else if (period === 'last90days') {
+    dateTo = getColomboCurrentDate();
+    dateFrom = getColomboDateOffset(-89); // 90 days inclusive (3 months): today and previous 89
   } else {
     // Custom range
     dateFrom = query.dateFrom || getColomboCurrentDate();

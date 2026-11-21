@@ -1290,7 +1290,11 @@ export default function AdminBannersPage() {
                             <input
                               ref={desktopFileInputRef}
                               type="file"
-                              accept={mediaType === 'video' ? 'video/mp4,video/webm' : 'image/*'}
+                              accept={
+                                mediaType === 'video'
+                                  ? 'video/mp4,video/webm,video/quicktime,video/x-m4v,video/*,.mp4,.webm,.mov,.m4v'
+                                  : 'image/*'
+                              }
                               className="hidden"
                               onChange={(e) => {
                                 const file = e.target.files?.[0];
@@ -1387,7 +1391,11 @@ export default function AdminBannersPage() {
                             <input
                               ref={mobileFileInputRef}
                               type="file"
-                              accept="image/*"
+                              accept={
+                                mediaType === 'video'
+                                  ? 'video/mp4,video/webm,video/quicktime,video/x-m4v,video/*,.mp4,.webm,.mov,.m4v'
+                                  : 'image/*'
+                              }
                               className="hidden"
                               onChange={(e) => {
                                 const file = e.target.files?.[0];

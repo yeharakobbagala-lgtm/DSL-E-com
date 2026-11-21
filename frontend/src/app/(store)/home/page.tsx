@@ -37,6 +37,7 @@ import { NewsletterSubscriptionForm } from '@/components/newsletter/NewsletterSu
 import { WelcomeSplashLoader } from '@/components/common/WelcomeSplashLoader';
 import { INITIAL_PRODUCTS } from '@/mocks/products';
 import { isMediaVideo, formatMediaUrl } from '@/lib/mediaUtils';
+import { useTranslation } from '@/services/languageStore';
 
 function getCuratedStorefrontProducts(items: Product[], type: 'best' | 'new'): Product[] {
   const withImages = items.filter(
@@ -58,6 +59,7 @@ function getCuratedStorefrontProducts(items: Product[], type: 'best' | 'new'): P
 }
 
 export default function HomeStorefrontPage() {
+  const { t } = useTranslation();
   const sectionOurBrandsRef = useRef<HTMLElement>(null);
   const [bestSellers, setBestSellers] = useState<Product[]>(() => getCuratedStorefrontProducts(INITIAL_PRODUCTS, 'best'));
   const [newArrivals, setNewArrivals] = useState<Product[]>(() => getCuratedStorefrontProducts(INITIAL_PRODUCTS, 'new'));
@@ -161,14 +163,14 @@ export default function HomeStorefrontPage() {
               <div className="flex items-center gap-2.5 sm:gap-3">
                 <span className="w-2 sm:w-2.5 h-6 sm:h-7 bg-[#0866E8] rounded-full inline-block" />
                 <h2 className="text-xl sm:text-2xl lg:text-3xl font-black text-[#102C60] tracking-tight">
-                  Best Sellers
+                  {t('home.bestSellers', 'Best Sellers')}
                 </h2>
               </div>
               <Link
                 href="/shop?filter=best-sellers"
                 className="text-xs sm:text-sm font-bold text-[#0866E8] hover:text-[#09285C] transition-colors flex items-center gap-1.5 group"
               >
-                <span>View All</span>
+                <span>{t('home.viewAll', 'View All')}</span>
                 <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
               </Link>
             </div>
@@ -275,14 +277,14 @@ export default function HomeStorefrontPage() {
               <div className="flex items-center gap-2.5 sm:gap-3">
                 <span className="w-2 sm:w-2.5 h-6 sm:h-7 bg-[#16A34A] rounded-full inline-block" />
                 <h2 className="text-xl sm:text-2xl lg:text-3xl font-black text-[#102C60] tracking-tight">
-                  New Arrivals
+                  {t('home.newArrivals', 'New Arrivals')}
                 </h2>
               </div>
               <Link
                 href="/shop?filter=new-arrivals"
                 className="text-xs sm:text-sm font-bold text-[#0866E8] hover:text-[#09285C] transition-colors flex items-center gap-1.5 group"
               >
-                <span>View All</span>
+                <span>{t('home.viewAll', 'View All')}</span>
                 <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
               </Link>
             </div>
@@ -328,14 +330,14 @@ export default function HomeStorefrontPage() {
               <div className="flex items-center gap-2.5 sm:gap-3">
                 <span className="w-2 sm:w-2.5 h-6 sm:h-7 bg-[#FFD84D] rounded-full inline-block" />
                 <h2 className="text-xl sm:text-2xl lg:text-3xl font-black text-[#102C60] tracking-tight">
-                  Authorised Brands
+                  {t('home.authorisedBrands', 'Authorised Brands')}
                 </h2>
               </div>
               <Link
                 href="/brands"
                 className="text-xs sm:text-sm font-bold text-[#0866E8] hover:text-[#09285C] transition-colors flex items-center gap-1.5 group"
               >
-                <span>View All Brands</span>
+                <span>{t('home.viewAllBrands', 'View All Brands')}</span>
                 <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
               </Link>
             </div>
@@ -347,30 +349,32 @@ export default function HomeStorefrontPage() {
 
               <div className="animate-marquee-right flex gap-4 sm:gap-6 items-center">
                 {[
-                  { name: 'Speed', slug: 'speed', desc: 'Pens, Adhesives & Correction', origin: 'Sri Lanka', logo: '/images/brands/speed.svg' },
-                  { name: 'Doms', slug: 'doms', desc: 'Colour Pencils, Clay & Art Kits', origin: 'India', logo: '/images/brands/doms.svg' },
-                  { name: 'Amigo', slug: 'amigo', desc: 'Scientific & Desk Calculators', origin: 'Sri Lanka', logo: '/images/brands/amigo.svg' },
-                  { name: 'Linc', slug: 'linc', desc: 'Pentonic Smooth Ball & Gel Pens', origin: 'India', logo: '/images/brands/linc.svg' },
-                  { name: 'Pentonic', slug: 'pentonic', desc: 'Featherlite Pastel Matte Pens', origin: 'India', logo: '/images/brands/pentonic.svg' },
-                  { name: 'Accumate', slug: 'accumate', desc: 'Precision Geometry Instrument Boxes', origin: 'Sri Lanka', logo: '/images/brands/accumate.svg' },
-                  { name: 'Geommy', slug: 'geommy', desc: 'High-Precision Compasses & Rulers', origin: 'Sri Lanka', logo: '/images/brands/geommy.svg' },
-                  { name: 'FlexOffice', slug: 'flexoffice', desc: 'Highlighters, Tapes & Stationery', origin: 'Global', logo: '/images/brands/flexoffice.svg' },
-                  // Duplicate set for seamless continuous marquee loop
-                  { name: 'Speed', slug: 'speed', desc: 'Pens, Adhesives & Correction', origin: 'Sri Lanka', logo: '/images/brands/speed.svg' },
-                  { name: 'Doms', slug: 'doms', desc: 'Colour Pencils, Clay & Art Kits', origin: 'India', logo: '/images/brands/doms.svg' },
-                  { name: 'Amigo', slug: 'amigo', desc: 'Scientific & Desk Calculators', origin: 'Sri Lanka', logo: '/images/brands/amigo.svg' },
-                  { name: 'Linc', slug: 'linc', desc: 'Pentonic Smooth Ball & Gel Pens', origin: 'India', logo: '/images/brands/linc.svg' },
-                  { name: 'Pentonic', slug: 'pentonic', desc: 'Featherlite Pastel Matte Pens', origin: 'India', logo: '/images/brands/pentonic.svg' },
-                  { name: 'Accumate', slug: 'accumate', desc: 'Precision Geometry Instrument Boxes', origin: 'Sri Lanka', logo: '/images/brands/accumate.svg' },
-                  { name: 'Geommy', slug: 'geommy', desc: 'High-Precision Compasses & Rulers', origin: 'Sri Lanka', logo: '/images/brands/geommy.svg' },
-                  { name: 'FlexOffice', slug: 'flexoffice', desc: 'Highlighters, Tapes & Stationery', origin: 'Global', logo: '/images/brands/flexoffice.svg' },
+                  { name: 'Speed', slug: 'speed', desc: 'Pens, Adhesives & Correction', origin: 'Sri Lanka', logo: '/images/brands/speed.png' },
+                  { name: 'Doms', slug: 'doms', desc: 'Colour Pencils, Clay & Art Kits', origin: 'India', logo: '/images/brands/doms.png' },
+                  { name: 'Linc', slug: 'linc', desc: 'Pentonic Smooth Ball & Gel Pens', origin: 'India', logo: '/images/brands/linc.png' },
+                  { name: 'Pentonic', slug: 'pentonic', desc: 'Featherlite Pastel Matte Pens', origin: 'India', logo: '/images/brands/pentonic.png' },
+                  { name: 'Amigo', slug: 'amigo', desc: 'Scientific & Desk Calculators', origin: 'Sri Lanka', logo: '/images/brands/amigo.png' },
+                  { name: 'FlexOffice', slug: 'flexoffice', desc: 'Highlighters, Tapes & Stationery', origin: 'Global', logo: '/images/brands/flexoffice.png' },
+                  // Seamless looping duplicates
+                  { name: 'Speed', slug: 'speed', desc: 'Pens, Adhesives & Correction', origin: 'Sri Lanka', logo: '/images/brands/speed.png' },
+                  { name: 'Doms', slug: 'doms', desc: 'Colour Pencils, Clay & Art Kits', origin: 'India', logo: '/images/brands/doms.png' },
+                  { name: 'Linc', slug: 'linc', desc: 'Pentonic Smooth Ball & Gel Pens', origin: 'India', logo: '/images/brands/linc.png' },
+                  { name: 'Pentonic', slug: 'pentonic', desc: 'Featherlite Pastel Matte Pens', origin: 'India', logo: '/images/brands/pentonic.png' },
+                  { name: 'Amigo', slug: 'amigo', desc: 'Scientific & Desk Calculators', origin: 'Sri Lanka', logo: '/images/brands/amigo.png' },
+                  { name: 'FlexOffice', slug: 'flexoffice', desc: 'Highlighters, Tapes & Stationery', origin: 'Global', logo: '/images/brands/flexoffice.png' },
+                  { name: 'Speed', slug: 'speed', desc: 'Pens, Adhesives & Correction', origin: 'Sri Lanka', logo: '/images/brands/speed.png' },
+                  { name: 'Doms', slug: 'doms', desc: 'Colour Pencils, Clay & Art Kits', origin: 'India', logo: '/images/brands/doms.png' },
+                  { name: 'Linc', slug: 'linc', desc: 'Pentonic Smooth Ball & Gel Pens', origin: 'India', logo: '/images/brands/linc.png' },
+                  { name: 'Pentonic', slug: 'pentonic', desc: 'Featherlite Pastel Matte Pens', origin: 'India', logo: '/images/brands/pentonic.png' },
+                  { name: 'Amigo', slug: 'amigo', desc: 'Scientific & Desk Calculators', origin: 'Sri Lanka', logo: '/images/brands/amigo.png' },
+                  { name: 'FlexOffice', slug: 'flexoffice', desc: 'Highlighters, Tapes & Stationery', origin: 'Global', logo: '/images/brands/flexoffice.png' },
                 ].map((brand, i) => (
                   <Link
                     key={`single-row-${brand.slug}-${i}`}
                     href={`/brands/${brand.slug}`}
                     className="w-[310px] sm:w-[350px] md:w-[380px] shrink-0 bg-white/95 backdrop-blur-md rounded-2xl sm:rounded-3xl border border-slate-200/90 hover:border-[#0866E8] shadow-xs hover:shadow-xl transition-all duration-300 p-4 sm:p-5 flex items-center gap-4 group cursor-pointer"
                   >
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#F7FAFF] border border-slate-100 flex items-center justify-center p-2.5 sm:p-3 shrink-0 shadow-2xs group-hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white border border-slate-100 flex items-center justify-center p-2.5 sm:p-3 shrink-0 shadow-2xs group-hover:scale-105 transition-transform duration-300 overflow-hidden">
                       <img
                         src={brand.logo}
                         alt={`${brand.name} Logo`}
@@ -503,20 +507,15 @@ export default function HomeStorefrontPage() {
                     {/* Left Content */}
                     <div className="lg:col-span-8 space-y-4">
                       <span className="inline-block bg-[#006DEB] text-white text-xs font-bold px-3.5 py-1.5 rounded-full uppercase tracking-wider shadow-sm">
-                        {midPromoBanner?.subtitle || 'Distribution Partner Promotion'}
+                        {midPromoBanner?.subtitle || t('home.promoBadge', 'Distribution Partner Promotion')}
                       </span>
 
                       <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight">
-                        {midPromoBanner?.title || (
-                          <>
-                            Equip Classrooms &amp; Workplaces <br className="hidden sm:inline" />
-                            With Wholesale Confidence.
-                          </>
-                        )}
+                        {midPromoBanner?.title || t('home.promoHeading', 'Equip Classrooms & Workplaces With Wholesale Confidence.')}
                       </h2>
 
                       <p className="text-xs sm:text-sm text-white/80 max-w-2xl leading-relaxed">
-                        {midPromoBanner?.description || 'Direct distribution agreements with Atlas, Promate, and Faber-Castell guarantee authentic supplies at authoritative distributor pricing.'}
+                        {midPromoBanner?.description || t('home.promoDesc', 'Direct distribution agreements with Atlas, Speed, Doms, and Linc guarantee authentic supplies at authoritative distributor pricing.')}
                       </p>
 
                       <div className="flex flex-wrap items-center gap-4 pt-4">
@@ -527,8 +526,8 @@ export default function HomeStorefrontPage() {
                           <Copy className="w-4 h-4" />
                           <span>
                             {copiedCode
-                              ? `Code Copied: ${midPromoBanner?.buttonText ? midPromoBanner.buttonText.replace(/^COPY CODE:\s*/i, '') : '20OFF'}!`
-                              : (midPromoBanner?.buttonText ? `COPY CODE: ${midPromoBanner.buttonText.replace(/^COPY CODE:\s*/i, '')}` : 'COPY CODE: 20OFF')}
+                              ? `${t('action.codeCopied', 'Code Copied')}: ${midPromoBanner?.buttonText ? midPromoBanner.buttonText.replace(/^COPY CODE:\s*/i, '') : '20OFF'}!`
+                              : (midPromoBanner?.buttonText ? `${t('action.copyCode', 'COPY CODE')}: ${midPromoBanner.buttonText.replace(/^COPY CODE:\s*/i, '')}` : `${t('action.copyCode', 'COPY CODE')}: 20OFF`)}
                           </span>
                         </button>
 
@@ -536,7 +535,7 @@ export default function HomeStorefrontPage() {
                           href={midPromoBanner?.buttonLink || '/offers'}
                           className="bg-white/10 hover:bg-white/20 text-white font-bold text-xs sm:text-sm px-7 py-3.5 rounded-full border border-white/20 transition-all hover:scale-105"
                         >
-                          Browse Promotional Offers
+                          {t('home.browseOffers', 'Browse Promotional Offers')}
                         </Link>
                       </div>
                     </div>
@@ -545,10 +544,10 @@ export default function HomeStorefrontPage() {
                     <div className="lg:col-span-4 flex justify-center lg:justify-end">
                       <div className="bg-white/10 backdrop-blur-md p-6 sm:p-8 rounded-3xl border border-white/15 max-w-sm w-full text-center space-y-3 shadow-xl">
                         <span className="text-[11px] font-bold text-[#006DEB] uppercase tracking-widest block bg-white/10 px-3 py-1 rounded-full w-fit mx-auto">
-                          Seasonal Bulk Benefit
+                          {t('home.bulkBenefit', 'Seasonal Bulk Benefit')}
                         </span>
                         <div className="text-4xl sm:text-5xl font-black text-white tracking-tight">
-                          SAVE 20%
+                          {t('home.save20', 'SAVE 20%')}
                         </div>
                         <p className="text-xs text-white/75 font-medium leading-relaxed">
                           Applies automatically to bulk stationery orders and curriculum packs during the back-to-school season.
@@ -558,7 +557,7 @@ export default function HomeStorefrontPage() {
                             href="/shop?filter=new-arrivals"
                             className="inline-block bg-white text-[#102C60] hover:bg-slate-100 text-xs font-bold px-6 py-2.5 rounded-full shadow-sm transition-all hover:scale-105"
                           >
-                            Shop New Releases
+                            {t('home.shopNewReleases', 'Shop New Releases')}
                           </Link>
                         </div>
                       </div>
@@ -640,44 +639,15 @@ export default function HomeStorefrontPage() {
               {/* Content */}
               <div className="relative z-10 max-w-2xl mx-auto text-center space-y-2 mb-3.5 sm:mb-4">
                 <span className="text-[10px] sm:text-[11px] font-black text-[#006DEB] uppercase tracking-wider bg-white/95 py-0.5 px-3.5 rounded-full inline-block border-2 border-[#006DEB] shadow-2xs">
-                  STAY INFORMED
+                  {t('home.stayInformed', 'STAY INFORMED')}
                 </span>
 
                 <h2 className="text-lg sm:text-xl md:text-2xl lg:text-[26px] font-black text-[#09285C] tracking-tight leading-tight">
-                  Subscribe for Distribution Updates &amp; Term{' '}
-                  <span className="relative inline-block whitespace-nowrap">
-                    Offers
-                    {/* Yellow 3-sparkle burst next to Offers */}
-                    <span
-                      className="absolute -top-2.5 -right-4 text-[#FFB800] select-none pointer-events-none"
-                      aria-hidden="true"
-                    >
-                      <svg className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none">
-                        <path d="M14 9L21 4" stroke="#FFB800" strokeWidth="3" strokeLinecap="round" />
-                        <path d="M11 7L12 1" stroke="#FFB800" strokeWidth="3" strokeLinecap="round" />
-                        <path d="M15 12L22 12" stroke="#FFB800" strokeWidth="3" strokeLinecap="round" />
-                      </svg>
-                    </span>
-                    {/* Yellow playful wavy underline beneath Offers */}
-                    <svg
-                      className="absolute -bottom-1 left-0 w-full h-2 text-[#FFB800]"
-                      viewBox="0 0 100 12"
-                      fill="none"
-                      preserveAspectRatio="none"
-                      aria-hidden="true"
-                    >
-                      <path
-                        d="M2 7C25 11 65 11 98 4"
-                        stroke="#FFB800"
-                        strokeWidth="4"
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                  </span>
+                  {t('home.subscribeHeading', 'Subscribe for Distribution Updates & Term Offers')}
                 </h2>
 
                 <p className="text-xs sm:text-[13px] text-[#09285C]/75 leading-relaxed font-medium max-w-lg mx-auto">
-                  Receive verified syllabus lists, seasonal stock allocations, and distributor discount codes straight to your inbox.
+                  {t('home.subscribeDesc', 'Receive verified syllabus lists, seasonal stock allocations, and distributor discount codes straight to your inbox.')}
                 </p>
               </div>
 

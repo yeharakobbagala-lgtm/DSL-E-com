@@ -3,8 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { announcementService, AnnouncementAd, DEFAULT_ANNOUNCEMENTS } from '@/services/announcementService';
+import { useTranslation } from '@/services/languageStore';
 
 export const DemoBanner: React.FC = () => {
+  const { t } = useTranslation();
   const [items, setItems] = useState<AnnouncementAd[]>(DEFAULT_ANNOUNCEMENTS);
 
   useEffect(() => {
@@ -38,23 +40,26 @@ export const DemoBanner: React.FC = () => {
 
       {/* Continuous Marquee Scrolling to the RIGHT */}
       <div className="animate-marquee-right flex items-center whitespace-nowrap">
-        {[...items, ...items].map((ad, idx) => (
-          <div key={`announcement-${ad.id}-${idx}`} className="flex items-center gap-3 px-6 shrink-0">
-            {ad.link ? (
-              <Link
-                href={ad.link}
-                className="tracking-wide uppercase text-[11px] sm:text-xs font-black hover:text-[#FFD84D] transition-colors cursor-pointer"
-              >
-                {ad.text}
-              </Link>
-            ) : (
-              <span className="tracking-wide uppercase text-[11px] sm:text-xs font-black">
-                {ad.text}
-              </span>
-            )}
-            <span className="text-[#FFD84D] text-xs select-none">•</span>
-          </div>
-        ))}
+        {[...items, ...items].map((ad, idx) => {
+          const bannerText = t(ad.id.replace('-', '.') as any, ad.text);
+          return (
+            <div key={`announcement-${ad.id}-${idx}`} className="flex items-center gap-3 px-6 shrink-0">
+              {ad.link ? (
+                <Link
+                  href={ad.link}
+                  className="tracking-wide uppercase text-[11px] sm:text-xs font-black hover:text-[#FFD84D] transition-colors cursor-pointer"
+                >
+                  {bannerText}
+                </Link>
+              ) : (
+                <span className="tracking-wide uppercase text-[11px] sm:text-xs font-black">
+                  {bannerText}
+                </span>
+              )}
+              <span className="text-[#FFD84D] text-xs select-none">•</span>
+            </div>
+          );
+        })}
       </div>
     </aside>
   );

@@ -87,7 +87,40 @@ export default function AdminAuditLogsPage() {
   const [entityFilter, setEntityFilter] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
+  const [datePreset, setDatePreset] = useState<'all' | 'today' | '1week' | '1month' | '3month' | 'custom'>('all');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+
+  const getColomboDateStr = (dayOffset = 0): string => {
+    const now = new Date();
+    const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+    const colomboTime = new Date(utc + 5.5 * 3600000 + dayOffset * 86400000);
+    const y = colomboTime.getFullYear();
+    const m = String(colomboTime.getMonth() + 1).padStart(2, '0');
+    const d = String(colomboTime.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  };
+
+  const handleSelectDatePreset = (preset: 'all' | 'today' | '1week' | '1month' | '3month') => {
+    setDatePreset(preset);
+    setPage(1);
+    if (preset === 'all') {
+      setDateFrom('');
+      setDateTo('');
+    } else if (preset === 'today') {
+      const today = getColomboDateStr(0);
+      setDateFrom(today);
+      setDateTo(today);
+    } else if (preset === '1week') {
+      setDateFrom(getColomboDateStr(-6));
+      setDateTo(getColomboDateStr(0));
+    } else if (preset === '1month') {
+      setDateFrom(getColomboDateStr(-29));
+      setDateTo(getColomboDateStr(0));
+    } else if (preset === '3month') {
+      setDateFrom(getColomboDateStr(-89));
+      setDateTo(getColomboDateStr(0));
+    }
+  };
 
   // Detail Modal state
   const [selectedEntry, setSelectedEntry] = useState<UnifiedAuditLogEntry | null>(null);
@@ -163,6 +196,7 @@ export default function AdminAuditLogsPage() {
     setEntityFilter('');
     setDateFrom('');
     setDateTo('');
+    setDatePreset('all');
     setPage(1);
   };
 
@@ -449,6 +483,46 @@ export default function AdminAuditLogsPage() {
             </div>
           </div>
 
+          {/* Quick Date Range Filter Bar (Today, 1 Week, 1 Month, 3 Months, All Time) */}
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="text-xs font-bold text-slate-500 uppercase mr-1 flex items-center gap-1">
+                <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                <span>Date:</span>
+              </span>
+              {[
+                { id: 'all', label: 'All Time' },
+                { id: 'today', label: 'Today (tdy)' },
+                { id: '1week', label: '1 Week' },
+                { id: '1month', label: '1 Month' },
+                { id: '3month', label: '3 Months' },
+              ].map((p) => {
+                const isActive = datePreset === p.id;
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => handleSelectDatePreset(p.id as any)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      isActive
+                        ? 'bg-[#08275E] text-white shadow-xs'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
+                    }`}
+                  >
+                    {p.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {(dateFrom || dateTo) && (
+              <span className="text-[11px] font-medium text-slate-500">
+                Range: <strong className="text-slate-800">{dateFrom || 'Start'}</strong> to{' '}
+                <strong className="text-slate-800">{dateTo || 'End'}</strong>
+              </span>
+            )}
+          </div>
+
           {/* Expandable Advanced Filters */}
           {showAdvancedFilters && (
             <div className="pt-3 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
@@ -504,6 +578,7 @@ export default function AdminAuditLogsPage() {
                   value={dateFrom}
                   onChange={(e) => {
                     setDateFrom(e.target.value);
+                    setDatePreset('custom');
                     setPage(1);
                   }}
                   className="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-700 font-medium focus:bg-white focus:outline-none"
@@ -520,6 +595,7 @@ export default function AdminAuditLogsPage() {
                   value={dateTo}
                   onChange={(e) => {
                     setDateTo(e.target.value);
+                    setDatePreset('custom');
                     setPage(1);
                   }}
                   className="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-700 font-medium focus:bg-white focus:outline-none"

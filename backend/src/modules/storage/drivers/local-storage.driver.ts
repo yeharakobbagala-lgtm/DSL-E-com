@@ -39,7 +39,7 @@ export class LocalStorageDriver implements StorageDriver {
     const extMatch = originalName.match(/\.([a-zA-Z0-9]+)$/);
     if (extMatch) {
       const ext = extMatch[1].toLowerCase();
-      if (['jpg', 'jpeg', 'png', 'webp', 'pdf', 'svg'].includes(ext)) {
+      if (['jpg', 'jpeg', 'png', 'webp', 'pdf', 'svg', 'mp4', 'webm', 'mov', 'ogg', 'm4v', 'gif'].includes(ext)) {
         return ext === 'jpeg' ? 'jpg' : ext;
       }
     }
@@ -54,6 +54,15 @@ export class LocalStorageDriver implements StorageDriver {
         return 'webp';
       case 'image/svg+xml':
         return 'svg';
+      case 'image/gif':
+        return 'gif';
+      case 'video/mp4':
+      case 'video/quicktime':
+        return 'mp4';
+      case 'video/webm':
+        return 'webm';
+      case 'video/ogg':
+        return 'ogg';
       case 'application/pdf':
         return 'pdf';
       default:

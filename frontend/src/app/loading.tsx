@@ -6,8 +6,24 @@ import { Loader2 } from 'lucide-react';
 export default function GlobalLoading() {
   return (
     <div className="fixed inset-0 z-[99999] w-screen h-screen min-h-screen overflow-hidden bg-slate-900 text-white select-none pointer-events-none flex flex-col justify-between items-center">
-      {/* Background Video / Poster matching Welcome Page */}
-      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+      {/* ========================================================= */}
+      {/* 1. MOBILE VIEW BACKGROUND (md:hidden)                     */}
+      {/* Exact portrait artwork matching uploaded reference        */}
+      {/* ========================================================= */}
+      <div className="md:hidden absolute inset-0 z-0 overflow-hidden bg-[#7EBCE6]">
+        <img
+          src="/images/welcome-mobile.jpg"
+          alt="DSL Enterprises Loading"
+          className="w-full h-full object-cover object-center pointer-events-none select-none"
+          draggable={false}
+        />
+      </div>
+
+      {/* ========================================================= */}
+      {/* 2. DESKTOP VIEW BACKGROUND (hidden md:block)              */}
+      {/* Widescreen video background                               */}
+      {/* ========================================================= */}
+      <div className="hidden md:block absolute inset-0 z-0 overflow-hidden pointer-events-none">
         <video
           autoPlay
           loop
@@ -38,7 +54,7 @@ export default function GlobalLoading() {
 
       {/* CENTER OFFICIAL LOGO LOCKUP WITH MIST & LOADING ICON */}
       <div className="relative z-10 max-w-5xl mx-auto px-6 text-center my-auto flex flex-col items-center justify-center space-y-5">
-        <div className="relative flex items-center justify-center py-2 px-2 transition-transform duration-300">
+        <div className="hidden md:flex relative items-center justify-center py-2 px-2 transition-transform duration-300">
           {/* Soft Organic Mist Cloud directly hugging the logo without any rectangle */}
           <div
             className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[105%] max-w-[500px] h-[130px] pointer-events-none rounded-full"

@@ -29,7 +29,7 @@ export const DEFAULT_ANNOUNCEMENTS: AnnouncementAd[] = [
   },
   {
     id: 'ann-3',
-    text: '100% Genuine Authorised Brands • Speed, Doms, Linc, Amigo & More ✨',
+    text: '100% Genuine Authorised Brands • Speed, Doms, Linc, Pentonic, Amigo & FlexOffice ✨',
     link: '/brands',
     isActive: true,
     priority: 3,

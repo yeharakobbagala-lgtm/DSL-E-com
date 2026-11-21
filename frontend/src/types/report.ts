@@ -1,4 +1,4 @@
-export type ReportPeriod = 'today' | 'last7days' | 'last30days' | 'custom';
+export type ReportPeriod = 'today' | 'last7days' | 'last30days' | 'last90days' | 'custom';
 export type ExportFormat = 'csv' | 'xlsx';
 
 export interface ReportKpiMetrics {

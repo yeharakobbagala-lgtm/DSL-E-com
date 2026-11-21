@@ -276,8 +276,9 @@ export default function AdminReportsPage() {
               {(
                 [
                   { id: 'today', label: 'Today' },
-                  { id: 'last7days', label: 'Last 7 Days' },
-                  { id: 'last30days', label: 'Last 30 Days' },
+                  { id: 'last7days', label: '1 Week' },
+                  { id: 'last30days', label: '1 Month' },
+                  { id: 'last90days', label: '3 Months' },
                   { id: 'custom', label: 'Custom Range' },
                 ] as const
               ).map((p) => (

@@ -23,7 +23,7 @@ const FAQS = [
   },
   {
     q: 'Are all distributed stationery brands 100% authentic?',
-    a: 'Yes, absolutely. DSL Enterprises (Pvt) Ltd holds direct distribution rights and partnerships with authorized brands including Speed, Doms, Amigo, Linc, Pentonic, Accumate, Geommy, and FlexOffice.',
+    a: 'Yes, absolutely. DSL Enterprises (Pvt) Ltd holds direct distribution rights and partnerships with authorized brands including Speed, Doms, Linc, Pentonic, Amigo, and FlexOffice.',
   },
   {
     q: 'What payment methods do you accept?',

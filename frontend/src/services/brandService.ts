@@ -7,8 +7,8 @@ import {
 } from '@/lib/api/apiClient';
 import { INITIAL_BRANDS } from '@/mocks/brands';
 
-const BRAND_STORAGE_KEY = 'dsl_brands_data_v1';
-const EXCLUDED_BRAND_IDS = new Set(['brand-atlas', 'brand-promate', 'brand-faber']);
+const BRAND_STORAGE_KEY = 'dsl_brands_data_v2';
+const ALLOWED_BRAND_SLUGS = new Set(['speed', 'doms', 'linc', 'pentonic', 'amigo', 'flexoffice']);
 
 export function deduplicateBrands(brands: Brand[]): Brand[] {
   const seenIds = new Set<string>();
@@ -17,9 +17,11 @@ export function deduplicateBrands(brands: Brand[]): Brand[] {
   const result: Brand[] = [];
 
   for (const b of brands) {
-    if (!b || EXCLUDED_BRAND_IDS.has(b.id)) continue;
-    const idKey = (b.id || '').toLowerCase().trim();
+    if (!b) continue;
     const slugKey = (b.slug || '').toLowerCase().trim();
+    if (!ALLOWED_BRAND_SLUGS.has(slugKey)) continue;
+
+    const idKey = (b.id || '').toLowerCase().trim();
     const nameKey = (b.name || '').toLowerCase().trim();
 
     if (idKey && seenIds.has(idKey)) continue;

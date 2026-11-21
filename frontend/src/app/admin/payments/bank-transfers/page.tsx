@@ -67,6 +67,37 @@ function BankTransfersQueueContent() {
   const [search, setSearch] = useState(initialSearch);
   const [dateFrom, setDateFrom] = useState(initialDateFrom);
   const [dateTo, setDateTo] = useState(initialDateTo);
+
+  const getColomboDateStr = (dayOffset = 0): string => {
+    const now = new Date();
+    const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+    const colomboTime = new Date(utc + 5.5 * 3600000 + dayOffset * 86400000);
+    const y = colomboTime.getFullYear();
+    const m = String(colomboTime.getMonth() + 1).padStart(2, '0');
+    const d = String(colomboTime.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  };
+
+  const handleDatePreset = (preset: 'today' | '1week' | '1month' | '3month' | 'all') => {
+    setPage(1);
+    if (preset === 'all') {
+      setDateFrom('');
+      setDateTo('');
+    } else if (preset === 'today') {
+      const t = getColomboDateStr(0);
+      setDateFrom(t);
+      setDateTo(t);
+    } else if (preset === '1week') {
+      setDateFrom(getColomboDateStr(-6));
+      setDateTo(getColomboDateStr(0));
+    } else if (preset === '1month') {
+      setDateFrom(getColomboDateStr(-29));
+      setDateTo(getColomboDateStr(0));
+    } else if (preset === '3month') {
+      setDateFrom(getColomboDateStr(-89));
+      setDateTo(getColomboDateStr(0));
+    }
+  };
   const [sortBy, setSortBy] = useState<'createdAt' | 'amountCents' | 'depositDate'>(initialSortBy);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>(initialSortOrder);
 
@@ -331,6 +362,41 @@ function BankTransfersQueueContent() {
               className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#0066CC] bg-white text-slate-700"
             />
           </div>
+        </div>
+
+        {/* Quick Date Presets */}
+        <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-slate-100">
+          <span className="text-[11px] font-bold text-slate-500 uppercase mr-1">Timeframe:</span>
+          {[
+            { id: 'all', label: 'All Time' },
+            { id: 'today', label: 'Today (tdy)' },
+            { id: '1week', label: '1 Week' },
+            { id: '1month', label: '1 Month' },
+            { id: '3month', label: '3 Months' },
+          ].map((p) => {
+            const today = getColomboDateStr(0);
+            let isActive = false;
+            if (p.id === 'all') isActive = !dateFrom && !dateTo;
+            else if (p.id === 'today') isActive = dateFrom === today && dateTo === today;
+            else if (p.id === '1week') isActive = dateFrom === getColomboDateStr(-6) && dateTo === today;
+            else if (p.id === '1month') isActive = dateFrom === getColomboDateStr(-29) && dateTo === today;
+            else if (p.id === '3month') isActive = dateFrom === getColomboDateStr(-89) && dateTo === today;
+
+            return (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => handleDatePreset(p.id as any)}
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  isActive
+                    ? 'bg-[#0066CC] text-white shadow-2xs'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
+                }`}
+              >
+                {p.label}
+              </button>
+            );
+          })}
         </div>
 
         {/* Active Filter Pills */}

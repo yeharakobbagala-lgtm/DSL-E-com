@@ -13,16 +13,22 @@ import {
   HelpCircle,
   ChevronDown,
   ChevronUp,
+  Upload,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { ProductCategory, Brand } from '@/types/product';
 import { productService } from '@/services/productService';
 import { brandService } from '@/services/brandService';
 import { categoryService } from '@/services/categoryService';
 import { SearchableSelect, SearchableSelectOption } from '@/components/common/SearchableSelect';
+import { resolveImageUrl } from '@/lib/image';
 
 export interface BulkProductDraft {
   id: string;
   name: string;
+  imageUrl?: string;
+  isUploading?: boolean;
+  uploadError?: string;
   brandName: string;
   parentCategory: string;
   subCategory: string;
@@ -78,6 +84,9 @@ const REFERENCE_EXAMPLES = [
 const createEmptyRow = (): BulkProductDraft => ({
   id: `draft-${Date.now()}-${Math.random()}`,
   name: '',
+  imageUrl: '',
+  isUploading: false,
+  uploadError: undefined,
   brandName: '',
   parentCategory: '',
   subCategory: '',
@@ -181,6 +190,9 @@ export function BulkAddProductsModal({
       return {
         id: `draft-example-${Date.now()}-${idx}`,
         name: ex.name,
+        imageUrl: '',
+        isUploading: false,
+        uploadError: undefined,
         brandName: matchedBrand ? matchedBrand.id : ex.brand,
         parentCategory: firstParent ? firstParent.id : '',
         subCategory: '',
@@ -194,6 +206,24 @@ export function BulkAddProductsModal({
     setRows(loadedRows);
     setFormError(null);
     setSuccessCount(null);
+  };
+
+  const handleRowImageUpload = async (rowId: string, file: File) => {
+    handleFieldChange(rowId, 'isUploading' as any, true);
+    handleFieldChange(rowId, 'uploadError' as any, undefined);
+
+    try {
+      const url = await productService.uploadProductImage(file);
+      handleFieldChange(rowId, 'imageUrl' as any, url);
+    } catch (err: any) {
+      handleFieldChange(rowId, 'uploadError' as any, err?.message || 'Upload failed');
+    } finally {
+      handleFieldChange(rowId, 'isUploading' as any, false);
+    }
+  };
+
+  const handleRowImageRemove = (rowId: string) => {
+    handleFieldChange(rowId, 'imageUrl' as any, '');
   };
 
   // Update specific field in row
@@ -376,6 +406,7 @@ export function BulkAddProductsModal({
           priceCents: Math.round(parseFloat(row.price) * 100),
           stockQuantity: parseInt(row.stockQuantity, 10) || 0,
           isActive: row.isActive,
+          images: row.imageUrl ? [row.imageUrl] : ['/products/default.png'],
         };
 
         await productService.createProductApi(payload);
@@ -543,10 +574,11 @@ export function BulkAddProductsModal({
 
         {/* Table Area (Scrollable Spreadsheet Table) */}
         <div className="flex-1 overflow-x-auto overflow-y-auto p-6">
-          <table className="min-w-[1550px] w-full text-left text-xs border-separate border-spacing-0">
+          <table className="min-w-[1650px] w-full text-left text-xs border-separate border-spacing-0">
             <thead>
               <tr className="bg-slate-100/90 text-slate-700 font-bold">
                 <th className="py-2.5 px-3 rounded-l-xl border-y border-l border-slate-200 w-10 text-center">#</th>
+                <th className="py-2.5 px-3 border-y border-slate-200 w-20 text-center">Photo</th>
                 <th className="py-2.5 px-3 border-y border-slate-200 min-w-[240px]">Product Name *</th>
                 <th className="py-2.5 px-3 border-y border-slate-200 min-w-[180px]">Brand Name</th>
                 <th className="py-2.5 px-3 border-y border-slate-200 min-w-[190px]">Parent Category</th>
@@ -567,6 +599,49 @@ export function BulkAddProductsModal({
                     <span className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[11px] mx-auto">
                       {idx + 1}
                     </span>
+                  </td>
+
+                  {/* Photo / Image Upload */}
+                  <td className="py-2 px-2 text-center">
+                    <div className="flex items-center justify-center">
+                      {row.isUploading ? (
+                        <div className="w-12 h-12 rounded-xl border border-blue-200 bg-blue-50 flex flex-col items-center justify-center text-blue-600">
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span className="text-[8px] font-bold mt-0.5">Wait...</span>
+                        </div>
+                      ) : row.imageUrl ? (
+                        <div className="relative group w-12 h-12 rounded-xl border border-slate-200 overflow-hidden bg-slate-50 flex items-center justify-center shadow-2xs">
+                          <img
+                            src={resolveImageUrl(row.imageUrl)}
+                            alt={row.name || 'Product'}
+                            className="w-full h-full object-contain p-0.5"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleRowImageRemove(row.id)}
+                            className="absolute -top-1 -right-1 bg-rose-600 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-xs cursor-pointer z-10"
+                            title="Remove photo"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ) : (
+                        <label className="w-12 h-12 rounded-xl border-2 border-dashed border-slate-300 hover:border-[#08275E] hover:bg-blue-50/30 flex flex-col items-center justify-center cursor-pointer transition-colors text-slate-400 hover:text-[#08275E] group">
+                          <Upload className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
+                          <span className="text-[8px] font-bold mt-0.5 tracking-tight">Photo</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleRowImageUpload(row.id, file);
+                              e.target.value = '';
+                            }}
+                          />
+                        </label>
+                      )}
+                    </div>
                   </td>
 
                   {/* Name */}

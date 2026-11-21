@@ -19,6 +19,31 @@ export const OrderFilterToolbar: React.FC<OrderFilterToolbarProps> = ({
   totalResults,
   isLoading,
 }) => {
+  const getColomboDateStr = (dayOffset = 0): string => {
+    const now = new Date();
+    const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+    const colomboTime = new Date(utc + 5.5 * 3600000 + dayOffset * 86400000);
+    const y = colomboTime.getFullYear();
+    const m = String(colomboTime.getMonth() + 1).padStart(2, '0');
+    const d = String(colomboTime.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  };
+
+  const handleDatePreset = (preset: 'today' | '1week' | '1month' | '3month' | 'all') => {
+    if (preset === 'all') {
+      onFilterChange({ startDate: '', endDate: '', page: 1 });
+    } else if (preset === 'today') {
+      const t = getColomboDateStr(0);
+      onFilterChange({ startDate: t, endDate: t, page: 1 });
+    } else if (preset === '1week') {
+      onFilterChange({ startDate: getColomboDateStr(-6), endDate: getColomboDateStr(0), page: 1 });
+    } else if (preset === '1month') {
+      onFilterChange({ startDate: getColomboDateStr(-29), endDate: getColomboDateStr(0), page: 1 });
+    } else if (preset === '3month') {
+      onFilterChange({ startDate: getColomboDateStr(-89), endDate: getColomboDateStr(0), page: 1 });
+    }
+  };
+
   const hasActiveFilters = Boolean(
     (filters.search && filters.search.trim().length > 0) ||
       (filters.status && filters.status !== 'all') ||
@@ -112,17 +137,57 @@ export const OrderFilterToolbar: React.FC<OrderFilterToolbarProps> = ({
 
       {/* Bottom row: Date range filter, active indicators, and reset CTA */}
       <div className="pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-slate-600">
-        <div className="flex flex-wrap items-center gap-2.5">
-          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1 mr-0.5">
             <Calendar className="w-3.5 h-3.5 text-slate-400" />
-            <span>Date Range:</span>
+            <span>Date:</span>
           </span>
+
+          {/* Quick Filter Presets */}
+          {[
+            { id: 'all', label: 'All' },
+            { id: 'today', label: 'Today (tdy)' },
+            { id: '1week', label: '1 Week' },
+            { id: '1month', label: '1 Month' },
+            { id: '3month', label: '3 Months' },
+          ].map((p) => {
+            const today = getColomboDateStr(0);
+            let isActive = false;
+            if (p.id === 'all') {
+              isActive = !filters.startDate && !filters.endDate;
+            } else if (p.id === 'today') {
+              isActive = filters.startDate === today && filters.endDate === today;
+            } else if (p.id === '1week') {
+              isActive = filters.startDate === getColomboDateStr(-6) && filters.endDate === today;
+            } else if (p.id === '1month') {
+              isActive = filters.startDate === getColomboDateStr(-29) && filters.endDate === today;
+            } else if (p.id === '3month') {
+              isActive = filters.startDate === getColomboDateStr(-89) && filters.endDate === today;
+            }
+
+            return (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => handleDatePreset(p.id as any)}
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  isActive
+                    ? 'bg-[#08275E] text-white shadow-2xs'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
+                }`}
+              >
+                {p.label}
+              </button>
+            );
+          })}
+
+          <div className="h-4 w-px bg-slate-200 hidden sm:block mx-1" />
 
           <input
             type="date"
             value={filters.startDate || ''}
             onChange={(e) => onFilterChange({ startDate: e.target.value, page: 1 })}
-            className="px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#08275E]"
+            className="px-2 py-1 rounded-lg border border-slate-200 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#08275E]"
             title="Start Date"
           />
           <span className="text-slate-400 text-xs">to</span>
@@ -130,7 +195,7 @@ export const OrderFilterToolbar: React.FC<OrderFilterToolbarProps> = ({
             type="date"
             value={filters.endDate || ''}
             onChange={(e) => onFilterChange({ endDate: e.target.value, page: 1 })}
-            className="px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#08275E]"
+            className="px-2 py-1 rounded-lg border border-slate-200 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#08275E]"
             title="End Date"
           />
 

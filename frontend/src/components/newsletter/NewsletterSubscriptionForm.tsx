@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Mail, CheckCircle2, AlertCircle, Loader2, ArrowRight } from 'lucide-react';
 import { newsletterService } from '@/services/newsletterService';
+import { useTranslation } from '@/services/languageStore';
 
 interface NewsletterSubscriptionFormProps {
   source?: string;
@@ -15,6 +16,7 @@ export const NewsletterSubscriptionForm: React.FC<NewsletterSubscriptionFormProp
   variant = 'card',
   className = '',
 }) => {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [consent, setConsent] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -154,7 +156,7 @@ export const NewsletterSubscriptionForm: React.FC<NewsletterSubscriptionFormProp
             <input
               type="email"
               required
-              placeholder="Enter your email address..."
+              placeholder={t('newsletter.emailPlaceholder', 'Enter your email address...')}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={loading}
@@ -171,10 +173,10 @@ export const NewsletterSubscriptionForm: React.FC<NewsletterSubscriptionFormProp
                 {loading ? (
                   <>
                     <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />
-                    <span className="hidden sm:inline">Sending...</span>
+                    <span className="hidden sm:inline">{t('newsletter.sending', 'Sending...')}</span>
                   </>
                 ) : (
-                  <span>Subscribe</span>
+                  <span>{t('newsletter.subscribe', 'Subscribe')}</span>
                 )}
               </span>
               <span className="bg-[#FFD84D] hover:bg-[#F2C736] text-[#594300] px-2.5 sm:px-3 py-2 sm:py-2.5 flex items-center justify-center transition-colors">
@@ -193,7 +195,7 @@ export const NewsletterSubscriptionForm: React.FC<NewsletterSubscriptionFormProp
                 className="mt-0.5 w-4 h-4 rounded border-slate-300 text-[#006DEB] focus:ring-[#006DEB] cursor-pointer shrink-0"
               />
               <span className="text-[11px] text-[#09285C]/75 leading-relaxed font-medium">
-                I agree to receive distribution updates and communications from DSL Distributors.
+                {t('newsletter.consentText', 'I agree to receive distribution updates and communications from DSL Distributors.')}
               </span>
             </label>
           </div>

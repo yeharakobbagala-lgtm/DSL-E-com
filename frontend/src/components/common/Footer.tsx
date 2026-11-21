@@ -185,7 +185,7 @@ export const Footer: React.FC = () => {
               >
                 <h5 className="text-sm font-bold text-[#092C68] flex items-center gap-2 tracking-tight">
                   <span className="w-2 h-2 rounded-full bg-[#EAB308] shadow-[0_0_6px_rgba(234,179,8,0.7)] shrink-0" />
-                  <span>Product Catalogue</span>
+                  <span>{t('footer.productCatalogue', 'Product Catalogue')}</span>
                 </h5>
                 <ChevronDown
                   className={`w-4 h-4 text-[#092C68] transition-transform duration-200 lg:hidden ${
@@ -201,32 +201,32 @@ export const Footer: React.FC = () => {
               >
                 <li>
                   <Link href="/shop" className="hover:text-[#0866F5] transition-colors inline-block py-0.5 font-medium">
-                    All Products
+                    {t('nav.shop', 'All Products')}
                   </Link>
                 </li>
                 <li>
                   <Link href="/categories/exercise-books" className="hover:text-[#0866F5] transition-colors inline-block py-0.5 font-medium">
-                    CR Books &amp; Paper
+                    {t('cat.exerciseBooks', 'CR Books & Paper')}
                   </Link>
                 </li>
                 <li>
                   <Link href="/categories/pens-and-writing" className="hover:text-[#0866F5] transition-colors inline-block py-0.5 font-medium">
-                    Pens &amp; Writing
+                    {t('cat.pensWriting', 'Pens & Writing')}
                   </Link>
                 </li>
                 <li>
                   <Link href="/categories/art-and-drawing" className="hover:text-[#0866F5] transition-colors inline-block py-0.5 font-medium">
-                    Art &amp; Craft Supplies
+                    {t('cat.artCraft', 'Art & Craft Supplies')}
                   </Link>
                 </li>
                 <li>
                   <Link href="/school-packs" className="hover:text-[#0866F5] transition-colors inline-block py-0.5 font-medium">
-                    School Stationery Packs
+                    {t('cat.schoolPacks', 'School Stationery Packs')}
                   </Link>
                 </li>
                 <li>
                   <Link href="/brands" className="hover:text-[#0866F5] transition-colors inline-block py-0.5 font-medium">
-                    Authorised Brands
+                    {t('nav.brands', 'Authorised Brands')}
                   </Link>
                 </li>
               </ul>
@@ -246,7 +246,7 @@ export const Footer: React.FC = () => {
               >
                 <h5 className="text-sm font-bold text-[#092C68] flex items-center gap-2 tracking-tight">
                   <span className="w-2 h-2 rounded-full bg-[#EAB308] shadow-[0_0_6px_rgba(234,179,8,0.7)] shrink-0" />
-                  <span>Services</span>
+                  <span>{t('footer.services', 'Services')}</span>
                 </h5>
                 <ChevronDown
                   className={`w-4 h-4 text-[#092C68] transition-transform duration-200 lg:hidden ${
@@ -262,22 +262,22 @@ export const Footer: React.FC = () => {
               >
                 <li>
                   <Link href="/find-my-stationery" className="hover:text-[#0866F5] transition-colors inline-block py-0.5 font-medium">
-                    Find My Stationery
+                    {t('footer.findStationery', 'Find My Stationery')}
                   </Link>
                 </li>
                 <li>
                   <Link href="/bulk-order" className="hover:text-[#0866F5] transition-colors inline-block py-0.5 font-medium">
-                    Bulk School Orders
+                    {t('footer.bulkOrders', 'Bulk School Orders')}
                   </Link>
                 </li>
                 <li>
                   <Link href="/account/wishlist" className="hover:text-[#0866F5] transition-colors inline-block py-0.5 font-medium">
-                    My Wishlist
+                    {t('footer.myWishlist', 'My Wishlist')}
                   </Link>
                 </li>
                 <li>
                   <Link href="/cart" className="hover:text-[#0866F5] transition-colors inline-block py-0.5 font-medium">
-                    Shopping Cart
+                    {t('footer.shoppingCart', 'Shopping Cart')}
                   </Link>
                 </li>
                 <li className="pt-2">
@@ -286,7 +286,7 @@ export const Footer: React.FC = () => {
                     href="/admin/dashboard"
                     className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#0866F5] hover:bg-[#005cd9] text-white font-bold text-xs shadow-[0_4px_14px_rgba(8,102,245,0.35),0_0_12px_rgba(245,158,11,0.45)] hover:shadow-lg transition-all duration-200 border-b-2 border-amber-400 group"
                   >
-                    <span>Admin Portal</span>
+                    <span>{t('footer.adminPortal', 'Admin Portal')}</span>
                     <ArrowRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-1" />
                   </Link>
                 </li>
@@ -307,7 +307,7 @@ export const Footer: React.FC = () => {
               >
                 <h5 className="text-sm font-bold text-[#092C68] flex items-center gap-2 tracking-tight">
                   <span className="w-2 h-2 rounded-full bg-[#EAB308] shadow-[0_0_6px_rgba(234,179,8,0.7)] shrink-0" />
-                  <span>Help &amp; Policies</span>
+                  <span>{t('footer.helpPolicies', 'Help & Policies')}</span>
                 </h5>
                 <ChevronDown
                   className={`w-4 h-4 text-[#092C68] transition-transform duration-200 lg:hidden ${
@@ -323,37 +323,37 @@ export const Footer: React.FC = () => {
               >
                 <li>
                   <Link href="/about" className="hover:text-[#0866F5] transition-colors inline-block py-0.5 font-medium">
-                    About DSL Enterprises
+                    {t('footer.aboutCompany', 'About DSL Enterprises')}
                   </Link>
                 </li>
                 <li>
                   <Link href="/contact" className="hover:text-[#0866F5] transition-colors inline-block py-0.5 font-medium">
-                    Contact Distribution Team
+                    {t('footer.contactTeam', 'Contact Distribution Team')}
                   </Link>
                 </li>
                 <li>
                   <Link href="/faq" className="hover:text-[#0866F5] transition-colors inline-block py-0.5 font-medium">
-                    FAQ &amp; Help Center
+                    {t('footer.faqHelp', 'FAQ & Help Center')}
                   </Link>
                 </li>
                 <li>
                   <Link href="/delivery" className="hover:text-[#0866F5] transition-colors inline-block py-0.5 font-medium">
-                    Delivery Information
+                    {t('footer.deliveryInfo', 'Delivery Information')}
                   </Link>
                 </li>
                 <li>
                   <Link href="/returns" className="hover:text-[#0866F5] transition-colors inline-block py-0.5 font-medium">
-                    Returns &amp; Replacement
+                    {t('footer.returns', 'Returns & Replacement')}
                   </Link>
                 </li>
                 <li>
                   <Link href="/terms" className="hover:text-[#0866F5] transition-colors inline-block py-0.5 font-medium">
-                    Terms of Service
+                    {t('footer.terms', 'Terms of Service')}
                   </Link>
                 </li>
                 <li>
                   <Link href="/privacy" className="hover:text-[#0866F5] transition-colors inline-block py-0.5 font-medium">
-                    Privacy Policy
+                    {t('footer.privacyPolicy', 'Privacy Policy')}
                   </Link>
                 </li>
               </ul>

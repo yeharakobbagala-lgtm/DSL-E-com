@@ -28,6 +28,7 @@ import {
   Check,
   Loader2,
   Table,
+  Upload,
 } from 'lucide-react';
 import { productService } from '@/services/productService';
 import { categoryService } from '@/services/categoryService';
@@ -128,6 +129,23 @@ function AdminProductsContent() {
 
   // Bulk Add Table Data Entry Modal
   const [isBulkAddModalOpen, setIsBulkAddModalOpen] = useState(false);
+  const [uploadingProductId, setUploadingProductId] = useState<string | null>(null);
+
+  const handleInlinePhotoUpload = async (productId: string, file: File) => {
+    setUploadingProductId(productId);
+    try {
+      const url = await productService.uploadProductImage(file);
+      await productService.updateProductApi(productId, { images: [url] });
+      setProducts((prev) =>
+        prev.map((p) => (p.id === productId ? { ...p, images: [url] } : p))
+      );
+    } catch (err: any) {
+      console.error('Failed to update product photo:', err);
+      alert(err?.message || 'Failed to update product photo');
+    } finally {
+      setUploadingProductId(null);
+    }
+  };
 
   // Load products from backend with full server-side pagination & multi-filter
   const loadProducts = useCallback(async (targetPage = page, targetLimit = limit) => {
@@ -785,15 +803,42 @@ function AdminProductsContent() {
                           />
                         </td>
 
-                        {/* Image Thumbnail */}
+                        {/* Image Thumbnail with Direct Quick Upload */}
                         {isColVisible('image') && (
                           <td className="py-3 px-3">
-                            <ProductThumbnail
-                              src={p.images && p.images[0] ? p.images[0] : null}
-                              alt={p.name}
-                              brandName={p.brandName}
-                              className="w-10 h-10 rounded-lg"
-                            />
+                            <div className="relative group w-11 h-11">
+                              <ProductThumbnail
+                                src={p.images && p.images[0] ? p.images[0] : null}
+                                alt={p.name}
+                                brandName={p.brandName}
+                                className="w-11 h-11 rounded-lg border border-slate-200"
+                              />
+                              {uploadingProductId === p.id ? (
+                                <div className="absolute inset-0 bg-white/90 rounded-lg flex items-center justify-center">
+                                  <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                                </div>
+                              ) : (
+                                hasPermission('products.update') && (
+                                  <label
+                                    className="absolute inset-0 bg-slate-900/60 rounded-lg opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center cursor-pointer transition-opacity text-white"
+                                    title="Click to upload/change photo"
+                                  >
+                                    <Upload className="w-3.5 h-3.5" />
+                                    <span className="text-[7px] font-bold mt-0.5">Edit</span>
+                                    <input
+                                      type="file"
+                                      accept="image/*"
+                                      className="hidden"
+                                      onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) handleInlinePhotoUpload(p.id, file);
+                                        e.target.value = '';
+                                      }}
+                                    />
+                                  </label>
+                                )
+                              )}
+                            </div>
                           </td>
                         )}
 

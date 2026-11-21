@@ -279,32 +279,17 @@ async function main() {
   }
 
   // ----------------------------------------------------------------------------
-  // 3. Seed 10 Approved Brands from https://www.dsl.lk/
+  // 3. Seed 6 Approved Authoritative Brands
   // ----------------------------------------------------------------------------
-  console.log('📦 Seeding Brands (10 brands)...');
+  console.log('📦 Seeding Authorised Brands (6 brands)...');
   const brands = [
     {
       id: 'brand-speed',
       name: 'Speed',
       slug: 'speed',
       originCountry: 'Sri Lanka',
-      description: "DSL's proprietary brand, creators of the Speed RIM ball pen and partners of the Lady Ridgeway Hospital Little Hearts project.",
-      featured: true,
-    },
-    {
-      id: 'brand-linc',
-      name: 'Linc',
-      slug: 'linc',
-      originCountry: 'India',
-      description: 'Renowned low-viscosity ink pens including Linc Pentonic, Ocean Slim, and Shine Glitter.',
-      featured: true,
-    },
-    {
-      id: 'brand-luxor',
-      name: 'Luxor',
-      slug: 'luxor',
-      originCountry: 'India',
-      description: 'Highlighters, whiteboard markers, permanent markers, and marker refill inks.',
+      description: 'Pens, Adhesives & Correction',
+      logo: '/images/brands/speed.png',
       featured: true,
     },
     {
@@ -312,55 +297,44 @@ async function main() {
       name: 'Doms',
       slug: 'doms',
       originCountry: 'India',
-      description: 'Premier colour pencils, erasers, sharpeners, and vibrant art supplies for students.',
+      description: 'Colour Pencils, Clay & Art Kits',
+      logo: '/images/brands/doms.png',
       featured: true,
     },
     {
-      id: 'brand-camlin',
-      name: 'Kokuyo Camlin',
-      slug: 'kokuyo-camlin',
+      id: 'brand-linc',
+      name: 'Linc',
+      slug: 'linc',
       originCountry: 'India',
-      description: 'Artist water colours, poster paints, geometry instrument boxes, and Little Hearts pencils.',
+      description: 'Pentonic Smooth Ball & Gel Pens',
+      logo: '/images/brands/linc.png',
       featured: true,
     },
     {
-      id: 'brand-fine',
-      name: 'Fine',
-      slug: 'fine',
+      id: 'brand-pentonic',
+      name: 'Pentonic',
+      slug: 'pentonic',
       originCountry: 'India',
-      description: 'Precision fine-tip pens, gel pens, and school writing stationery.',
-      featured: false,
-    },
-    {
-      id: 'brand-wetex',
-      name: 'Wetex',
-      slug: 'wetex',
-      originCountry: 'Sri Lanka',
-      description: 'Essential tapes, adhesives, fabric paints, and baby diapers.',
-      featured: false,
-    },
-    {
-      id: 'brand-lido',
-      name: 'Lido',
-      slug: 'lido',
-      originCountry: 'South Korea',
-      description: 'Non-toxic modelling clay and natural creative educational materials.',
+      description: 'Featherlite Pastel Matte Pens',
+      logo: '/images/brands/pentonic.png',
       featured: true,
-    },
-    {
-      id: 'brand-hp',
-      name: 'HP',
-      slug: 'hp',
-      originCountry: 'Global',
-      description: 'High performance printing paper and office copier reams.',
-      featured: false,
     },
     {
       id: 'brand-amigo',
       name: 'Amigo',
       slug: 'amigo',
       originCountry: 'Sri Lanka',
-      description: 'Precision electronic desktop and scientific calculators distributed across Sri Lanka by DSL.',
+      description: 'Scientific & Desk Calculators',
+      logo: '/images/brands/amigo.png',
+      featured: true,
+    },
+    {
+      id: 'brand-flexoffice',
+      name: 'FlexOffice',
+      slug: 'flexoffice',
+      originCountry: 'Global',
+      description: 'Highlighters, Tapes & Stationery',
+      logo: '/images/brands/flexoffice.png',
       featured: true,
     },
   ];
@@ -527,7 +501,7 @@ async function main() {
       description: 'Lido soft modeling clay imported from South Korea. Safe, non-hardening, non-toxic, and reusable formula for early childhood sensory development.',
       shortDescription: 'Non-toxic vibrant South Korean modeling clay 6-color set for children and creative crafts.',
       categoryId: 'cat-clay',
-      brandId: 'brand-lido',
+      brandId: 'brand-doms',
       priceCents: 38000, // Verified Rs. 380.00 on dsl.lk
       compareAtPriceCents: 42000,
       costPriceCents: 26000,
@@ -576,14 +550,14 @@ async function main() {
     },
     {
       id: 'prod-camlin-water-colour-12',
-      name: 'Kokuyo Camlin Artist Water Colour 12 Cakes',
-      slug: 'kokuyo-camlin-artist-water-colour-12-cakes',
-      sku: 'DSL-CAMLIN-WC-12',
-      barcode: '8901425001218', // [Placeholder: Needs Approval]
-      description: 'Kokuyo Camlin student water colour set featuring smooth flow, lightfast transparent pigments, and an integrated mixing palette.',
+      name: 'Doms Artist Water Colour 12 Cakes',
+      slug: 'doms-artist-water-colour-12-cakes',
+      sku: 'DSL-DOMS-WC-12',
+      barcode: '8901425001218',
+      description: 'Doms student water colour set featuring smooth flow, lightfast transparent pigments, and an integrated mixing palette.',
       shortDescription: '12 vibrant cake watercolours with a quality round painting brush in sturdy palette.',
       categoryId: 'cat-water-colour',
-      brandId: 'brand-camlin',
+      brandId: 'brand-doms',
       priceCents: 65000, // Verified Rs. 650.00 on dsl.lk
       compareAtPriceCents: 72000,
       costPriceCents: 45000,
